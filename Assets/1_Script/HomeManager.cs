@@ -134,9 +134,7 @@ public class HomeManager : MonoBehaviour
             {
                 newFolder = Instantiate(singleFolder, FoldersOngoing.transform);
 
-                int recordCount = newProject.records.Count;
-                newFolder.transform.GetChild(2).GetComponent<TMP_Text>().text = recordCount.ToString();
-                if (recordCount == 0) { newFolder.transform.GetChild(4).gameObject.SetActive(false); }
+                if (newProject.records.Count == 0) { newFolder.transform.GetChild(4).gameObject.SetActive(false); }
                 else
                 {
                     TimeSpan howManyDays = DateTime.Now - newProject.lastRecordDate;
@@ -158,6 +156,7 @@ public class HomeManager : MonoBehaviour
             newFolder.transform.SetAsFirstSibling();
             newFolder.transform.GetChild(0).GetComponent<TMP_Text>().text = newProject.projectType;
             newFolder.transform.GetChild(1).GetComponent<TMP_Text>().text = newProject.projectTitle;
+            newFolder.transform.GetChild(2).GetComponent<TMP_Text>().text = newProject.records.Count.ToString();
             newFolder.transform.GetChild(3).GetComponent<TMP_Text>().text = newProject.experiences.Count.ToString();
             newFolder.GetComponent<Button>().onClick.AddListener(goFolder);
         }

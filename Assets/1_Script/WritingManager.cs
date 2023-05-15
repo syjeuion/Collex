@@ -22,6 +22,7 @@ public class WritingManager : MonoBehaviour
     public GameObject cancelWritingPage;
     public GameObject templatesPage;
 
+    public RectTransform writingContent;
     public GameObject writingArea;
     public GameObject writing_Problem;
     public GameObject writing_Cause;
@@ -45,6 +46,10 @@ public class WritingManager : MonoBehaviour
     public GameObject Hashtags;
     int forcount;
 
+    public GameObject experiencePageConfirmButton;
+    public Sprite button_disable;
+    public Sprite button_enable;
+
     public GameObject writingNextButton;
 
     public GameObject snackBar;
@@ -54,6 +59,7 @@ public class WritingManager : MonoBehaviour
     #endregion
 
     //사용 컬러
+    Color primary1;
     Color primary3;
     Color gray_200;
     Color gray_300;
@@ -66,6 +72,7 @@ public class WritingManager : MonoBehaviour
     private void Start()
     {
         //컬러 지정
+        ColorUtility.TryParseHtmlString("#EFF5FF", out primary1);
         ColorUtility.TryParseHtmlString("#408BFD", out primary3);
         ColorUtility.TryParseHtmlString("#EBEDEF", out gray_200);
         ColorUtility.TryParseHtmlString("#DDE0E3", out gray_300);
@@ -200,12 +207,7 @@ public class WritingManager : MonoBehaviour
         temporaryTemplate = EventSystem.current.currentSelectedGameObject.name;
         if (temporaryTemplate == "기본형")
         {
-            writing_Problem.SetActive(false);
-            writing_Cause.SetActive(false);
-            writing_Solution.SetActive(false);
-            writing_Learning.SetActive(false);
-            writing_Goodpoint.SetActive(false);
-            writing_Badpoint.SetActive(false);
+            writingArea.SetActive(false);
         }
         else if (temporaryTemplate == "문제기록형")
         {
@@ -235,8 +237,8 @@ public class WritingManager : MonoBehaviour
             writing_Badpoint.SetActive(false);
         }
         yield return new WaitForEndOfFrame();
-        writingArea.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
-        writingArea.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 20;
+        writingContent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
+        writingContent.GetComponent<VerticalLayoutGroup>().spacing = 20;
     }
     #endregion
 
@@ -341,6 +343,37 @@ public class WritingManager : MonoBehaviour
         }
     }
     #endregion
+
+    #region Writing InputField
+    //인풋필드 클릭 시 상단에 위치 고정시키기
+    float height;
+    public void OnSelectWritingInput()
+    {
+        StartCoroutine(OnSelectInput());
+    }
+    IEnumerator OnSelectInput()
+    {
+        height = 0;
+        GameObject thisField = EventSystem.current.currentSelectedGameObject;
+        writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 454;
+        yield return new WaitForEndOfFrame();
+        if (thisField.name == "InputField_Practice")
+        { writingContent.anchoredPosition = new Vector2(writingContent.anchoredPosition.x, 373f); }
+        else
+        {
+            for (int i = 0; i < thisField.transform.parent.GetSiblingIndex() + 1; i++)
+            {
+                if (writingArea.transform.GetChild(i).gameObject.activeSelf)
+                { height += writingArea.transform.GetChild(i).GetComponent<RectTransform>().sizeDelta.y+20; }
+            }
+            yield return new WaitForEndOfFrame();
+            writingContent.anchoredPosition = new Vector2(writingContent.anchoredPosition.x, (373 + height));
+        }
+    }
+    public void OnDeselectWritingInput()
+    {
+        writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 44;
+    }
     //글쓰기 실시간 높이 값 반영
     public void checkHeight()
     {
@@ -373,8 +406,9 @@ public class WritingManager : MonoBehaviour
         writingArea.GetComponent<VerticalLayoutGroup>().spacing = 25.9f;
         writingArea.GetComponent<VerticalLayoutGroup>().spacing = 26;
     }
+    #endregion
 
-    //기록문서 저장
+    #region 기록문서 저장
     public void SaveDailyRecord()
     {
         newDailyRecord.title = inputTitle.text;
@@ -517,7 +551,7 @@ public class WritingManager : MonoBehaviour
             }
         }
     }
-
+    #endregion
 
     //토글 클릭할때 실행되는 함수
     #region 토글
@@ -656,6 +690,11 @@ public class WritingManager : MonoBehaviour
                 newDailyRecord.experiences.Add(currentObj.transform.GetChild(0).GetComponent<TMP_Text>().text);
                 currentObj.GetComponent<Image>().color = primary3;
                 currentObj.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
+                if (newDailyRecord.experiences.Count != 0)
+                {
+                    experiencePageConfirmButton.GetComponent<Image>().sprite = button_enable;
+                    experiencePageConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = primary1;
+                }
             }
             if (currentObj.GetComponent<Toggle>().isOn == false && newDailyRecord.experiences.Contains(currentObj.transform.GetChild(0).GetComponent<TMP_Text>().text))
             {
@@ -663,6 +702,11 @@ public class WritingManager : MonoBehaviour
                 newDailyRecord.experiences.Remove(currentObj.transform.GetChild(0).GetComponent<TMP_Text>().text);
                 currentObj.GetComponent<Image>().color = gray_300;
                 currentObj.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_700;
+                if (newDailyRecord.experiences.Count == 0)
+                {
+                    experiencePageConfirmButton.GetComponent<Image>().sprite = button_disable;
+                    experiencePageConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_500;
+                }
             }
         }
     }
@@ -714,6 +758,8 @@ public class WritingManager : MonoBehaviour
         newHorizontalGroupObj.GetComponent<HorizontalLayoutGroup>().spacing = 8;
         Experiences.GetComponent<VerticalLayoutGroup>().spacing = 7.9f;
         Experiences.GetComponent<VerticalLayoutGroup>().spacing = 8;
+
+        experiencePage.SetActive(false);
     }
     //경험칩 제거 함수
     void removeEXchip()
@@ -786,42 +832,46 @@ public class WritingManager : MonoBehaviour
         }
     }
     //추가완료 버튼
+    int count;
     public void comfirmAddInput()
     {
+        count = 0;
         for (int i = 0; i < 6; i++)
         {
             GameObject activeToggle = addInputFieldContainer.transform.GetChild(i + 1).gameObject;
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "문제상황")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) writing_Problem.SetActive(true);
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Problem.SetActive(true); count++; }
                 else { writing_Problem.SetActive(false); inputProblem.text = ""; }
             }
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "문제원인")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) writing_Cause.SetActive(true);
+                if (activeToggle.GetComponent<Toggle>().isOn) {writing_Cause.SetActive(true); count++; }
                 else { writing_Cause.SetActive(false); inputCause.text = ""; }
             }
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "해결과정")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) writing_Solution.SetActive(true);
+                if (activeToggle.GetComponent<Toggle>().isOn) {writing_Solution.SetActive(true); count++; }
                 else { writing_Solution.SetActive(false); inputSolution.text = ""; }
             }
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "잘한점")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) writing_Goodpoint.SetActive(true);
+                if (activeToggle.GetComponent<Toggle>().isOn) {writing_Goodpoint.SetActive(true); count++; }
                 else { writing_Goodpoint.SetActive(false); inputGoodpoint.text = ""; }
             }
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "부족한점")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) writing_Badpoint.SetActive(true);
+                if (activeToggle.GetComponent<Toggle>().isOn) {writing_Badpoint.SetActive(true); count++; }
                 else { writing_Badpoint.SetActive(false); inputBadpoint.text = ""; }
             }
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "배운점")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) writing_Learning.SetActive(true);
+                if (activeToggle.GetComponent<Toggle>().isOn) {writing_Learning.SetActive(true); count++; }
                 else { writing_Learning.SetActive(false); inputLearning.text = ""; }
             }
         }
+        if (count == 0) writingArea.SetActive(false);
+        else writingArea.SetActive(true);
         addInputFieldContainer.transform.parent.gameObject.SetActive(false);
     }
     

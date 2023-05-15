@@ -80,6 +80,12 @@ public class FolderManager : MonoBehaviour
     #endregion
 
     //필터
+    public GameObject filterTabs;
+    public Sprite unselectFilter;
+    public Sprite selectedFilter;
+    public Sprite arrowIcon;
+    public Sprite closeIcon;
+
     List<string> defaultTitles = new List<string>();
     List<string> filterTitles = new List<string>();
 
@@ -92,6 +98,7 @@ public class FolderManager : MonoBehaviour
     public GameObject EpisodeType;
     public GameObject CapabilitesAnalytics;
     public GameObject Experiences;
+    public GameObject ExEmpty;
     public GameObject ReportScript;
 
     //색상
@@ -162,13 +169,12 @@ public class FolderManager : MonoBehaviour
     }
 
     #region 필터
-    public GameObject filterTabs;
     //오픈 필터 페이지
     public void openFilter()
     {
         FilterPage.SetActive(true);
         GameObject currentObject = EventSystem.current.currentSelectedGameObject;
-        if(currentObject.name == "Filter_capability") { filterTabs.transform.GetChild(1).GetComponent<Toggle>().isOn = true; }
+        if (currentObject.name == "Filter_capability") { filterTabs.transform.GetChild(1).GetComponent<Toggle>().isOn = true; }
         if (currentObject.name == "Filter_hashtag") { filterTabs.transform.GetChild(2).GetComponent<Toggle>().isOn = true; }
     }
 
@@ -183,9 +189,8 @@ public class FolderManager : MonoBehaviour
 
         if (currentObject.GetComponent<Toggle>().isOn == true)
         {
-            ColorUtility.TryParseHtmlString("#408BFD", out Color color);
-            newFilter.color = color;
-            if(currentObject.transform.parent.name == "Panel_Capability")
+            newFilter.color = primary3;
+            if (currentObject.transform.parent.name == "Panel_Capability")
             {
                 if (!filterCapa.Contains(newFilter.text)) { filterCapa.Add(newFilter.text); }
             }
@@ -197,9 +202,8 @@ public class FolderManager : MonoBehaviour
         }
         if (currentObject.GetComponent<Toggle>().isOn == false)
         {
-            ColorUtility.TryParseHtmlString("#616161", out Color color);
-            newFilter.color = color;
-            
+            newFilter.color = gray700;
+
             if (currentObject.transform.parent.name == "Panel_Capability")
             {
                 if (filterCapa.Contains(newFilter.text)) { filterCapa.Remove(newFilter.text); }
@@ -209,7 +213,6 @@ public class FolderManager : MonoBehaviour
                 if (filterHash.Contains(newFilter.text)) { filterHash.Remove(newFilter.text); }
             }
         }
-        
     }
 
     //필터 완료버튼(출력)
@@ -219,7 +222,7 @@ public class FolderManager : MonoBehaviour
         if (filterCapa.Count <= 0 && filterHash.Count <= 0)
         {
             StartCoroutine(outputRecords(defaultTitles));
-            explanation.GetComponent<Text>().text = "아직 작성된 기록이 없네요!\n나의 직무 경험을 바로 기록해볼까요?";
+            explanation.GetComponent<Text>().text = "아직 작성된 기록이 없네요!\n나의 직무 경험을 바로 기록해 볼까요?";
         }
         else
         {
@@ -230,23 +233,25 @@ public class FolderManager : MonoBehaviour
                 DailyRecord newDailyRecord = JsonConvert.DeserializeObject<DailyRecord>(getRecordData);
                 foreach (string capa in filterCapa)
                 {
-                    if (newDailyRecord.capabilities.Contains(capa) && !filterTitles.Contains(keys)) { filterTitles.Add(keys); }
+                    if (newDailyRecord.capabilities.Contains(capa) && !filterTitles.Contains(keys))
+                    { filterTitles.Add(keys); }
                 }
                 foreach (string hash in filterHash)
                 {
-                    if (newDailyRecord.hashtags.Contains(hash) && !filterTitles.Contains(keys)) { filterTitles.Add(keys); }
+                    if (newDailyRecord.hashtags.Contains(hash) && !filterTitles.Contains(keys))
+                    { filterTitles.Add(keys); }
                 }
             }
 
             StartCoroutine(outputRecords(filterTitles));
-            explanation.GetComponent<Text>().text = "조건에 해당하는 기록이 없어요.\n다른 조건으로 다시 설정해보세요!";
+            explanation.GetComponent<TMP_Text>().text = "조건에 해당하는 기록이 없어요.\n다른 조건으로 다시 설정해 보세요!";
         }
         FilterPage.SetActive(false);
     }
     #endregion
 
     //기록리스트 출력
-    IEnumerator outputRecords(List<string> titles)
+    public IEnumerator outputRecords(List<string> titles)
     {
         //리스트 초기화
         for(int i=0; i< recordListContainer.transform.childCount; i++) { Destroy(recordListContainer.transform.GetChild(i).gameObject); }
@@ -801,14 +806,14 @@ public class FolderManager : MonoBehaviour
             //글자 크기 예외처리
             if(ReportScript.GetComponent<Report>().MostCapability == "커뮤니케이션능력")
             {
-                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                                       이\n특히 두드러지네요!";
+                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                                           이\n특히 두드러지네요!";
                 CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().fontSize = 21;
                 CapabilitesAnalytics.transform.GetChild(2).GetComponent<TMP_Text>().fontSize = 21;
                 CapabilitesAnalytics.transform.GetChild(2).GetComponent<RectTransform>().anchoredPosition = new Vector2(-24, CapabilitesAnalytics.transform.GetChild(2).GetComponent<RectTransform>().anchoredPosition.y) ;
             }
-            else if(ReportScript.GetComponent<Report>().MostCapability != "문제해결능력")
+            else if(ReportScript.GetComponent<Report>().MostCapability == "문제해결능력")
             {
-                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는               이\n특히 두드러지네요!";
+                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                                이\n특히 두드러지네요!";
             }
             CapabilitesAnalytics.transform.GetChild(6).gameObject.SetActive(false);
 
@@ -857,7 +862,7 @@ public class FolderManager : MonoBehaviour
             Experiences.transform.GetChild(1).gameObject.SetActive(false);
             if (sortedKeys.Count <= 2) Experiences.transform.GetChild(0).GetChild(1).GetChild(2).gameObject.SetActive(false);
             if (sortedKeys.Count <= 1) Experiences.transform.GetChild(0).GetChild(1).GetChild(1).gameObject.SetActive(false);
-            if (sortedKeys.Count == 0) Experiences.SetActive(false);
+            if (sortedKeys.Count == 0) { Experiences.SetActive(false); ExEmpty.SetActive(true); }
         }
         for (int i = 0; i < sortedKeys.Count; i++)
         {
