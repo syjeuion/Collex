@@ -58,10 +58,6 @@ public class UserTitleManager : MonoBehaviour
         ColorUtility.TryParseHtmlString("#DDE0E3", out gray300);
         ColorUtility.TryParseHtmlString("#949CA8", out gray500);
         ColorUtility.TryParseHtmlString("#1E2024", out gray900);
-        nowTargetTitleModi = UserManager.Instance.newUserInformation.targetTitleModi[0];
-        nowTargetTitleNoun = UserManager.Instance.newUserInformation.targetTitleNoun[0];
-        nowUserTitleModi = UserManager.Instance.newUserInformation.userTitleModi;
-        nowUserTitleNoun = UserManager.Instance.newUserInformation.userTitleNoun;
     }
 
     #region 페이지 세팅
@@ -84,6 +80,9 @@ public class UserTitleManager : MonoBehaviour
         }
 
         //기존 목표칭호 있으면 띄워주기
+        nowTargetTitleModi = UserManager.Instance.newUserInformation.targetTitleModi[0];
+        nowTargetTitleNoun = UserManager.Instance.newUserInformation.targetTitleNoun[0];
+
         UserTitlePage.SetActive(true);
         if (!string.IsNullOrWhiteSpace(nowTargetTitleModi))
             selectedModi.GetComponent<TMP_Text>().text = nowTargetTitleModi;
@@ -151,6 +150,8 @@ public class UserTitleManager : MonoBehaviour
         tabModi.GetComponent<Toggle>().isOn = true;
         tabNoun.GetComponent<Toggle>().isOn = false;
 
+        nowUserTitleModi = UserManager.Instance.newUserInformation.userTitleModi;
+        nowUserTitleNoun = UserManager.Instance.newUserInformation.userTitleNoun;
         selectedModi.GetComponent<TMP_Text>().text = nowUserTitleModi;
         selectedNoun.GetComponent<TMP_Text>().text = nowUserTitleNoun;
 
@@ -385,7 +386,6 @@ public class UserTitleManager : MonoBehaviour
             //칭호컬렉션에서 버튼 문구 변경
             if (whichTitle == 2)
             {
-                print(selectedModiData[2]);
                 if ((!string.IsNullOrWhiteSpace(selectedModiData[2]) && int.Parse(selectedModiData[2]) == 1)||
                         (!string.IsNullOrWhiteSpace(selectedNounData[2]) && int.Parse(selectedNounData[2]) == 1))
                 {

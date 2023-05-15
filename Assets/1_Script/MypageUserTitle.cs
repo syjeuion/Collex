@@ -19,8 +19,12 @@ public class MypageUserTitle : MonoBehaviour
         if(userTitleScript.GetComponent<UserTitleManager>().whichTitle == 3)
         {
             userTitleScript.GetComponent<UserTitleManager>().saveUserTitle();
-            changeTitleText.GetComponent<TMP_Text>().text = UserManager.Instance.selectedModi + " " + UserManager.Instance.selectedNoun;
-            //idCardScript.GetComponent<IdCard>().setTitle(changeTitleText, UserManager.Instance.selectedModi, UserManager.Instance.selectedNoun);
+            if (!string.IsNullOrWhiteSpace(UserManager.Instance.selectedModi))
+                changeTitleText.GetComponent<TMP_Text>().text = UserManager.Instance.selectedModi;
+            else changeTitleText.GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.userTitleModi;
+            if (!string.IsNullOrWhiteSpace(UserManager.Instance.selectedNoun))
+                changeTitleText.GetComponent<TMP_Text>().text += " "+UserManager.Instance.selectedNoun;
+            else changeTitleText.GetComponent<TMP_Text>().text += " "+UserManager.Instance.newUserInformation.userTitleNoun;
         }
     }
 
