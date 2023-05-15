@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "615960248310",
+    "firebase_url": "https://collex-23731-default-rtdb.firebaseio.com",
+    "project_id": "collex-23731",
+    "storage_bucket": "collex-23731.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:615960248310:android:8802d4f2df4c9cb8ff51d7",
+        "android_client_info": {
+          "package_name": "com.breezenight.collex"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "615960248310-icso3iasprglng283rh9kcl882bd2do9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsaV113Y3p6qsmMtD3ytQRjUg3UDc3Hgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "615960248310-icso3iasprglng283rh9kcl882bd2do9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
