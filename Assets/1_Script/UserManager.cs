@@ -17,6 +17,7 @@ public class UserInformation
     public int isItFirstTargetTitlePage; //목표칭호 페이지 처음인지
     public int isItFirstTitleCollection; //칭호컬렉션 처음인지
     public int isItFirstUserTitle; //대표칭호 처음인지
+    public int folderPageCount; //폴더페이지 몇번 들어갔는지-툴팁
 
     public string userName; //유저 이름
     public int kindOfJob; //직군
@@ -39,6 +40,7 @@ public class UserManager : Singleton<UserManager>
 {
     public bool firstOpen = true; //처음 앱 실행 체크
     public bool checkFolderDelete = false; //폴더 삭제하고 홈으로 돌아왔을때 체크
+    public bool checkHomeTargetTitle = false; //홈에서 목표칭호 획득 했을 때
     public int getTitle = 0; //칭호 조건 달성했을 때 체크하고 칭호획득 페이지에서 해제
     
 
@@ -152,11 +154,17 @@ public class UserManager : Singleton<UserManager>
     {
         saveFoldersData();
     }
+    bool isFocus = false;
     private void OnApplicationFocus(bool focus)
     {
-        if (!focus)
+        if (focus)
         {
             saveFoldersData();
+            isFocus = true;
+        }
+        else
+        {
+            if (isFocus) { isFocus = false; Onboarding.ActionPlayerPrefs(); }
         }
     }
 

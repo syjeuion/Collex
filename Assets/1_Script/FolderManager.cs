@@ -31,6 +31,7 @@ public class FolderManager : MonoBehaviour
     public GameObject buttonFinishUp;
     public GameObject buttonWriting;
     public GameObject toastPopUp;
+    public GameObject tooltip;
 
     //기록 페이지 세팅
     [SerializeField] TMP_Text recordTitle;
@@ -157,6 +158,9 @@ public class FolderManager : MonoBehaviour
             StartCoroutine(outputRecords(defaultTitles));
         }
 
+        if (UserManager.Instance.newUserInformation.folderPageCount <= 5)
+        { StartCoroutine(ActiveTooltip()); UserManager.Instance.newUserInformation.folderPageCount++; }
+
         if (!string.IsNullOrWhiteSpace(UserManager.Instance.pushedRecord)) clickRecord();
     }
     private void Update()
@@ -166,6 +170,13 @@ public class FolderManager : MonoBehaviour
             ReportContent.GetComponent<VerticalLayoutGroup>().spacing = 15.5f;
             ReportContent.GetComponent<VerticalLayoutGroup>().spacing = 16f;
         }
+    }
+    //tooltip
+    IEnumerator ActiveTooltip()
+    {
+        tooltip.SetActive(true);
+        yield return new WaitForSeconds(2.5f);
+        tooltip.SetActive(false);
     }
 
     #region 필터

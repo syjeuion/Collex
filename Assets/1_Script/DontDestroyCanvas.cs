@@ -373,6 +373,14 @@ public class DontDestroyCanvas : MonoBehaviour
             titleConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "대표 칭호로 설정하기";
             ObtainTitlePage.transform.GetChild(4).gameObject.SetActive(true);
             ObtainTitlePage.transform.GetChild(5).gameObject.SetActive(false);
+            
+            if (nowTitle[0] == "앞" && nowTitle[1] == UserManager.Instance.newUserInformation.targetTitleModi[0])
+                { UserManager.Instance.newUserInformation.targetTitleModi = new string[5]; }
+            if (nowTitle[0] == "뒤" && nowTitle[1] == UserManager.Instance.newUserInformation.targetTitleNoun[0])
+                { UserManager.Instance.newUserInformation.targetTitleNoun = new string[5]; }
+
+            if(SceneManager.GetActiveScene().name == "1_Home")
+                { UserManager.Instance.checkHomeTargetTitle = true; }
         }
     }
     public void titleCancel()

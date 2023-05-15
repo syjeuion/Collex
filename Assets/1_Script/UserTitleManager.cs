@@ -58,6 +58,8 @@ public class UserTitleManager : MonoBehaviour
         ColorUtility.TryParseHtmlString("#DDE0E3", out gray300);
         ColorUtility.TryParseHtmlString("#949CA8", out gray500);
         ColorUtility.TryParseHtmlString("#1E2024", out gray900);
+        nowUserTitleModi = UserManager.Instance.newUserInformation.userTitleModi;
+        nowUserTitleNoun = UserManager.Instance.newUserInformation.userTitleNoun;
     }
 
     #region 페이지 세팅

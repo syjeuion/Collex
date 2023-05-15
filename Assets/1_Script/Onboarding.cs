@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -43,6 +44,8 @@ public class Onboarding : MonoBehaviour
     Color gray_200;
     Color gray_500;
 
+    public static Action ActionPlayerPrefs;
+
     private void Awake()
     {
         ColorUtility.TryParseHtmlString("#EFF5FF", out primary1);
@@ -50,40 +53,11 @@ public class Onboarding : MonoBehaviour
         ColorUtility.TryParseHtmlString("#FF3E49", out errorColor);
         ColorUtility.TryParseHtmlString("#EBEDEF", out gray_200);
         ColorUtility.TryParseHtmlString("#949CA8", out gray_500);
+        ActionPlayerPrefs = () => { GetPlayerPrefs(); };
 
         Screen.fullScreen = false;
 
-        if (UserManager.Instance.firstOpen)
-        {
-            if (PlayerPrefs.HasKey("UserInformation"))
-            {
-                string newUserInformationData = PlayerPrefs.GetString("UserInformation");
-                if (!string.IsNullOrWhiteSpace(newUserInformationData))
-                    UserManager.Instance.newUserInformation = JsonConvert.DeserializeObject<UserInformation>(newUserInformationData);
-            }
-
-            //기록 정보
-            string folderJsonData = PlayerPrefs.GetString("FolderData", "");
-            if (!string.IsNullOrWhiteSpace(folderJsonData))
-                UserManager.Instance.folders = JsonConvert.DeserializeObject<Dictionary<string, string>>(folderJsonData);
-
-            string capabilitesData = PlayerPrefs.GetString("CapabilitesData", "");
-            if (!string.IsNullOrWhiteSpace(capabilitesData))
-                UserManager.Instance.Allcapabilites = JsonConvert.DeserializeObject<Dictionary<string, int>>(capabilitesData);
-
-            string experiencesData = PlayerPrefs.GetString("ExperiencesData", "");
-            if (!string.IsNullOrWhiteSpace(experiencesData))
-                UserManager.Instance.AllExperiences = JsonConvert.DeserializeObject<Dictionary<string, int>>(experiencesData);
-
-            string hashtagData = PlayerPrefs.GetString("HashtagData", "");
-            if (!string.IsNullOrWhiteSpace(hashtagData))
-                UserManager.Instance.AllHashtags = JsonConvert.DeserializeObject<Dictionary<string, int>>(hashtagData);
-
-            string bookmarkData = PlayerPrefs.GetString("BookmarkData", "");
-            if (!string.IsNullOrWhiteSpace(bookmarkData))
-                UserManager.Instance.bookmarks = JsonConvert.DeserializeObject<List<string>>(bookmarkData);
-            UserManager.Instance.firstOpen = false;
-        }
+        if (UserManager.Instance.firstOpen) { GetPlayerPrefs(); }
 
         StartCoroutine(WaitSplash());
     }
@@ -92,6 +66,38 @@ public class Onboarding : MonoBehaviour
     {
         yield return new WaitForSeconds(1.5f);
         if (!string.IsNullOrWhiteSpace(UserManager.Instance.newUserInformation.userName)) { goHome(); }
+    }
+    //PlayerPrefs 불러오는 함수
+    public void GetPlayerPrefs()
+    {
+        if (PlayerPrefs.HasKey("UserInformation"))
+        {
+            string newUserInformationData = PlayerPrefs.GetString("UserInformation");
+            if (!string.IsNullOrWhiteSpace(newUserInformationData))
+                UserManager.Instance.newUserInformation = JsonConvert.DeserializeObject<UserInformation>(newUserInformationData);
+        }
+
+        //기록 정보
+        string folderJsonData = PlayerPrefs.GetString("FolderData", "");
+        if (!string.IsNullOrWhiteSpace(folderJsonData))
+            UserManager.Instance.folders = JsonConvert.DeserializeObject<Dictionary<string, string>>(folderJsonData);
+
+        string capabilitesData = PlayerPrefs.GetString("CapabilitesData", "");
+        if (!string.IsNullOrWhiteSpace(capabilitesData))
+            UserManager.Instance.Allcapabilites = JsonConvert.DeserializeObject<Dictionary<string, int>>(capabilitesData);
+
+        string experiencesData = PlayerPrefs.GetString("ExperiencesData", "");
+        if (!string.IsNullOrWhiteSpace(experiencesData))
+            UserManager.Instance.AllExperiences = JsonConvert.DeserializeObject<Dictionary<string, int>>(experiencesData);
+
+        string hashtagData = PlayerPrefs.GetString("HashtagData", "");
+        if (!string.IsNullOrWhiteSpace(hashtagData))
+            UserManager.Instance.AllHashtags = JsonConvert.DeserializeObject<Dictionary<string, int>>(hashtagData);
+
+        string bookmarkData = PlayerPrefs.GetString("BookmarkData", "");
+        if (!string.IsNullOrWhiteSpace(bookmarkData))
+            UserManager.Instance.bookmarks = JsonConvert.DeserializeObject<List<string>>(bookmarkData);
+        UserManager.Instance.firstOpen = false;
     }
 
     //화면 터치 시 페이지 전환

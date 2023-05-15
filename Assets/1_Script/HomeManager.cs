@@ -179,6 +179,14 @@ public class HomeManager : MonoBehaviour
             {ColorUtility.TryParseHtmlString("#EFF5FF", out Color color);
             HomeDefault.transform.GetChild(3).GetComponent<Image>().color = color;}
 
+        //홈에서 칭호 획득 했을 때
+        if (UserManager.Instance.checkHomeTargetTitle)
+        {
+            setTargetTitle(modiContainer, UserManager.Instance.newUserInformation.targetTitleModi);
+            setTargetTitle(nounContainer, UserManager.Instance.newUserInformation.targetTitleNoun);
+            UserManager.Instance.checkHomeTargetTitle = false;
+        }
+
         //안드로이드 디바이스 뒤로가기 클릭 시
         if (Input.GetKey(KeyCode.Escape)) QuitAlert.SetActive(true);
     }
@@ -277,7 +285,7 @@ public class HomeManager : MonoBehaviour
         {
             UserManager.Instance.checkTitle("앞", i, 4);
         }
-        if (UserManager.Instance.nowGetTitle.Count != 0) UserManager.Instance.getTitle = 1;
+        if (UserManager.Instance.nowGetTitle.Count != 0) { UserManager.Instance.getTitle = 1; }
 
         //목표칭호 있으면 다시 세팅
         if (UserManager.Instance.newUserInformation.isItFirstTargetTitle != 0)
@@ -314,7 +322,7 @@ public class HomeManager : MonoBehaviour
     {
         newTargetTitle = "";
         
-        if (modiContainer.transform.parent.childCount > 2)
+        if (modiContainer.transform.parent.childCount > 4)
         {
             Destroy(modiContainer.transform.parent.GetChild(0).gameObject);
             Destroy(modiContainer.transform.parent.GetChild(1).gameObject);
@@ -359,9 +367,9 @@ public class HomeManager : MonoBehaviour
         else
         {
             if(container.name == "Selected Modif Container")
-                container.transform.GetChild(0).GetComponent<TMP_Text>().text = "칭호 (앞)";
+                container.transform.GetChild(0).GetComponent<TMP_Text>().text = "앞 칭호";
             else
-                container.transform.GetChild(0).GetComponent<TMP_Text>().text = "칭호 (뒤)";
+                container.transform.GetChild(0).GetComponent<TMP_Text>().text = "뒤 칭호";
             container.transform.GetChild(1).gameObject.SetActive(false);
             container.transform.GetChild(2).gameObject.SetActive(false);
             container.transform.GetChild(3).gameObject.SetActive(true);

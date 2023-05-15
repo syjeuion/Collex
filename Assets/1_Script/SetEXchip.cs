@@ -120,6 +120,7 @@ public class SetEXchip : MonoBehaviour
                 newExChip.GetComponent<RectTransform>().sizeDelta = new Vector2(chipWidth + 24f, newExChip.GetComponent<RectTransform>().sizeDelta.y);
                 yield return new WaitForEndOfFrame();
 
+                //print(newHorizontalGroup.GetComponent<RectTransform>().sizeDelta.x);
                 if (newHorizontalGroup.GetComponent<RectTransform>().sizeDelta.x >= 350)
                 {
                     newHorizontalGroup = Instantiate(horizontalGroup, container.transform);
