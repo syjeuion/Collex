@@ -370,6 +370,7 @@ public class DontDestroyCanvas : MonoBehaviour
             else
                 ObtainTitlePage.transform.GetChild(2).GetComponent<TMP_Text>().text = description + "으로";
 
+            titleConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "대표 칭호로 설정하기";
             ObtainTitlePage.transform.GetChild(4).gameObject.SetActive(true);
             ObtainTitlePage.transform.GetChild(5).gameObject.SetActive(false);
         }

@@ -95,8 +95,10 @@ public class WritingManager : MonoBehaviour
     public void setModify()
     {
         templatesPage.SetActive(false);
-        writingPage.transform.GetChild(3).GetChild(3).GetChild(0).GetComponent<TMP_Text>().text = "저장";
-        writingPage.transform.GetChild(3).GetChild(3).GetChild(0).GetComponent<TMP_Text>().color = gray_900;
+        writingPage.transform.GetChild(2).GetChild(3).GetChild(0).GetComponent<TMP_Text>().text = "저장";
+        writingPage.transform.GetChild(2).GetChild(3).GetChild(0).GetComponent<TMP_Text>().color = gray_900;
+
+        writingContent.transform.GetChild(0).GetChild(1).GetComponent<Button>().interactable = false;
 
         string clickedRecordSTR = thisProject.records[UserManager.Instance.pushedRecord];
         newDailyRecord = JsonConvert.DeserializeObject<DailyRecord>(clickedRecordSTR);
@@ -108,22 +110,22 @@ public class WritingManager : MonoBehaviour
         if (newDailyRecord.experiences.Count > 0) startCoroutine();
 
         inputPractice.text = newDailyRecord.writings["활동내용"]; 
-        if (newDailyRecord.writings["문제상황"] != ""){ writing_Problem.SetActive(true);inputProblem.text = newDailyRecord.writings["문제상황"]; }
+        if (!string.IsNullOrWhiteSpace(newDailyRecord.writings["문제상황"])){ writing_Problem.SetActive(true);inputProblem.text = newDailyRecord.writings["문제상황"]; }
         else writing_Problem.SetActive(false);
 
-        if (newDailyRecord.writings["문제원인"] != "") { writing_Cause.SetActive(true); inputCause.text = newDailyRecord.writings["문제원인"]; }
+        if (!string.IsNullOrWhiteSpace(newDailyRecord.writings["문제원인"])) { writing_Cause.SetActive(true); inputCause.text = newDailyRecord.writings["문제원인"]; }
         else writing_Cause.SetActive(false);
 
-        if (newDailyRecord.writings["해결과정"] != "") { writing_Solution.SetActive(true); inputSolution.text = newDailyRecord.writings["해결과정"]; }
+        if (!string.IsNullOrWhiteSpace(newDailyRecord.writings["해결과정"])) { writing_Solution.SetActive(true); inputSolution.text = newDailyRecord.writings["해결과정"]; }
         else writing_Solution.SetActive(false);
 
-        if (newDailyRecord.writings["잘한점"] != "") { writing_Goodpoint.SetActive(true); inputGoodpoint.text = newDailyRecord.writings["잘한점"]; }
+        if (!string.IsNullOrWhiteSpace(newDailyRecord.writings["잘한점"])) { writing_Goodpoint.SetActive(true); inputGoodpoint.text = newDailyRecord.writings["잘한점"]; }
         else writing_Goodpoint.SetActive(false);
 
-        if (newDailyRecord.writings["부족한점"] != "") { writing_Badpoint.SetActive(true); inputBadpoint.text = newDailyRecord.writings["부족한점"]; }
+        if (!string.IsNullOrWhiteSpace(newDailyRecord.writings["부족한점"])) { writing_Badpoint.SetActive(true); inputBadpoint.text = newDailyRecord.writings["부족한점"]; }
         else writing_Badpoint.SetActive(false);
 
-        if (newDailyRecord.writings["배운점"] != "") { writing_Learning.SetActive(true); inputLearning.text = newDailyRecord.writings["배운점"]; }
+        if (!string.IsNullOrWhiteSpace(newDailyRecord.writings["배운점"])) { writing_Learning.SetActive(true); inputLearning.text = newDailyRecord.writings["배운점"]; }
         else writing_Learning.SetActive(false);
     }
 
@@ -160,8 +162,9 @@ public class WritingManager : MonoBehaviour
     private void Update()
     {
         //spacing 맞추기
-        writingArea.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
-        writingArea.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 20f;
+        //writingArea.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
+        //writingArea.GetComponent<VerticalLayoutGroup>().spacing = 20f;
+        //writingContent.GetComponent<VerticalLayoutGroup>().spacing = 20f;
 
         if (Input.GetKey(KeyCode.KeypadEnter)|| Input.GetKey(KeyCode.Delete)) { checkHeight(); }
 
@@ -238,7 +241,7 @@ public class WritingManager : MonoBehaviour
         }
         yield return new WaitForEndOfFrame();
         writingContent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
-        writingContent.GetComponent<VerticalLayoutGroup>().spacing = 20;
+        //writingContent.GetComponent<VerticalLayoutGroup>().spacing = 20;
     }
     #endregion
 
@@ -347,29 +350,34 @@ public class WritingManager : MonoBehaviour
     #region Writing InputField
     //인풋필드 클릭 시 상단에 위치 고정시키기
     float height;
+    RectTransform parentRect;
+    GameObject thisField;
+    //인풋 OnSelect
     public void OnSelectWritingInput()
     {
+        height = 0;
+        parentRect = EventSystem.current.currentSelectedGameObject.transform.parent.GetComponent<RectTransform>();
+        thisField = EventSystem.current.currentSelectedGameObject;
         StartCoroutine(OnSelectInput());
     }
     IEnumerator OnSelectInput()
     {
-        height = 0;
-        GameObject thisField = EventSystem.current.currentSelectedGameObject;
         writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 454;
         yield return new WaitForEndOfFrame();
         if (thisField.name == "InputField_Practice")
         { writingContent.anchoredPosition = new Vector2(writingContent.anchoredPosition.x, 373f); }
         else
         {
-            for (int i = 0; i < thisField.transform.parent.GetSiblingIndex() + 1; i++)
+            for (int i = 0; i < thisField.transform.parent.GetSiblingIndex(); i++)
             {
                 if (writingArea.transform.GetChild(i).gameObject.activeSelf)
                 { height += writingArea.transform.GetChild(i).GetComponent<RectTransform>().sizeDelta.y+20; }
             }
             yield return new WaitForEndOfFrame();
-            writingContent.anchoredPosition = new Vector2(writingContent.anchoredPosition.x, (373 + height));
+            writingContent.anchoredPosition = new Vector2(writingContent.anchoredPosition.x, (393+inputPractice.transform.parent.GetComponent<RectTransform>().sizeDelta.y + height));
         }
     }
+    //인풋 Deselect
     public void OnDeselectWritingInput()
     {
         writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 44;
@@ -387,24 +395,25 @@ public class WritingManager : MonoBehaviour
         }
         else writingNextButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_200;
     }
+    float inputTextHeight;
     IEnumerator writingAreaSpacing()
     {
-        GameObject selectedField = EventSystem.current.currentSelectedGameObject;
-        if (selectedField.GetComponent<TMP_InputField>() != null)
+        if (thisField.GetComponent<TMP_InputField>() != null)
         {
-            selectedField.GetComponent<Image>().color = gray_300;
-            RectTransform rectTransform = selectedField.transform.parent.GetComponent<RectTransform>();
-            rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, 30f + (float)selectedField.GetComponent<RectTransform>().sizeDelta.y);
+            thisField.GetComponent<Image>().color = gray_300;
+
+            parentRect.sizeDelta = new Vector2(parentRect.sizeDelta.x, 30f + thisField.GetComponent<RectTransform>().sizeDelta.y);
+            print(thisField.GetComponent<RectTransform>().sizeDelta.y);
+            print(parentRect.sizeDelta.y);
             /*if (selectedField.name == "Input_Practice")
                 rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, 76f + (float)selectedField.GetComponent<RectTransform>().sizeDelta.y);
             else
                 rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, 16f + (float)selectedField.GetComponent<RectTransform>().sizeDelta.y);*/
-
             yield return new WaitForEndOfFrame();
         }
-        yield return new WaitForEndOfFrame();
-        writingArea.GetComponent<VerticalLayoutGroup>().spacing = 25.9f;
-        writingArea.GetComponent<VerticalLayoutGroup>().spacing = 26;
+        //yield return new WaitForEndOfFrame();
+        //writingArea.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
+        //writingArea.GetComponent<VerticalLayoutGroup>().spacing = 20;
     }
     #endregion
 
@@ -835,6 +844,10 @@ public class WritingManager : MonoBehaviour
     int count;
     public void comfirmAddInput()
     {
+        StartCoroutine(AddInput());
+    }
+    IEnumerator AddInput()
+    {
         count = 0;
         for (int i = 0; i < 6; i++)
         {
@@ -846,35 +859,38 @@ public class WritingManager : MonoBehaviour
             }
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "문제원인")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) {writing_Cause.SetActive(true); count++; }
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Cause.SetActive(true); count++; }
                 else { writing_Cause.SetActive(false); inputCause.text = ""; }
             }
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "해결과정")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) {writing_Solution.SetActive(true); count++; }
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Solution.SetActive(true); count++; }
                 else { writing_Solution.SetActive(false); inputSolution.text = ""; }
             }
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "잘한점")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) {writing_Goodpoint.SetActive(true); count++; }
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Goodpoint.SetActive(true); count++; }
                 else { writing_Goodpoint.SetActive(false); inputGoodpoint.text = ""; }
             }
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "부족한점")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) {writing_Badpoint.SetActive(true); count++; }
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Badpoint.SetActive(true); count++; }
                 else { writing_Badpoint.SetActive(false); inputBadpoint.text = ""; }
             }
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "배운점")
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) {writing_Learning.SetActive(true); count++; }
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Learning.SetActive(true); count++; }
                 else { writing_Learning.SetActive(false); inputLearning.text = ""; }
             }
         }
         if (count == 0) writingArea.SetActive(false);
         else writingArea.SetActive(true);
         addInputFieldContainer.transform.parent.gameObject.SetActive(false);
+
+        yield return new WaitForEndOfFrame();
+        writingArea.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
+        writingContent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
     }
-    
     #endregion#
 
     public void goFolder() { SceneManager.LoadScene("3_Folder");  }
