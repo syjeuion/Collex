@@ -171,6 +171,9 @@ public class WritingManager : MonoBehaviour
         //안드로이드 뒤로가기
         if (Input.GetKey(KeyCode.Escape))
         {
+            //if (thisField != null && !string.IsNullOrWhiteSpace(nowInputText))
+            //{ thisField.GetComponent<TMP_InputField>().text = nowInputText; }
+            //else { cancelWritingPage.SetActive(true); }
             cancelWritingPage.SetActive(true);
         }
         //if (clickCount == 2) { Application.Quit(); }두번 눌렀을때 종료?
@@ -387,7 +390,7 @@ public class WritingManager : MonoBehaviour
     {
         if (EventSystem.current.currentSelectedGameObject == null) return;
         StartCoroutine(writingAreaSpacing());
-
+        
         if (!string.IsNullOrWhiteSpace(inputTitle.text) && !string.IsNullOrWhiteSpace(inputPractice.text))
         {
             //writingNextButton.GetComponent<Button>().interactable = true;
@@ -400,11 +403,10 @@ public class WritingManager : MonoBehaviour
     {
         if (thisField.GetComponent<TMP_InputField>() != null)
         {
+            nowInputText = thisField.GetComponent<TMP_InputField>().text;
             thisField.GetComponent<Image>().color = gray_300;
 
             parentRect.sizeDelta = new Vector2(parentRect.sizeDelta.x, 30f + thisField.GetComponent<RectTransform>().sizeDelta.y);
-            print(thisField.GetComponent<RectTransform>().sizeDelta.y);
-            print(parentRect.sizeDelta.y);
             /*if (selectedField.name == "Input_Practice")
                 rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, 76f + (float)selectedField.GetComponent<RectTransform>().sizeDelta.y);
             else
@@ -414,6 +416,14 @@ public class WritingManager : MonoBehaviour
         //yield return new WaitForEndOfFrame();
         //writingArea.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
         //writingArea.GetComponent<VerticalLayoutGroup>().spacing = 20;
+    }
+    string nowInputText;
+    public void OnEndWritingInput()
+    {
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            thisField.GetComponent<TMP_InputField>().text = nowInputText;
+        }
     }
     #endregion
 
@@ -612,7 +622,7 @@ public class WritingManager : MonoBehaviour
         }
         else { snackBar.transform.GetChild(0).GetComponent<TMP_Text>().text = "해시태그는 최대 3개까지만 선택이 가능합니다."; }
         snackBar.SetActive(true);
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(3f);
         snackBar.SetActive(false);
     }
 

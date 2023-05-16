@@ -379,7 +379,7 @@ public class DontDestroyCanvas : MonoBehaviour
             if (nowTitle[0] == "뒤" && nowTitle[1] == UserManager.Instance.newUserInformation.targetTitleNoun[0])
                 { UserManager.Instance.newUserInformation.targetTitleNoun = new string[5]; }
 
-            if(SceneManager.GetActiveScene().name == "1_Home")
+            if(SceneManager.GetActiveScene().name == "1_Home" && UserManager.Instance.newUserInformation.isItFirstTargetTitle!=0)
                 { UserManager.Instance.checkHomeTargetTitle = true; }
         }
     }
@@ -405,8 +405,8 @@ public class DontDestroyCanvas : MonoBehaviour
         if(UserManager.Instance.getTitle == 3)
         {
             goHome();
-            ObtainTitlePage.SetActive(false);
             UIController.instance.SetEnableCanvasState(true);
+            ObtainTitlePage.SetActive(false);
         }
         else
         {
@@ -430,7 +430,8 @@ public class DontDestroyCanvas : MonoBehaviour
                 setObtainTitlePage();
             }
         }
-        
+        if(SceneManager.GetActiveScene().name == "1_Home"|| SceneManager.GetActiveScene().name == "6_Mypage")
+        { UserTitleManager.ActionUserTitle(); }
     }
 
     #endregion

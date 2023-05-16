@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 
 public class MypageUserTitle : MonoBehaviour
@@ -9,6 +11,9 @@ public class MypageUserTitle : MonoBehaviour
     public GameObject userTitleScript;
     public GameObject changeTitleText;
     public GameObject toastPopUp;
+
+    //이용가이드 스크롤영역
+    public RectTransform usingGuideContent;
 
     public void confirmButton()
     {
@@ -30,7 +35,6 @@ public class MypageUserTitle : MonoBehaviour
 
     public void popUpConfirm()
     {
-        print(userTitleScript.GetComponent<UserTitleManager>().condition);
         if(userTitleScript.GetComponent<UserTitleManager>().condition == 1)
         {
             toastPopUp.transform.GetChild(0).GetComponent<TMP_Text>().text =
@@ -59,7 +63,17 @@ public class MypageUserTitle : MonoBehaviour
     IEnumerator popUpCoroutine()
     {
         toastPopUp.SetActive(true);
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(3f);
         toastPopUp.SetActive(false);
+    }
+
+    //가이드 페이지
+    public void TabWritingTip()
+    {
+        usingGuideContent.anchoredPosition = new Vector2(0, 0);
+    }
+    public void TabUsingTip()
+    {
+        usingGuideContent.anchoredPosition = new Vector2(0, 2260);
     }
 }

@@ -71,12 +71,13 @@ public class HomeManager : MonoBehaviour
             { userProfiles.transform.GetChild(1).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.userTitleNoun; }
             else { userProfiles.transform.GetChild(1).GetComponent<TMP_Text>().text = "반가워요"; }
         }*/
-        userProfiles.transform.GetChild(1).GetComponent<TMP_Text>().text = 
-            UserManager.Instance.newUserInformation.userTitleModi+" "+ UserManager.Instance.newUserInformation.userTitleNoun + "\n"+UserManager.Instance.newUserInformation.userName + "님!";
-        
         //홈 스크롤 시 앱바 색상 변경용도
         wholeContentRect = Home_MainContent.GetComponent<RectTransform>();
 
+        UserTitleManager.ActionUserTitle();
+        //UIController.instance.ReloadUserTitleUI();
+        userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = "\n"+UserManager.Instance.newUserInformation.userName + "님!";
+        
         //칭호 세팅
         if (UserManager.Instance.newUserInformation.isItFirstTargetTitle != 0)
         {
@@ -90,14 +91,14 @@ public class HomeManager : MonoBehaviour
         if (UserManager.Instance.newUserInformation.isItFirst == 0)
         {
             explanation.SetActive(true);
-            userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = cheerUpMessage[0];
+            userProfiles.transform.GetChild(3).GetComponent<TMP_Text>().text = cheerUpMessage[0];
             //UserManager.Instance.isItFirst = 1;
         }
         else
         {
             System.Random random = new System.Random();
             int randomNumber = random.Next(1, 5);
-            userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = cheerUpMessage[randomNumber];
+            userProfiles.transform.GetChild(3).GetComponent<TMP_Text>().text = cheerUpMessage[randomNumber];
             explanation.SetActive(false);
             FoldersOngoing.SetActive(true);
             //FoldersEnded.SetActive(false);
@@ -379,6 +380,13 @@ public class HomeManager : MonoBehaviour
     }
     #endregion
 
+    //프로필 이미지 클릭 시 사원증 수정 페이지로 이동
+    public void ClickProfileImg()
+    {
+        UserManager.Instance.editProfileInHome = true;
+        goMypage();
+    }
+
     //홈화면 fab버튼
     public void pushMakeNewRecord()
     {
@@ -399,7 +407,7 @@ public class HomeManager : MonoBehaviour
     IEnumerator setSnackBar(GameObject toastPopUp)
     {
         toastPopUp.SetActive(true);
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(3f);
         toastPopUp.SetActive(false);
     }
 

@@ -175,7 +175,7 @@ public class FolderManager : MonoBehaviour
     IEnumerator ActiveTooltip()
     {
         tooltip.SetActive(true);
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(3f);
         tooltip.SetActive(false);
     }
 
@@ -715,6 +715,8 @@ public class FolderManager : MonoBehaviour
         FolderPage.SetActive(true);
         if (!thisProject.isItOngoing)
         {
+            titleArea.transform.GetChild(3).GetComponent<TMP_Text>().text = thisProject.endedDate.Year + "년 " + thisProject.endedDate.Month + "월 " + thisProject.endedDate.Day + "일";
+            titleArea.transform.GetChild(3).GetComponent<TMP_Text>().color = gray900;
             buttonFinishUp.SetActive(false);
             buttonWriting.SetActive(false);
         }
@@ -747,15 +749,16 @@ public class FolderManager : MonoBehaviour
 
         FolderInfo.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = thisProject.projectType;
         FolderInfo.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.projectTitle;
-        FolderInfo.transform.GetChild(2).GetComponent<TMP_Text>().text = thisProject.startDate+" ~ ";
+        FolderInfo.transform.GetChild(2).GetComponent<TMP_Text>().text = thisProject.startDate.Year + "년 " + thisProject.startDate.Month + "월 " + thisProject.startDate.Day + "일" + " ~ ";
         if (!thisProject.isItOngoing)
-            { FolderInfo.transform.GetChild(2).GetComponent<TMP_Text>().text += thisProject.endedDate; }
+            { FolderInfo.transform.GetChild(2).GetComponent<TMP_Text>().text += thisProject.endedDate.Year + "년 " + thisProject.endedDate.Month + "월 " + thisProject.endedDate.Day + "일"; }
         if(!string.IsNullOrWhiteSpace(thisProject.myRole))FolderInfo.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.myRole;
 
         if (thisProject.records.Count > 9) RecordCount.transform.GetChild(2).GetComponent<TMP_Text>().text = "                의 기록을 작성했어요!";
         RecordCount.transform.GetChild(4).GetComponent<TMP_Text>().text = "총 "+thisProject.records.Count.ToString() +"개";
 
-        
+        EpisodeType.transform.GetChild(5).GetComponent<TMP_Text>().text = "이 활동에서 " + UserManager.Instance.newUserInformation.userName + "님은";
+
         if (thisProject.isItOngoing)
         {
             //날짜 비교
@@ -804,7 +807,9 @@ public class FolderManager : MonoBehaviour
             }
 
             //활동 유형
-            EpisodeType.transform.GetChild(5).GetComponent<TMP_Text>().text = "이 활동에서 " + UserManager.Instance.newUserInformation.userName + "님은";
+            //print(UserManager.Instance.newUserInformation.userName);
+            
+            //print(EpisodeType.transform.GetChild(5).GetComponent<TMP_Text>().text);
             EpisodeType.transform.GetChild(4).gameObject.SetActive(false);
             EpisodeType.transform.GetChild(0).GetComponent<TMP_Text>().text = ReportScript.GetComponent<Report>().setEpisodeType()[1];
             EpisodeType.transform.GetChild(3).GetComponent<TMP_Text>().text = ReportScript.GetComponent<Report>().setEpisodeType()[0];

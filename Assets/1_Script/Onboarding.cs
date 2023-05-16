@@ -57,7 +57,7 @@ public class Onboarding : MonoBehaviour
 
         Screen.fullScreen = false;
 
-        if (UserManager.Instance.firstOpen) { GetPlayerPrefs(); }
+        if (UserManager.Instance.firstOpen) {  GetPlayerPrefs(); }
 
         StartCoroutine(WaitSplash());
     }

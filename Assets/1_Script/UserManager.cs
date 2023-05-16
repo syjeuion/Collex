@@ -40,7 +40,8 @@ public class UserManager : Singleton<UserManager>
 {
     public bool firstOpen = true; //처음 앱 실행 체크
     public bool checkFolderDelete = false; //폴더 삭제하고 홈으로 돌아왔을때 체크
-    public bool checkHomeTargetTitle = false; //홈에서 목표칭호 획득 했을 때
+    public bool checkHomeTargetTitle = false; //홈에서 목표칭호 획득했을 때
+    public bool editProfileInHome = false; //홈에서 프로필 이미지 클릭했을 때
     public int getTitle = 0; //칭호 조건 달성했을 때 체크하고 칭호획득 페이지에서 해제
     
 
@@ -162,10 +163,10 @@ public class UserManager : Singleton<UserManager>
             saveFoldersData();
             isFocus = true;
         }
-        else
+        /*else
         {
             if (isFocus) { isFocus = false; Onboarding.ActionPlayerPrefs(); }
-        }
+        }*/
     }
 
     //데이터 저장

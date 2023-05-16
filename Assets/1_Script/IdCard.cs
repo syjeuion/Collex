@@ -60,13 +60,16 @@ public class IdCard : MonoBehaviour
         ColorUtility.TryParseHtmlString("#DDE0E3", out gray300);
         ColorUtility.TryParseHtmlString("#949CA8", out gray500);
         ColorUtility.TryParseHtmlString("#FF3E49", out errorColor);
-        setIdCard();
+        
         colorNumber = UserManager.Instance.newUserInformation.idCardColorNumber;
         profileNumber = UserManager.Instance.newUserInformation.userProfileImgNumber;
+        setIdCard();
         changeCardColor();
 
         userJob = UserManager.Instance.newUserInformation.kindOfJob;
         userDetailJob = UserManager.Instance.newUserInformation.detailJob;
+
+        if (UserManager.Instance.editProfileInHome) { setEditIdCard(); }
     }
 
     private void Update()
@@ -87,8 +90,8 @@ public class IdCard : MonoBehaviour
         idCard.transform.GetChild(1).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.companyName;
 
         //setTitle(idCard.transform.GetChild(2).gameObject, UserManager.Instance.newUserInformation.userTitleModi, UserManager.Instance.newUserInformation.userTitleNoun);//칭호
-        idCard.transform.GetChild(2).GetComponent<TMP_Text>().text =
-            UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
+        //UIController.instance.ReloadUserTitleUI();
+        UserTitleManager.ActionUserTitle();
         idCard.transform.GetChild(3).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.userName; //유저 이름
     }
 
@@ -155,9 +158,13 @@ public class IdCard : MonoBehaviour
         EditIdCardPage.transform.GetChild(1).GetChild(2).GetComponent<TMP_Text>().text =
             EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text.Length.ToString() + "/10";
         //목표기업명
-        EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text = UserManager.Instance.newUserInformation.companyName;
-        EditIdCardPage.transform.GetChild(2).GetChild(2).GetComponent<TMP_Text>().text =
-            EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text.Length.ToString() + "/10";
+        if (!string.IsNullOrWhiteSpace(UserManager.Instance.newUserInformation.companyName))
+        {
+            EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text = UserManager.Instance.newUserInformation.companyName;
+            EditIdCardPage.transform.GetChild(2).GetChild(2).GetComponent<TMP_Text>().text =
+                EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text.Length.ToString() + "/10";
+        }
+        
         //직군직무
         EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text =
             Jobs[userJob] + " · " + UserManager.Instance.newUserInformation.detailJob;
@@ -168,6 +175,7 @@ public class IdCard : MonoBehaviour
     }
 
     #region 사원증 프로필 이미지 선택
+    GameObject lastSelectedProfileImg;
     public void setEditProfileImg()
     {
         editProfileImg.SetActive(true);
@@ -179,7 +187,11 @@ public class IdCard : MonoBehaviour
     }
     public void ChangeProfileImg()
     {
-        Image nowProfile = EventSystem.current.currentSelectedGameObject.GetComponent<Image>();
+        if (lastSelectedProfileImg != null)
+        { lastSelectedProfileImg.transform.GetChild(0).gameObject.SetActive(false); }
+
+        lastSelectedProfileImg = EventSystem.current.currentSelectedGameObject;
+        Image nowProfile = lastSelectedProfileImg.GetComponent<Image>();
         for (int i = 0; i < ProfileImgs.Length; i++)
         {
             if (nowProfile.sprite == ProfileImgs[i])
@@ -258,6 +270,7 @@ public class IdCard : MonoBehaviour
     }
     public void checkInput()
     {
+        if (EventSystem.current.currentSelectedGameObject == null) return;
         currentInputObj = EventSystem.current.currentSelectedGameObject;
         if (currentInputObj.GetComponent<TMP_InputField>() == null) return;
         if (currentInputObj.GetComponent<TMP_InputField>().text.Length >= 10)
@@ -293,6 +306,8 @@ public class IdCard : MonoBehaviour
         {
             editIdCardAlert.SetActive(true);
         }
+        else if (UserManager.Instance.editProfileInHome)
+            { goHome(); UserManager.Instance.editProfileInHome = false; }
         else { EditIdCardPage.SetActive(false); }
 
     }
@@ -323,8 +338,9 @@ public class IdCard : MonoBehaviour
             UserManager.Instance.getTitle = 1;
         }
 
-        EditIdCardPage.SetActive(false);
-        setIdCard();
+        if (UserManager.Instance.editProfileInHome) { goHome(); UserManager.Instance.editProfileInHome = false; }
+        else { EditIdCardPage.SetActive(false); setIdCard(); }
+        
     }
     #endregion
 

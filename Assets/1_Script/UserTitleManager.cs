@@ -36,10 +36,20 @@ public class UserTitleManager : MonoBehaviour
     public GameObject selectedModi;
     public GameObject selectedNoun;
 
+    //대표칭호 로드
+    public TMP_Text userTitleUI;
+
+    public void ReloadUserTitleUI()
+    {
+        userTitleUI.text = UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
+    }
+
     public static Action TargetTitle;
+    public static Action ActionUserTitle;
     private void Awake()
     {
         TargetTitle = () => { saveTargetTitle(whichTitle); };
+        ActionUserTitle = () => { ReloadUserTitleUI(); };
     }
 
     string nowTargetTitleModi;
@@ -539,7 +549,19 @@ public class UserTitleManager : MonoBehaviour
     public void popUpConfirmButton()
     {
         if (condition == 1)
-            saveUserTitle();
+        {
+            //saveUserTitle();
+            if (!string.IsNullOrWhiteSpace(selectedModiData[0]))
+            {
+                UserManager.Instance.newUserInformation.userTitleModi = selectedModiData[0];
+            }
+            if (!string.IsNullOrWhiteSpace(selectedNounData[0]))
+            {
+                UserManager.Instance.newUserInformation.userTitleNoun = selectedNounData[0];
+            }
+            ReloadUserTitleUI();
+            UserTitlePage.SetActive(false);
+        }
         else if(condition==2)
             setData( "앞", whichTitle, true);
         else if(condition==3)
@@ -571,7 +593,7 @@ public class UserTitleManager : MonoBehaviour
     IEnumerator toolTipCoroutine()
     {
         toolTip.SetActive(true);
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(3f);
         toolTip.SetActive(false);
     }
 }
