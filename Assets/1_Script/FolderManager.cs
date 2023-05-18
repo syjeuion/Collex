@@ -750,9 +750,9 @@ public class FolderManager : MonoBehaviour
         FolderInfo.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = thisProject.projectType;
         FolderInfo.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.projectTitle;
         FolderInfo.transform.GetChild(2).GetComponent<TMP_Text>().text = thisProject.startDate.Year + "년 " + thisProject.startDate.Month + "월 " + thisProject.startDate.Day + "일" + " ~ ";
-        if (!thisProject.isItOngoing)
-            { FolderInfo.transform.GetChild(2).GetComponent<TMP_Text>().text += thisProject.endedDate.Year + "년 " + thisProject.endedDate.Month + "월 " + thisProject.endedDate.Day + "일"; }
-        if(!string.IsNullOrWhiteSpace(thisProject.myRole))FolderInfo.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.myRole;
+        //if (!thisProject.isItOngoing)
+        //    { FolderInfo.transform.GetChild(2).GetComponent<TMP_Text>().text += thisProject.endedDate.Year + "년 " + thisProject.endedDate.Month + "월 " + thisProject.endedDate.Day + "일"; }
+        //if(!string.IsNullOrWhiteSpace(thisProject.myRole))FolderInfo.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.myRole;
 
         if (thisProject.records.Count > 9) RecordCount.transform.GetChild(2).GetComponent<TMP_Text>().text = "                의 기록을 작성했어요!";
         RecordCount.transform.GetChild(4).GetComponent<TMP_Text>().text = "총 "+thisProject.records.Count.ToString() +"개";
@@ -761,6 +761,7 @@ public class FolderManager : MonoBehaviour
 
         if (thisProject.isItOngoing)
         {
+            //FolderInfo.transform.GetChild(1).GetComponent<TMP_Text>().text = "";
             //날짜 비교
             TimeSpan howManyDays = DateTime.Now - thisProject.startDate;
             int howManyDaysInt = howManyDays.Days;
@@ -775,6 +776,8 @@ public class FolderManager : MonoBehaviour
         }
         else
         {
+            FolderInfo.transform.GetChild(2).GetComponent<TMP_Text>().text += thisProject.endedDate.Year + "년 " + thisProject.endedDate.Month + "월 " + thisProject.endedDate.Day + "일";
+            FolderInfo.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.myRole;
             //날짜 비교
             //endedDate = new DateTime(thisProject.endedYear, thisProject.endedMonth, thisProject.endedDay);
             TimeSpan howManyDays = thisProject.endedDate - thisProject.startDate;

@@ -22,8 +22,8 @@ public class IdCard : MonoBehaviour
     public GameObject editIdCardAlert;
 
     //버튼
-    public Sprite Button_Disabled;
-    public Sprite Button_Enabled;
+    //public Sprite Button_Disabled;
+    //public Sprite Button_Enabled;
 
     //사원증 이미지
     public GameObject idCard;
@@ -238,7 +238,7 @@ public class IdCard : MonoBehaviour
         else if (jobGroup == "BackEndGroup") userJob = 3;
         else if (jobGroup == "DataGroup") userJob = 4;
 
-        if (userDetailJob != UserManager.Instance.newUserInformation.detailJob)
+        /*if (userDetailJob != UserManager.Instance.newUserInformation.detailJob)
         {
             SetUserJobPage.transform.GetChild(2).GetComponent<Button>().interactable = true;
             SetUserJobPage.transform.GetChild(2).GetComponent<Image>().sprite = Button_Enabled;
@@ -249,7 +249,7 @@ public class IdCard : MonoBehaviour
             SetUserJobPage.transform.GetChild(2).GetComponent<Button>().interactable = false;
             SetUserJobPage.transform.GetChild(2).GetComponent<Image>().sprite = Button_Disabled;
             SetUserJobPage.transform.GetChild(2).GetChild(0).GetComponent<TMP_Text>().color = gray500;
-        }
+        }*/
     }
     //직군/직무 저장
     public void SaveChangeJob()

@@ -74,6 +74,6 @@ public class MypageUserTitle : MonoBehaviour
     }
     public void TabUsingTip()
     {
-        usingGuideContent.anchoredPosition = new Vector2(0, 2260);
+        usingGuideContent.anchoredPosition = new Vector2(0, 2568);
     }
 }

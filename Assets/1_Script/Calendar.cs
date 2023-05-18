@@ -28,8 +28,8 @@ public class Calendar : MonoBehaviour
         newDay = DateTime.Now.Day;
         todayDate.text = newYear + "년 " + newMonth + "월 " + newDay +"일";
 
-        dayMMDDTitle.text = newMonth + "월"+ newDay + "일"+GetDay(DateTime.Now);
-        dayYYYYMM.text = newYear + "년" + newMonth + "월";
+        dayMMDDTitle.text = newMonth + "월 "+ newDay + "일"+GetDay(DateTime.Now);
+        dayYYYYMM.text = newYear + "년 " + newMonth + "월";
 
         changeMonth(0);
     }
@@ -39,7 +39,7 @@ public class Calendar : MonoBehaviour
         newMonth += changeCount;
         if(newMonth <= 0) { newMonth = 12; newYear -= 1; }
         if (newMonth > 12) { newMonth = 1; newYear += 1; }
-        dayYYYYMM.text = newYear + "년" + newMonth + "월";
+        dayYYYYMM.text = newYear + "년 " + newMonth + "월";
 
         DateTime dateValue = new DateTime(newYear, newMonth, 1);
         firstDay = (int)dateValue.DayOfWeek;
@@ -88,7 +88,7 @@ public class Calendar : MonoBehaviour
         changeMonth(0);
         GameObject selectedDay = EventSystem.current.currentSelectedGameObject;
         newDay = int.Parse(selectedDay.transform.GetChild(0).GetComponent<TMP_Text>().text);
-        dayMMDDTitle.text = newMonth + "월" + newDay + "일" + GetDay(new DateTime(newYear,newMonth,newDay));
+        dayMMDDTitle.text = newMonth + "월 " + newDay + "일" + GetDay(new DateTime(newYear,newMonth,newDay));
         //UserManager.Instance.calendarDate = new DateTime(newYear, newMonth, newDay);
 
         Color newcolor = selectedDay.GetComponent<Image>().color;
