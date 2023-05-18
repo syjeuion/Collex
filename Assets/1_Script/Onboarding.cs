@@ -14,7 +14,6 @@ public class Onboarding : MonoBehaviour
     public GameObject onboardingUserPage;
     public GameObject onboardingGuidePage;
     public GameObject progressBar;
-    public GameObject QuitAlert;
 
     //유저 페이지 오브젝트
     public GameObject getUserName;
@@ -100,13 +99,6 @@ public class Onboarding : MonoBehaviour
             UserManager.Instance.bookmarks = JsonConvert.DeserializeObject<List<string>>(bookmarkData);
         UserManager.Instance.firstOpen = false;
     }
-
-    //뒤로가기 시 종료 알랏 및 종료
-    private void Update()
-    {
-        if (Input.GetKey(KeyCode.Escape)) QuitAlert.SetActive(true);
-    }
-    public void QuitApplication() { Application.Quit(); }
 
     //화면 터치 시 페이지 전환
     public void OnClickPage()

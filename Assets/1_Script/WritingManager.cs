@@ -164,8 +164,7 @@ public class WritingManager : MonoBehaviour
         //spacing 맞추기
         //writingArea.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
         //writingArea.GetComponent<VerticalLayoutGroup>().spacing = 20f;
-        writingContent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
-        writingContent.GetComponent<VerticalLayoutGroup>().spacing = 20f;
+        //writingContent.GetComponent<VerticalLayoutGroup>().spacing = 20f;
 
         if (Input.GetKey(KeyCode.KeypadEnter)|| Input.GetKey(KeyCode.Delete)) { checkHeight(); }
 
@@ -619,9 +618,9 @@ public class WritingManager : MonoBehaviour
     {
         if (selectedCapabilitiesPage.activeSelf)
         {
-            snackBar.transform.GetChild(0).GetComponent<TMP_Text>().text = "역량은 3개까지 선택할 수 있어요.";
+            snackBar.transform.GetChild(0).GetComponent<TMP_Text>().text = "역량은 최대 3개까지만 선택이 가능합니다.";
         }
-        else { snackBar.transform.GetChild(0).GetComponent<TMP_Text>().text = "해시태그는 3개까지 선택할 수 있어요."; }
+        else { snackBar.transform.GetChild(0).GetComponent<TMP_Text>().text = "해시태그는 최대 3개까지만 선택이 가능합니다."; }
         snackBar.SetActive(true);
         yield return new WaitForSeconds(3f);
         snackBar.SetActive(false);

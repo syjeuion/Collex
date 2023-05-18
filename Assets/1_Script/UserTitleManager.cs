@@ -18,8 +18,8 @@ public class UserTitleManager : MonoBehaviour
     public Sprite skeleton2;
 
     //버튼
-    //public Sprite Button_Disabled;
-    //public Sprite Button_Enabled;
+    public Sprite Button_Disabled;
+    public Sprite Button_Enabled;
 
     //탭
     public GameObject tabModi;
@@ -151,9 +151,9 @@ public class UserTitleManager : MonoBehaviour
             UserManager.Instance.newUserInformation.isItFirstUserTitle = 1;
         }
 
-        //ConfirmButton.GetComponent<Image>().sprite = Button_Enabled;
-        //ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = primary1;
-        //ConfirmButton.GetComponent<Button>().interactable = true;
+        ConfirmButton.GetComponent<Image>().sprite = Button_Enabled;
+        ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = primary1;
+        ConfirmButton.GetComponent<Button>().interactable = true;
     }
 
     void titlePageInMy()
@@ -425,7 +425,7 @@ public class UserTitleManager : MonoBehaviour
         selectedModi.transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 4f;
 
         //버튼 활성화
-        /*if (whichTitle != 3)
+        if (whichTitle != 3)
         {
             if (!string.IsNullOrWhiteSpace(selectedModiData[0]) || !string.IsNullOrWhiteSpace(selectedNounData[0]))
             {
@@ -439,7 +439,7 @@ public class UserTitleManager : MonoBehaviour
                 ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray500;
                 ConfirmButton.GetComponent<Button>().interactable = false;
             }
-        }*/
+        }
         
     }
     

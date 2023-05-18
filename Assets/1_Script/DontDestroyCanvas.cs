@@ -75,6 +75,11 @@ public class DontDestroyCanvas : MonoBehaviour
         {
             folderPage = GameObject.Find("FolderPage");
         }
+        //else if (SceneManager.GetActiveScene().name == "6_Mypage")
+        //{
+        //    bookmarkPage = GameObject.Find("BookmarkPage");
+        //}
+
         this.transform.GetChild(0).gameObject.SetActive(true);
         clickedRecordTitle = UserManager.Instance.pushedRecord;
 
