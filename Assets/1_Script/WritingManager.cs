@@ -171,10 +171,13 @@ public class WritingManager : MonoBehaviour
         //안드로이드 뒤로가기
         if (Input.GetKey(KeyCode.Escape))
         {
-            //if (thisField != null && !string.IsNullOrWhiteSpace(nowInputText))
-            //{ thisField.GetComponent<TMP_InputField>().text = nowInputText; }
-            //else { cancelWritingPage.SetActive(true); }
-            cancelWritingPage.SetActive(true);
+            //thisField.GetComponent<TMP_InputField>().text = nowInputText;
+            if (thisField != null && !string.IsNullOrWhiteSpace(nowInputText))
+            {   thisField.GetComponent<TMP_InputField>().text = nowInputText;
+                nowInputText = "";
+            }
+            else { cancelWritingPage.SetActive(true); }
+            //cancelWritingPage.SetActive(true);
         }
         //if (clickCount == 2) { Application.Quit(); }두번 눌렀을때 종료?
     }
@@ -359,8 +362,9 @@ public class WritingManager : MonoBehaviour
     public void OnSelectWritingInput()
     {
         height = 0;
-        parentRect = EventSystem.current.currentSelectedGameObject.transform.parent.GetComponent<RectTransform>();
         thisField = EventSystem.current.currentSelectedGameObject;
+        parentRect = thisField.transform.parent.GetComponent<RectTransform>();
+        
         StartCoroutine(OnSelectInput());
     }
     IEnumerator OnSelectInput()
@@ -385,12 +389,18 @@ public class WritingManager : MonoBehaviour
     {
         writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 44;
     }
+
     //글쓰기 실시간 높이 값 반영
     public void checkHeight()
     {
         if (EventSystem.current.currentSelectedGameObject == null) return;
         StartCoroutine(writingAreaSpacing());
-        
+
+        //뒤로가기 했을 때 텍스트 저장용
+        if (!string.IsNullOrEmpty(thisField.GetComponent<TMP_InputField>().text))
+        { nowInputText = thisField.GetComponent<TMP_InputField>().text; }
+
+        //제목과 활동을 썼다면 다음 버튼 활성화
         if (!string.IsNullOrWhiteSpace(inputTitle.text) && !string.IsNullOrWhiteSpace(inputPractice.text))
         {
             //writingNextButton.GetComponent<Button>().interactable = true;
@@ -403,27 +413,20 @@ public class WritingManager : MonoBehaviour
     {
         if (thisField.GetComponent<TMP_InputField>() != null)
         {
-            nowInputText = thisField.GetComponent<TMP_InputField>().text;
-            thisField.GetComponent<Image>().color = gray_300;
-
-            parentRect.sizeDelta = new Vector2(parentRect.sizeDelta.x, 30f + thisField.GetComponent<RectTransform>().sizeDelta.y);
-            /*if (selectedField.name == "Input_Practice")
-                rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, 76f + (float)selectedField.GetComponent<RectTransform>().sizeDelta.y);
-            else
-                rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, 16f + (float)selectedField.GetComponent<RectTransform>().sizeDelta.y);*/
+            RectTransform thisRect = thisField.GetComponent<RectTransform>();
+            if (inputTextHeight == 0) { inputTextHeight = thisRect.sizeDelta.y; }
             yield return new WaitForEndOfFrame();
+            if (thisRect.sizeDelta.y!=inputTextHeight)
+            {
+                parentRect.sizeDelta = new Vector2(parentRect.sizeDelta.x, thisRect.sizeDelta.y + 32);
+                inputTextHeight = thisRect.sizeDelta.y;
+            }
         }
-        //yield return new WaitForEndOfFrame();
-        //writingArea.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
-        //writingArea.GetComponent<VerticalLayoutGroup>().spacing = 20;
     }
     string nowInputText;
     public void OnEndWritingInput()
     {
-        if (Input.GetKey(KeyCode.Escape))
-        {
-            thisField.GetComponent<TMP_InputField>().text = nowInputText;
-        }
+        thisField.GetComponent<TMP_InputField>().text = nowInputText;
     }
     #endregion
 

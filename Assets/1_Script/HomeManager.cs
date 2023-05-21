@@ -15,8 +15,8 @@ public class HomeManager : MonoBehaviour
 {
     //페이지
     public GameObject HomeDefault;
-    public GameObject NewFolderPopUp;
-    public GameObject QuitAlert;
+    //public GameObject NewFolderPopUp;
+    //public GameObject QuitAlert;
 
     public GameObject Home_MainContent;
     RectTransform wholeContentRect;
@@ -170,7 +170,7 @@ public class HomeManager : MonoBehaviour
             wholeContentRect.sizeDelta = new Vector2(wholeContentRect.sizeDelta.x, 454 + (endedCount * 82));
     }
     #endregion
-
+    bool EscCheck = true;
     private void Update()
     {
         //앱바 컬러 조절
@@ -189,13 +189,31 @@ public class HomeManager : MonoBehaviour
         }
 
         //안드로이드 디바이스 뒤로가기 클릭 시
-        if (Input.GetKey(KeyCode.Escape)) QuitAlert.SetActive(true);
+        if (Input.GetKey(KeyCode.Escape)&&EscCheck)
+        {
+            EscCheck = false;
+            StartCoroutine(OnClickEsc());
+        }
+    }
+    IEnumerator OnClickEsc()
+    {
+        if (UIController.instance.curOpenPageNum > -1)
+        {
+            int num = UIController.instance.curOpenPageNum;
+            UIController.instance.PageObjArr[num].SetActive(false);
+            UIController.instance.curOpenPageNum = -1;
+        }
+        else { UIController.instance.PageObjArr[1].SetActive(false); }
+        yield return new WaitForSeconds(0.1f);
+        EscCheck = true;
     }
 
     #region 폴더 생성
     public void pushMakeFolder()
     {
-        NewFolderPopUp.SetActive(true);
+        UIController.instance.PageObjArr[0].SetActive(true);
+        UIController.instance.curOpenPageNum = 0;
+        //NewFolderPopUp.SetActive(true);
         ColorUtility.TryParseHtmlString("#E0E0E0", out Color color);
         ColorUtility.TryParseHtmlString("#9E9E9E", out Color color3);
         inputFolderTitle.GetComponent<Image>().color = color;
@@ -258,7 +276,10 @@ public class HomeManager : MonoBehaviour
             }
             return;
         }
-        NewFolderPopUp.SetActive(false);
+        UIController.instance.PageObjArr[0].SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
+        //NewFolderPopUp.SetActive(false);
+        UIController.instance.PageObjArr[0].SetActive(false);
         //설명 글 없애기
         explanation.SetActive(false);
 
@@ -266,14 +287,6 @@ public class HomeManager : MonoBehaviour
         MakeNewProject newProject = new MakeNewProject();
 
         newProject.startDate = DateTime.Now;
-        //newProject.startYear = DateTime.Now.Year;
-        //newProject.startMonth = DateTime.Now.Month;
-        //newProject.startDay = DateTime.Now.Day;
-        //newProject.startDate = DateTime.Now.Year.ToString()+"년 "+ DateTime.Now.Month.ToString() + "월 "+ DateTime.Now.Day.ToString() + "일";
-
-        //newProject.lastRecordYear = DateTime.Now.Year;
-        //newProject.lastRecordMonth = DateTime.Now.Month;
-        //newProject.lastRecordDay = DateTime.Now.Day;
 
         newProject.projectTitle = inputFolderTitle.text;
         inputFolderTitle.text = "";
@@ -322,7 +335,7 @@ public class HomeManager : MonoBehaviour
     public void saveTargetTitle()
     {
         newTargetTitle = "";
-        
+        UIController.instance.curOpenPageNum = -1;
         if (modiContainer.transform.parent.childCount > 4)
         {
             Destroy(modiContainer.transform.parent.GetChild(0).gameObject);

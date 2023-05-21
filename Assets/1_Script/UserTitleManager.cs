@@ -79,8 +79,10 @@ public class UserTitleManager : MonoBehaviour
     {
         whichTitle = 1;
         GameObject currentObj = EventSystem.current.currentSelectedGameObject;
+        UIController.instance.curOpenPageNum = 2;
+        UIController.instance.PageObjArr[2].SetActive(true);
         //목표칭호 앞 뒤 선택에 따른 탭 활성화
-        if(currentObj.name == "Selected Noun Container")
+        if (currentObj.name == "Selected Noun Container")
         {
             tabModi.GetComponent<Toggle>().isOn = false;
             tabNoun.GetComponent<Toggle>().isOn = true;
@@ -95,7 +97,7 @@ public class UserTitleManager : MonoBehaviour
         nowTargetTitleModi = UserManager.Instance.newUserInformation.targetTitleModi[0];
         nowTargetTitleNoun = UserManager.Instance.newUserInformation.targetTitleNoun[0];
 
-        UserTitlePage.SetActive(true);
+        //UserTitlePage.SetActive(true);
         if (!string.IsNullOrWhiteSpace(nowTargetTitleModi))
             selectedModi.GetComponent<TMP_Text>().text = nowTargetTitleModi;
         else selectedModi.GetComponent<TMP_Text>().text = nowUserTitleModi;
@@ -471,7 +473,8 @@ public class UserTitleManager : MonoBehaviour
         {
             setData( "뒤", whichTitle, true);
         }
-        UserTitlePage.SetActive(false);
+        //UserTitlePage.SetActive(false);
+        UIController.instance.PageObjArr[2].SetActive(false);
     }
 
     #region 2.칭호컬렉션 저장

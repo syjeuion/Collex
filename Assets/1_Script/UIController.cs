@@ -6,6 +6,8 @@ public class UIController : MonoBehaviour
 {
     public static UIController instance = null;
     [SerializeField] Canvas myCanves;
+    public GameObject[] PageObjArr;
+    public int curOpenPageNum;
     
     // Start is called before the first frame update
     void Start()

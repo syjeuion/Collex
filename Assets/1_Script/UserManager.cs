@@ -155,13 +155,13 @@ public class UserManager : Singleton<UserManager>
     {
         saveFoldersData();
     }
-    bool isFocus = false;
+    //bool isFocus = false;
     private void OnApplicationFocus(bool focus)
     {
         if (focus)
         {
             saveFoldersData();
-            isFocus = true;
+            //isFocus = true;
         }
         /*else
         {
