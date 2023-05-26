@@ -48,7 +48,7 @@ public class FolderManager : MonoBehaviour
     GameObject newRecord;
     
     string capas; //역량, 태그 UI에 표시하는 임시 텍스트 저장소
-    string outputDate;
+    //string outputDate;
 
     //DateTime startDate;
     //string startDateStr;
@@ -170,6 +170,8 @@ public class FolderManager : MonoBehaviour
             ReportContent.GetComponent<VerticalLayoutGroup>().spacing = 15.5f;
             ReportContent.GetComponent<VerticalLayoutGroup>().spacing = 16f;
         }
+        //if (Input.GetKey(KeyCode.Escape))
+        //{ goHome(); }
     }
     //tooltip
     IEnumerator ActiveTooltip()
@@ -770,7 +772,7 @@ public class FolderManager : MonoBehaviour
             MainEpisode.SetActive(false);
             mainEpisode_none.SetActive(true);
 
-            CapabilitesAnalytics.transform.GetChild(2).gameObject.SetActive(false);
+            CapabilitesAnalytics.transform.GetChild(3).gameObject.SetActive(false);
         }
         else
         {

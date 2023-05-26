@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+//using System.IO;
 using UnityEngine;
-using UnityEngine.UI;
+//using UnityEngine.UI;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
-using TMPro;
+//using TMPro;
 
 
 
@@ -18,6 +18,8 @@ public class UserInformation
     public int isItFirstTitleCollection; //칭호컬렉션 처음인지
     public int isItFirstUserTitle; //대표칭호 처음인지
     public int folderPageCount; //폴더페이지 몇번 들어갔는지-툴팁
+
+    public bool homeBanner; //홈 이용팁 배너 클릭 유무
 
     public string userName; //유저 이름
     public int kindOfJob; //직군
@@ -42,13 +44,44 @@ public class UserManager : Singleton<UserManager>
     public bool checkFolderDelete = false; //폴더 삭제하고 홈으로 돌아왔을때 체크
     public bool checkHomeTargetTitle = false; //홈에서 목표칭호 획득했을 때
     public bool editProfileInHome = false; //홈에서 프로필 이미지 클릭했을 때
+    public bool clickHomeBanner = false; //홈에서 이용팁 배너 클릭했을 때
     public int getTitle = 0; //칭호 조건 달성했을 때 체크하고 칭호획득 페이지에서 해제
-    
+
+    //경험칩
+    public string[,] ExperienceChipList = new string[20, 17];
+
+    //경험칩 저장
+    const string ExURL = "https://docs.google.com/spreadsheets/d/1eeIYaIaWKZZdIQ_uJALBBgKEpr23Ak3Zfwe8Dv80NTI/export?format=tsv&gid=198678164&range=B3:R22";
+
+    IEnumerator DownloadPlannerEx()
+    {
+        //경험 데이터 받아오기
+        UnityWebRequest Exwww = UnityWebRequest.Get(ExURL);
+        yield return Exwww.SendWebRequest();
+        ExSetData(Exwww.downloadHandler.text);
+    }
+    void ExSetData(string tsv)
+    {
+        string[] row = tsv.Split('\n');
+        int rowSize = row.Length;
+        
+        for (int i = 0; i < rowSize; i++) //칭호 개수
+        {
+            string[] column = row[i].Split('\t');
+            int columnSize = column.Length;
+
+            for (int ii = 0; ii < columnSize; ii++)
+            {
+                ExperienceChipList[i, ii] = column[ii];
+            }
+        }
+    }
 
     //칭호 배열
     public string[,] modiTitleList = new string[27,4];
     public string[,] nounTitleList = new string[27,4];
     //const string[] labelArr = new string["커뮤니케이션능","",""]; //급한 문제는 아니지만 이렇게 처리하는게 더 좋음(오류 방지)
+
     //칭호 리스트 - 구글 스프레드 시트에서 가져옴
     const string ModificationURL = "https://docs.google.com/spreadsheets/d/1eeIYaIaWKZZdIQ_uJALBBgKEpr23Ak3Zfwe8Dv80NTI/export?format=tsv&range=B2:E28";
     const string NounURL = "https://docs.google.com/spreadsheets/d/1eeIYaIaWKZZdIQ_uJALBBgKEpr23Ak3Zfwe8Dv80NTI/export?format=tsv&range=H2:K28";
@@ -82,6 +115,7 @@ public class UserManager : Singleton<UserManager>
     private void Start()
     {
         StartCoroutine(DownloadTitles());
+        StartCoroutine(DownloadPlannerEx());
     }
 
     #region 칭호 세팅
@@ -108,7 +142,7 @@ public class UserManager : Singleton<UserManager>
     {
         string[] row = tsv.Split('\n');
         int rowSize = row.Length;
-        int columnSize = row[0].Split('\t').Length;
+        //int columnSize = row[0].Split('\t').Length;
 
         for (int i = 0; i < rowSize; i++) //칭호 개수
         {

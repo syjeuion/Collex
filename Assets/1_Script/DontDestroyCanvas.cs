@@ -75,12 +75,8 @@ public class DontDestroyCanvas : MonoBehaviour
         {
             folderPage = GameObject.Find("FolderPage");
         }
-        //else if (SceneManager.GetActiveScene().name == "6_Mypage")
-        //{
-        //    bookmarkPage = GameObject.Find("BookmarkPage");
-        //}
 
-        this.transform.GetChild(0).gameObject.SetActive(true);
+        transform.GetChild(0).gameObject.SetActive(true);
         clickedRecordTitle = UserManager.Instance.pushedRecord;
 
         string thisFolderDatas = UserManager.Instance.folders[UserManager.Instance.pushedButton];
@@ -155,7 +151,8 @@ public class DontDestroyCanvas : MonoBehaviour
             !recordTitleContainer.transform.GetChild(3).GetChild(2).gameObject.activeSelf)
         {
             recordTitleContainer.transform.GetChild(3).GetChild(3).gameObject.SetActive(true);
-            recordTitleContainer.transform.GetChild(3).GetChild(3).GetComponent<LayoutElement>().ignoreLayout = false;
+            recordTitleContainer.transform.GetChild(3).GetComponent<VerticalLayoutGroup>().childAlignment = TextAnchor.UpperCenter;
+            //recordTitleContainer.transform.GetChild(3).GetChild(3).GetComponent<LayoutElement>().ignoreLayout = false;
         }
 
         for (int i = 0; i < recordsContainer.transform.childCount; i++)
@@ -350,7 +347,7 @@ public class DontDestroyCanvas : MonoBehaviour
         {
             ObtainTitlePage.transform.GetChild(2).GetComponent<TMP_Text>().text = "Collex 입사 완료로";
             ObtainTitlePage.transform.GetChild(3).GetComponent<TMP_Text>().text =
-                "‘주니어 "+ UserManager.Instance.newUserInformation.userTitleNoun + "' 칭호를 획득했어요!";
+                "‘신입 " + UserManager.Instance.newUserInformation.userTitleNoun + "’ 칭호를 획득했어요!";
 
             titleConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "홈으로 가기";
             ObtainTitlePage.transform.GetChild(4).gameObject.SetActive(false);
@@ -362,7 +359,7 @@ public class DontDestroyCanvas : MonoBehaviour
             nowTitle[1] = UserManager.Instance.nowGetTitle[order][1];
             nowTitle[2] = UserManager.Instance.nowGetTitle[order][2];
 
-            ObtainTitlePage.transform.GetChild(3).GetComponent<TMP_Text>().text = "'" + nowTitle[1] + "' 칭호를 획득했어요!";
+            ObtainTitlePage.transform.GetChild(3).GetComponent<TMP_Text>().text = "‘" + nowTitle[1] + "’ 칭호를 획득했어요!";
             string description = nowTitle[2];
 
             if (description == "Collex 입사 완료" || description == "경험 첫 추가" || description == "입사동기 첫 추가" || description == "활동 첫 마무리")
@@ -404,9 +401,7 @@ public class DontDestroyCanvas : MonoBehaviour
     {
         if(UserManager.Instance.getTitle == 3)
         {
-            goHome();
-            UIController.instance.SetEnableCanvasState(true);
-            ObtainTitlePage.SetActive(false);
+            StartCoroutine(TitleToHome());
         }
         else
         {
@@ -432,6 +427,13 @@ public class DontDestroyCanvas : MonoBehaviour
         }
         if(SceneManager.GetActiveScene().name == "1_Home"|| SceneManager.GetActiveScene().name == "6_Mypage")
         { UserTitleManager.ActionUserTitle(); }
+    }
+    IEnumerator TitleToHome()
+    {
+        goHome();
+        yield return new WaitForEndOfFrame();
+        UIController.instance.SetEnableCanvasState(true);
+        ObtainTitlePage.SetActive(false);
     }
 
     #endregion

@@ -161,22 +161,16 @@ public class WritingManager : MonoBehaviour
     //int clickCount = 0;
     private void Update()
     {
-        //spacing 맞추기
-        //writingArea.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
-        //writingArea.GetComponent<VerticalLayoutGroup>().spacing = 20f;
-        //writingContent.GetComponent<VerticalLayoutGroup>().spacing = 20f;
-
         if (Input.GetKey(KeyCode.KeypadEnter)|| Input.GetKey(KeyCode.Delete)) { checkHeight(); }
 
         //안드로이드 뒤로가기
         if (Input.GetKey(KeyCode.Escape))
         {
-            //thisField.GetComponent<TMP_InputField>().text = nowInputText;
-            if (thisField != null && !string.IsNullOrWhiteSpace(nowInputText))
-            {   thisField.GetComponent<TMP_InputField>().text = nowInputText;
-                nowInputText = "";
-            }
-            else { cancelWritingPage.SetActive(true); }
+            if (string.IsNullOrWhiteSpace(nowInputText))
+            { cancelWritingPage.SetActive(true); }
+            if (!string.IsNullOrEmpty(nowInputText))
+            { thisField.GetComponent<TMP_InputField>().text = nowInputText; nowInputText = ""; }
+
             //cancelWritingPage.SetActive(true);
         }
         //if (clickCount == 2) { Application.Quit(); }두번 눌렀을때 종료?
@@ -216,10 +210,17 @@ public class WritingManager : MonoBehaviour
         temporaryTemplate = EventSystem.current.currentSelectedGameObject.name;
         if (temporaryTemplate == "기본형")
         {
+            writing_Problem.SetActive(false);
+            writing_Cause.SetActive(false);
+            writing_Solution.SetActive(false);
+            writing_Learning.SetActive(false);
+            writing_Goodpoint.SetActive(false);
+            writing_Badpoint.SetActive(false);
             writingArea.SetActive(false);
         }
         else if (temporaryTemplate == "문제기록형")
         {
+            writingArea.SetActive(true);
             writing_Problem.SetActive(true);
             writing_Cause.SetActive(true);
             writing_Solution.SetActive(true);
@@ -229,6 +230,7 @@ public class WritingManager : MonoBehaviour
         }
         else if (temporaryTemplate == "자기칭찬형")
         {
+            writingArea.SetActive(true);
             writing_Problem.SetActive(false);
             writing_Cause.SetActive(false);
             writing_Solution.SetActive(false);
@@ -238,6 +240,7 @@ public class WritingManager : MonoBehaviour
         }
         else if (temporaryTemplate == "자기반성형")
         {
+            writingArea.SetActive(true);
             writing_Problem.SetActive(true);
             writing_Cause.SetActive(true);
             writing_Solution.SetActive(false);
@@ -364,13 +367,11 @@ public class WritingManager : MonoBehaviour
         height = 0;
         thisField = EventSystem.current.currentSelectedGameObject;
         parentRect = thisField.transform.parent.GetComponent<RectTransform>();
-        
+        writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 454;
         StartCoroutine(OnSelectInput());
     }
     IEnumerator OnSelectInput()
     {
-        writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 454;
-        yield return new WaitForEndOfFrame();
         if (thisField.name == "InputField_Practice")
         { writingContent.anchoredPosition = new Vector2(writingContent.anchoredPosition.x, 373f); }
         else
@@ -387,11 +388,13 @@ public class WritingManager : MonoBehaviour
     //인풋 Deselect
     public void OnDeselectWritingInput()
     {
+        if (!string.IsNullOrEmpty(nowInputText))
+        { thisField.GetComponent<TMP_InputField>().text = nowInputText; nowInputText = ""; }
         writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 44;
     }
 
     //글쓰기 실시간 높이 값 반영
-    public void checkHeight()
+    public void checkHeight() //OnValueChange
     {
         if (EventSystem.current.currentSelectedGameObject == null) return;
         StartCoroutine(writingAreaSpacing());
@@ -423,10 +426,12 @@ public class WritingManager : MonoBehaviour
             }
         }
     }
-    string nowInputText;
+    public string nowInputText;
     public void OnEndWritingInput()
     {
-        thisField.GetComponent<TMP_InputField>().text = nowInputText;
+        if (!string.IsNullOrEmpty(nowInputText))
+        { thisField.GetComponent<TMP_InputField>().text = nowInputText; nowInputText = ""; }
+        //writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 44;
     }
     #endregion
 
@@ -806,8 +811,29 @@ public class WritingManager : MonoBehaviour
     public GameObject addInputFieldContainer;
     GameObject activeObject;
 
-    public Sprite plusIcon;
-    public Sprite deleteIcon;
+    //public Sprite plusIcon;
+    //public Sprite deleteIcon;
+
+    //인풋 필드 삭제
+    public void DeleteInputField()
+    {
+        GameObject thisObj = EventSystem.current.currentSelectedGameObject;
+        thisObj.transform.parent.parent.gameObject.SetActive(false);
+        thisObj.transform.parent.parent.GetChild(1).GetComponent<TMP_InputField>().text = "";
+
+        count = 0;
+        for(int i = 0; i < 6; i++)
+        { if (writingArea.transform.GetChild(i).gameObject.activeSelf) { count++; } }
+        if (count == 0) writingArea.SetActive(false);
+        StartCoroutine(WritingContentSpacing());
+    }
+    IEnumerator WritingContentSpacing()
+    {
+        yield return new WaitForEndOfFrame();
+        writingContent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
+        writingContent.GetComponent<VerticalLayoutGroup>().spacing = 20;
+    }
+
     //이미 활성화된 토글 on
     public void openAddInput()
     {
@@ -820,14 +846,14 @@ public class WritingManager : MonoBehaviour
                 activeObject.GetComponent<Toggle>().isOn = true;
                 activeObject.GetComponent<Image>().color = primary3;
                 activeObject.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
-                activeObject.transform.GetChild(1).GetComponent<Image>().sprite = deleteIcon;
+                //activeObject.transform.GetChild(1).GetComponent<Image>().sprite = deleteIcon;
             }
             else
             {
                 activeObject.GetComponent<Toggle>().isOn = false;
                 activeObject.GetComponent<Image>().color = gray_300;
                 activeObject.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_700;
-                activeObject.transform.GetChild(1).GetComponent<Image>().sprite = plusIcon;
+                //activeObject.transform.GetChild(1).GetComponent<Image>().sprite = plusIcon;
             }
         }
     }
@@ -842,13 +868,13 @@ public class WritingManager : MonoBehaviour
             {
                 selectedChip.GetComponent<Image>().color = primary3;
                 selectedChip.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
-                selectedChip.transform.GetChild(1).GetComponent<Image>().sprite = deleteIcon;
+                //selectedChip.transform.GetChild(1).GetComponent<Image>().sprite = deleteIcon;
             }
             if (selectedChip.GetComponent<Toggle>().isOn ==false)
             {
                 selectedChip.GetComponent<Image>().color = gray_300;
                 selectedChip.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_700;
-                selectedChip.transform.GetChild(1).GetComponent<Image>().sprite = plusIcon;
+                //selectedChip.transform.GetChild(1).GetComponent<Image>().sprite = plusIcon;
             }
             
         }
@@ -857,14 +883,10 @@ public class WritingManager : MonoBehaviour
     int count;
     public void comfirmAddInput()
     {
-        StartCoroutine(AddInput());
-    }
-    IEnumerator AddInput()
-    {
         count = 0;
-        for (int i = 0; i < 6; i++)
+        for (int i = 1; i < 7; i++)
         {
-            GameObject activeToggle = addInputFieldContainer.transform.GetChild(i + 1).gameObject;
+            GameObject activeToggle = addInputFieldContainer.transform.GetChild(i).gameObject;
             if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "문제상황")
             {
                 if (activeToggle.GetComponent<Toggle>().isOn) { writing_Problem.SetActive(true); count++; }
@@ -899,11 +921,50 @@ public class WritingManager : MonoBehaviour
         if (count == 0) writingArea.SetActive(false);
         else writingArea.SetActive(true);
         addInputFieldContainer.transform.parent.gameObject.SetActive(false);
-
-        yield return new WaitForEndOfFrame();
-        writingArea.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
-        writingContent.GetComponent<VerticalLayoutGroup>().spacing = 19.9f;
+        StartCoroutine(WritingContentSpacing());
+        //StartCoroutine(AddInput());
     }
+    /*IEnumerator AddInput()
+    {
+        count = 0;
+        for (int i = 1; i < 7; i++)
+        {
+            GameObject activeToggle = addInputFieldContainer.transform.GetChild(i).gameObject;
+            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "문제상황")
+            {
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Problem.SetActive(true); count++; }
+                else { writing_Problem.SetActive(false); inputProblem.text = ""; }
+            }
+            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "문제원인")
+            {
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Cause.SetActive(true); count++; }
+                else { writing_Cause.SetActive(false); inputCause.text = ""; }
+            }
+            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "해결과정")
+            {
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Solution.SetActive(true); count++; }
+                else { writing_Solution.SetActive(false); inputSolution.text = ""; }
+            }
+            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "잘한점")
+            {
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Goodpoint.SetActive(true); count++; }
+                else { writing_Goodpoint.SetActive(false); inputGoodpoint.text = ""; }
+            }
+            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "부족한점")
+            {
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Badpoint.SetActive(true); count++; }
+                else { writing_Badpoint.SetActive(false); inputBadpoint.text = ""; }
+            }
+            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "배운점")
+            {
+                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Learning.SetActive(true); count++; }
+                else { writing_Learning.SetActive(false); inputLearning.text = ""; }
+            }
+        }
+        if (count == 0) writingArea.SetActive(false);
+        else writingArea.SetActive(true);
+        addInputFieldContainer.transform.parent.gameObject.SetActive(false);
+    }*/
     #endregion#
 
     public void goFolder() { SceneManager.LoadScene("3_Folder");  }

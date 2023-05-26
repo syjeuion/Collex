@@ -12,8 +12,16 @@ public class MypageUserTitle : MonoBehaviour
     public GameObject changeTitleText;
     public GameObject toastPopUp;
 
+    public GameObject usingGuidePage;
+
     //이용가이드 스크롤영역
     public RectTransform usingGuideContent;
+
+    private void Start()
+    {
+        if (UserManager.Instance.clickHomeBanner)
+        { usingGuidePage.SetActive(true);}
+    }
 
     public void confirmButton()
     {

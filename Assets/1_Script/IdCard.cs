@@ -164,11 +164,14 @@ public class IdCard : MonoBehaviour
             EditIdCardPage.transform.GetChild(2).GetChild(2).GetComponent<TMP_Text>().text =
                 EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text.Length.ToString() + "/10";
         }
-        
-        //직군직무
-        EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text =
-            Jobs[userJob] + " · " + UserManager.Instance.newUserInformation.detailJob;
 
+        //직군직무
+        if (userJob < 5)
+        {
+            EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text =
+            Jobs[userJob] + " · " + UserManager.Instance.newUserInformation.detailJob;
+        }
+        
         //setTitle(EditIdCardPage.transform.GetChild(4).GetChild(1).GetChild(0).gameObject, UserManager.Instance.newUserInformation.userTitleModi, UserManager.Instance.newUserInformation.userTitleNoun);
         EditIdCardPage.transform.GetChild(4).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text =
             UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;

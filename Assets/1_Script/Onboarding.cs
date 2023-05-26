@@ -14,6 +14,7 @@ public class Onboarding : MonoBehaviour
     public GameObject onboardingUserPage;
     public GameObject onboardingGuidePage;
     public GameObject progressBar;
+    public Image backButtonIcon;
 
     //유저 페이지 오브젝트
     public GameObject getUserName;
@@ -34,25 +35,33 @@ public class Onboarding : MonoBehaviour
         { "서버 개발", "IT 클라우드", "기술지원", "QA 엔지니어" },
         { "데이터 분석", "데이터 엔지니어", "인공지능", "DBA" } };
 
-    //단계 체크
-    int countStep;
+    
+    int countStep; //단계 체크
+    string UserName; //유저 이름
+    int UserJobIndex; //직군
+    int UserDetailJobIndex=5; //직무
 
     //사용 컬러
     Color primary1;
     Color primary3;
     Color errorColor;
     Color gray_200;
+    Color gray_400;
     Color gray_500;
+    Color gray_800;
 
     public static Action ActionPlayerPrefs;
 
+    #region 앱 시작 세팅
     private void Awake()
     {
         ColorUtility.TryParseHtmlString("#EFF5FF", out primary1);
         ColorUtility.TryParseHtmlString("#408BFD", out primary3);
         ColorUtility.TryParseHtmlString("#FF3E49", out errorColor);
         ColorUtility.TryParseHtmlString("#EBEDEF", out gray_200);
+        ColorUtility.TryParseHtmlString("#B6BBC3", out gray_400);
         ColorUtility.TryParseHtmlString("#949CA8", out gray_500);
+        ColorUtility.TryParseHtmlString("#3C4149", out gray_800);
         ActionPlayerPrefs = () => { GetPlayerPrefs(); };
 
         Screen.fullScreen = false;
@@ -99,45 +108,132 @@ public class Onboarding : MonoBehaviour
             UserManager.Instance.bookmarks = JsonConvert.DeserializeObject<List<string>>(bookmarkData);
         UserManager.Instance.firstOpen = false;
     }
+    #endregion
 
-    //화면 터치 시 페이지 전환
+    #region 다음/이전
     public void OnClickPage()
     {
-        if (countStep == 0)
+        if (countStep == 0) //첫인사>앱설명
         {
             daJeongImg.sprite = DaJeongFaces[0];
-            guideMessage.text = "아, 이름이 뭐라고 하셨죠?";
-            StartCoroutine(ChangeProgressBar(45, 90));
-            countStep++;
+            guideMessage.text = "저희 <color=#408BFD>Collex</color>에서는 직무 관련 경험을 하면서 \n무엇을 했고, 배웠고, 느꼈는지를\n템플릿으로 기록할 수 있어요.";
+            backButtonIcon.color = gray_800;
+            StartCoroutine(ChangeProgressBar(true, 40, 40*2));
+            countStep=1;
         }
-        else if (countStep == 1)
+        else if (countStep == 1) //앱설명>이름묻기
+        {
+            guideMessage.text = "아! 혹시 우리 회사에서 \n사용하고 싶은 닉네임이 있나요?";
+            StartCoroutine(ChangeProgressBar(true, 40*2, 40*3));
+            countStep=2;
+        }
+        else if (countStep == 2) //이름묻기>이름입력
         {
             onboardingGuidePage.SetActive(false);
             onboardingUserPage.SetActive(true);
-            StartCoroutine(ChangeProgressBar(90, 135));
-            countStep++;
+            StartCoroutine(ChangeProgressBar(true, 40*3, 40*4));
+            countStep=3;
         }
-        else if (countStep == 2)
+        else if(countStep==4) //직군묻기>직군입력
         {
             onboardingGuidePage.SetActive(false);
             onboardingUserPage.SetActive(true);
             getUserName.SetActive(false);
             getUserJob.SetActive(true);
-            StartCoroutine(ChangeProgressBar(180, 225));
-            countStep++;
+            StartCoroutine(ChangeProgressBar(true, 40 * 5, 40 * 6));
+            countStep = 5;
         }
-        else if(countStep==3)
+        else if(countStep==7|| countStep == 8) //직무선택후반응>마무리
         {
-            StartCoroutine(ChangeProgressBar(315, 360));
             daJeongImg.sprite = DaJeongFaces[2];
             guideMessage.text = "앗, 갑자기 팀장님이 부르셔서...\n일단 활동 폴더 추가하고,\n기록을 작성해 보시겠어요?";
-            countStep++;
+            StartCoroutine(ChangeProgressBar(true, 40*8, 360));
+            countStep = 9;
         }
-        else
+        else //countStep==9 //마무리>홈
         {
+            UserManager.Instance.newUserInformation.userName = UserName;
+            UserManager.Instance.newUserInformation.kindOfJob = UserJobIndex;
+            if (UserDetailJobIndex < 4)
+            { UserManager.Instance.newUserInformation.detailJob = JobList[UserJobIndex, UserDetailJobIndex]; }
             GetFirstTitles();
         }
     }
+    public void BackButton()
+    {
+        if (countStep == 0) return;
+        else if(countStep ==1) //앱설명>첫인사
+        {
+            daJeongImg.sprite = DaJeongFaces[1];
+            guideMessage.text = "<color=#408BFD>Collex</color>에 입사한 걸 환영해요!\n저는 사수 한다정이라고 해요.\n잘 부탁해요.…";
+            backButtonIcon.color = gray_400;
+            StartCoroutine(ChangeProgressBar(false, 40 * 2, 40));
+            countStep = 0;
+        }
+        else if (countStep == 2) //이름묻기>앱설명
+        {
+            guideMessage.text = "저희 <color=#408BFD>Collex</color>에서는 직무 관련 경험을 하면서 \n무엇을 했고, 배웠고, 느꼈는지를\n템플릿으로 기록할 수 있어요.";
+            StartCoroutine(ChangeProgressBar(false, 40 * 3, 40 * 2));
+            countStep = 1;
+        }
+        else if (countStep == 3) //이름입력>이름묻기
+        {
+            onboardingGuidePage.SetActive(true);
+            onboardingUserPage.SetActive(false);
+            guideMessage.text = "아! 혹시 우리 회사에서 \n사용하고 싶은 닉네임이 있나요?";
+            StartCoroutine(ChangeProgressBar(false, 40 * 4, 40 * 3));
+            countStep = 2;
+        }
+        else if (countStep == 4) //직군묻기>이름입력
+        {
+            onboardingGuidePage.SetActive(false);
+            onboardingUserPage.SetActive(true);
+            StartCoroutine(ChangeProgressBar(false, 40 * 5, 40 * 4));
+            countStep = 3;
+        }
+        else if (countStep == 5) //직군입력>직군묻기
+        {
+            onboardingGuidePage.SetActive(true);
+            onboardingUserPage.SetActive(false);
+            guideMessage.text = "좋아요, " + UserName+ "님!\n저희 팀에서 어떤 업무를 담당할지 아시죠?";
+            StartCoroutine(ChangeProgressBar(false, 40 * 6, 40 * 5));
+            daJeongImg.sprite = DaJeongFaces[0];
+            countStep = 4;
+        }
+        else if (countStep == 6) //직무입력>직군입력
+        {
+            getUserJobDetails.SetActive(false);
+            getUserJob.SetActive(true);
+            StartCoroutine(ChangeProgressBar(false, 40 * 7, 40 * 6));
+            countStep = 5;
+        }
+        else if (countStep == 7 || countStep==8) //직무선택후반응>직무입력||직군입력
+        {
+            onboardingGuidePage.SetActive(false);
+            onboardingUserPage.SetActive(true);
+            
+            if (UserManager.Instance.newUserInformation.kindOfJob==5)
+            {   countStep = 5;
+                StartCoroutine(ChangeProgressBar(false, 40 * 8, 40 * 6));
+            }
+            else { countStep = 6; StartCoroutine(ChangeProgressBar(false, 40 * 8, 40 * 7)); }
+        }
+        else //countStep ==9 //마무리>직무선택후반응
+        {
+            if (!string.IsNullOrEmpty(UserManager.Instance.newUserInformation.detailJob))
+            {   guideMessage.text = "맞아요!";
+                daJeongImg.sprite = DaJeongFaces[1];
+                countStep = 7;
+            }
+            else //직무 없음
+            {   guideMessage.text = "아, 그랬나요?";
+                countStep = 8;
+                daJeongImg.sprite = DaJeongFaces[0];
+            }
+            StartCoroutine(ChangeProgressBar(false, 360, 40 * 8));
+        }
+    }
+    #endregion
 
     #region 유저 이름
     //이름 입력
@@ -183,33 +279,50 @@ public class Onboarding : MonoBehaviour
     //이름 저장
     public void SaveUserName()
     {
-        string UserName = inputUserName.GetComponent<TMP_InputField>().text;
-        UserManager.Instance.newUserInformation.userName = UserName;
-        
+        UserName = inputUserName.GetComponent<TMP_InputField>().text;
         onboardingGuidePage.SetActive(true);
         onboardingUserPage.SetActive(false);
-        guideMessage.text = "맞다, "+UserName+"님이었죠.\n"+ UserName + "님, 저희 팀에서\n어떤 업무를 담당할지 아시죠?";
-        StartCoroutine(ChangeProgressBar(135, 180));
+        guideMessage.text = "좋아요, "+UserName+"님!\n저희 팀에서 어떤 업무를 담당할지 아시죠?";
+        StartCoroutine(ChangeProgressBar(true, 40*4, 40*5));
+        countStep = 4;
     }
     #endregion
 
+    #region 직군/직무 선택
     //직군 선택
-    int UserJobIndex;
+    
+    GameObject selectedJobObj;
     public void SaveUserJob()
     {
-        GameObject currentObj = EventSystem.current.currentSelectedGameObject;
-        UserJobIndex = currentObj.transform.GetSiblingIndex();
-        UserManager.Instance.newUserInformation.kindOfJob = UserJobIndex;
+        if (selectedJobObj != null)
+        { selectedJobObj.transform.GetChild(1).gameObject.SetActive(false); }
 
-        getUserJob.SetActive(false);
-        getUserJobDetails.SetActive(true);
-
-        SetJobDetails();
+        selectedJobObj = EventSystem.current.currentSelectedGameObject;
+        selectedJobObj.transform.GetChild(1).gameObject.SetActive(true);
+        UserJobIndex = selectedJobObj.transform.GetSiblingIndex();
+        
+        if (UserJobIndex == 5)
+        {
+            onboardingGuidePage.SetActive(true);
+            onboardingUserPage.SetActive(false);
+            guideMessage.text = "아, 그랬나요?";
+            daJeongImg.sprite = DaJeongFaces[0];
+            StartCoroutine(ChangeProgressBar(true, 40 * 6, 40 * 8));
+            countStep = 8;
+        }
+        else
+        {
+            getUserJob.SetActive(false);
+            getUserJobDetails.SetActive(true);
+            SetJobDetails();
+            StartCoroutine(ChangeProgressBar(true, 40 * 6, 40 * 7));
+            countStep = 6;
+        }
+        
     }
     //직무 선택 페이지 세팅
     void SetJobDetails()
     {
-        StartCoroutine(ChangeProgressBar(225, 270));
         for (int i = 0; i < 4; i++)
         {
             getUserJobDetails.transform.GetChild(i).GetChild(0).GetComponent<TMP_Text>().text
@@ -223,34 +336,42 @@ public class Onboarding : MonoBehaviour
         
     }
     //직무 선택
+    GameObject selectedDetailJobObj;
     public void SaveUserJobDetail()
     {
-        GameObject currentObj = EventSystem.current.currentSelectedGameObject;
+        if (selectedDetailJobObj != null)
+        { selectedDetailJobObj.transform.GetChild(1).gameObject.SetActive(false); }
 
-        if (currentObj.transform.GetSiblingIndex() >= 4)
+        selectedDetailJobObj = EventSystem.current.currentSelectedGameObject;
+        selectedDetailJobObj.transform.GetChild(1).gameObject.SetActive(true);
+
+        UserDetailJobIndex = selectedDetailJobObj.transform.GetSiblingIndex();
+        if (UserDetailJobIndex >= 4)
         {
             guideMessage.text = "아, 그랬나요?";
             daJeongImg.sprite = DaJeongFaces[0];
+            countStep = 8;
         }
         else
         {
-            UserManager.Instance.newUserInformation.detailJob = JobList[UserJobIndex, currentObj.transform.GetSiblingIndex()];
-
             guideMessage.text = "맞아요!";
             daJeongImg.sprite = DaJeongFaces[1];
+            countStep = 7;
         }
         
         onboardingUserPage.SetActive(false);
         onboardingGuidePage.SetActive(true);
 
-        StartCoroutine(ChangeProgressBar(270, 315));
+        StartCoroutine(ChangeProgressBar(true, 40*7, 40*8));
     }
+    #endregion
+
 
     //온보딩 완료 후 칭호 획득
     void GetFirstTitles()
     {
         UserManager.Instance.newUserInformation.titleCheck[0]++;
-        UserManager.Instance.newUserInformation.userTitleModi = "주니어";
+        UserManager.Instance.newUserInformation.userTitleModi = "신입";
         if (UserJobIndex == 0)
         {   UserManager.Instance.newUserInformation.titleCheck[1]++;
             UserManager.Instance.newUserInformation.userTitleNoun = "기획자";
@@ -259,7 +380,11 @@ public class Onboarding : MonoBehaviour
         {   UserManager.Instance.newUserInformation.titleCheck[2]++;
             UserManager.Instance.newUserInformation.userTitleNoun = "디자이너";
         }
-        else
+        else if(UserJobIndex==5) //직무 선택 안함
+        {
+            UserManager.Instance.newUserInformation.userTitleNoun = "사원";
+        }
+        else //2,3,4
         { UserManager.Instance.newUserInformation.titleCheck[3]++;
             UserManager.Instance.newUserInformation.userTitleNoun = "개발자";
         }
@@ -268,12 +393,23 @@ public class Onboarding : MonoBehaviour
     }
 
     //ProgressBar 움직이게
-    IEnumerator ChangeProgressBar(int startWidth, int finishWidth)
+    IEnumerator ChangeProgressBar(bool next, int startWidth, int finishWidth)
     {
-        for(int i=startWidth; i < finishWidth+1; i++)
+        if (next)
         {
-            progressBar.GetComponent<RectTransform>().sizeDelta = new Vector2(i, 4);
-            yield return new WaitForEndOfFrame();
+            for (int i = startWidth; i < finishWidth + 1; i++)
+            {
+                progressBar.GetComponent<RectTransform>().sizeDelta = new Vector2(i, 4);
+                yield return new WaitForEndOfFrame();
+            }
+        }
+        else
+        {
+            for (int i = startWidth; i > finishWidth + 1; i--)
+            {
+                progressBar.GetComponent<RectTransform>().sizeDelta = new Vector2(i, 4);
+                yield return new WaitForEndOfFrame();
+            }
         }
     }
 

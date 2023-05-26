@@ -20,6 +20,7 @@ public class HomeManager : MonoBehaviour
 
     public GameObject Home_MainContent;
     RectTransform wholeContentRect;
+    public GameObject BannerArea; //이용팁
 
     //유저 정보
     public GameObject userProfiles;
@@ -59,26 +60,18 @@ public class HomeManager : MonoBehaviour
     {
         userProfiles.transform.GetChild(0).GetComponent<Image>().sprite = myProfileImgs[UserManager.Instance.newUserInformation.userProfileImgNumber];
 
-        /*if (!string.IsNullOrWhiteSpace(UserManager.Instance.newUserInformation.userTitleModi))
-        {
-            userProfiles.transform.GetChild(1).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.userTitleModi;
-            if (!string.IsNullOrWhiteSpace(UserManager.Instance.newUserInformation.userTitleNoun))
-            { userProfiles.transform.GetChild(1).GetComponent<TMP_Text>().text += " "+UserManager.Instance.newUserInformation.userTitleNoun; }
-        }
-        else
-        {
-            if (!string.IsNullOrWhiteSpace(UserManager.Instance.newUserInformation.userTitleNoun))
-            { userProfiles.transform.GetChild(1).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.userTitleNoun; }
-            else { userProfiles.transform.GetChild(1).GetComponent<TMP_Text>().text = "반가워요"; }
-        }*/
         //홈 스크롤 시 앱바 색상 변경용도
         wholeContentRect = Home_MainContent.GetComponent<RectTransform>();
 
+        //이용팁 배너
+        if (!UserManager.Instance.newUserInformation.homeBanner)
+        { BannerArea.SetActive(true); }
+        else { BannerArea.SetActive(false); }
+
         UserTitleManager.ActionUserTitle();
-        //UIController.instance.ReloadUserTitleUI();
         userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = "\n"+UserManager.Instance.newUserInformation.userName + "님!";
         
-        //칭호 세팅
+        //목표칭호 세팅
         if (UserManager.Instance.newUserInformation.isItFirstTargetTitle != 0)
         {
             Destroy(modiContainer.transform.parent.GetChild(0).gameObject);
@@ -113,7 +106,8 @@ public class HomeManager : MonoBehaviour
         }
 
         //폴더 삭제로 홈으로 넘어왔을때
-        if (UserManager.Instance.checkFolderDelete) StartCoroutine(setSnackBar(SnackBar));
+        if (UserManager.Instance.checkFolderDelete)
+        { StartCoroutine(setSnackBar(SnackBar)); UserManager.Instance.checkFolderDelete = false; }
 
     }
     //폴더 세팅 함수
@@ -203,7 +197,7 @@ public class HomeManager : MonoBehaviour
             UIController.instance.PageObjArr[num].SetActive(false);
             UIController.instance.curOpenPageNum = -1;
         }
-        else { UIController.instance.PageObjArr[1].SetActive(false); }
+        else { UIController.instance.PageObjArr[1].SetActive(true); }
         yield return new WaitForSeconds(0.1f);
         EscCheck = true;
     }
@@ -414,6 +408,14 @@ public class HomeManager : MonoBehaviour
             UserManager.Instance.pushedRecord = "";
             SceneManager.LoadScene("2_Writing");
         }
+    }
+
+    //홈화면 이용팁 배너
+    public void UsingTipBanner()
+    {
+        UserManager.Instance.clickHomeBanner = true;
+        goMypage();
+        UserManager.Instance.newUserInformation.homeBanner = true;
     }
 
     //토스트 팝업
