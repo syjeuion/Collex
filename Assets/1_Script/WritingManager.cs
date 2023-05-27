@@ -63,9 +63,11 @@ public class WritingManager : MonoBehaviour
     Color primary3;
     Color gray_200;
     Color gray_300;
+    Color gray_400;
     Color gray_700;
     Color gray_500;
     Color gray_900;
+    Color transparent;
     Color errorColor;
 
     //활동폴더 불러오기
@@ -76,11 +78,11 @@ public class WritingManager : MonoBehaviour
         ColorUtility.TryParseHtmlString("#408BFD", out primary3);
         ColorUtility.TryParseHtmlString("#EBEDEF", out gray_200);
         ColorUtility.TryParseHtmlString("#DDE0E3", out gray_300);
+        ColorUtility.TryParseHtmlString("#B6BBC3", out gray_400);
         ColorUtility.TryParseHtmlString("#575F6B", out gray_700);
         ColorUtility.TryParseHtmlString("#949CA8", out gray_500);
         ColorUtility.TryParseHtmlString("#1E2024", out gray_900);
         ColorUtility.TryParseHtmlString("#FF3E49", out errorColor);
-
 
         if (UserManager.Instance.pushedButton !=null&& UserManager.Instance.pushedButton != "")
         {
@@ -151,7 +153,10 @@ public class WritingManager : MonoBehaviour
         if(!string.IsNullOrWhiteSpace(inputTitle.text)&& !string.IsNullOrWhiteSpace(inputPractice.text))
         {
             if (!string.IsNullOrWhiteSpace(UserManager.Instance.pushedRecord)) SaveDailyRecord();
-            else { writingPage.SetActive(false); selectedCapabilitiesPage.SetActive(true); }//checkTitle();
+            else
+                { writingPage.SetActive(false);
+                experiencePage.SetActive(false);
+                selectedCapabilitiesPage.SetActive(true); }
         }
         //checkTitle();
     }
@@ -166,12 +171,9 @@ public class WritingManager : MonoBehaviour
         //안드로이드 뒤로가기
         if (Input.GetKey(KeyCode.Escape))
         {
-            if (string.IsNullOrWhiteSpace(nowInputText))
-            { cancelWritingPage.SetActive(true); }
             if (!string.IsNullOrEmpty(nowInputText))
             { thisField.GetComponent<TMP_InputField>().text = nowInputText; nowInputText = ""; }
-
-            //cancelWritingPage.SetActive(true);
+            else { cancelWritingPage.SetActive(true); }
         }
         //if (clickCount == 2) { Application.Quit(); }두번 눌렀을때 종료?
     }
@@ -373,7 +375,9 @@ public class WritingManager : MonoBehaviour
     IEnumerator OnSelectInput()
     {
         if (thisField.name == "InputField_Practice")
-        { writingContent.anchoredPosition = new Vector2(writingContent.anchoredPosition.x, 373f); }
+        {   writingContent.anchoredPosition = new Vector2(writingContent.anchoredPosition.x, 273f);
+            //print(writingContent.anchoredPosition.y);
+        } //373f
         else
         {
             for (int i = 0; i < thisField.transform.parent.GetSiblingIndex(); i++)
@@ -382,8 +386,10 @@ public class WritingManager : MonoBehaviour
                 { height += writingArea.transform.GetChild(i).GetComponent<RectTransform>().sizeDelta.y+20; }
             }
             yield return new WaitForEndOfFrame();
-            writingContent.anchoredPosition = new Vector2(writingContent.anchoredPosition.x, (393+inputPractice.transform.parent.GetComponent<RectTransform>().sizeDelta.y + height));
+            writingContent.anchoredPosition = new Vector2(writingContent.anchoredPosition.x, (293+inputPractice.transform.parent.GetComponent<RectTransform>().sizeDelta.y + height)); //393f
         }
+        //yield return new WaitForEndOfFrame();
+        //print(writingContent.anchoredPosition.y);
     }
     //인풋 Deselect
     public void OnDeselectWritingInput()
@@ -426,7 +432,7 @@ public class WritingManager : MonoBehaviour
             }
         }
     }
-    public string nowInputText;
+    string nowInputText;
     public void OnEndWritingInput()
     {
         if (!string.IsNullOrEmpty(nowInputText))
@@ -693,8 +699,8 @@ public class WritingManager : MonoBehaviour
 
     //경험칩 저장
     #region 경험칩
-    List<string> deletedEXchip = new List<string>();
-    //List<GameObject> selectedExChip = new List<GameObject>();
+    //List<string> deletedEXchip = new List<string>();
+    List<GameObject> selectedExChip = new List<GameObject>();
     /*public void setEXchips()
     {
         experiencePage.SetActive(true);
@@ -713,9 +719,9 @@ public class WritingManager : MonoBehaviour
         {
             if (currentObj.GetComponent<Toggle>().isOn == true && !newDailyRecord.experiences.Contains(currentObj.transform.GetChild(0).GetComponent<TMP_Text>().text))
             {
-                //selectedExChip.Add(currentObj);
+                selectedExChip.Add(currentObj);
                 newDailyRecord.experiences.Add(currentObj.transform.GetChild(0).GetComponent<TMP_Text>().text);
-                currentObj.GetComponent<Image>().color = primary3;
+                //currentObj.GetComponent<Image>().color = primary3;
                 currentObj.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
                 if (newDailyRecord.experiences.Count != 0)
                 {
@@ -725,9 +731,9 @@ public class WritingManager : MonoBehaviour
             }
             if (currentObj.GetComponent<Toggle>().isOn == false && newDailyRecord.experiences.Contains(currentObj.transform.GetChild(0).GetComponent<TMP_Text>().text))
             {
-                //selectedExChip.Remove(currentObj);
+                selectedExChip.Remove(currentObj);
                 newDailyRecord.experiences.Remove(currentObj.transform.GetChild(0).GetComponent<TMP_Text>().text);
-                currentObj.GetComponent<Image>().color = gray_300;
+                //currentObj.GetComponent<Image>().color = gray_300;
                 currentObj.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_700;
                 if (newDailyRecord.experiences.Count == 0)
                 {
@@ -754,54 +760,65 @@ public class WritingManager : MonoBehaviour
     IEnumerator saveExperience()
     {
         //기존 칩 제거
-        for (int i = 1; i < Experiences.transform.childCount-1; i++)
+        for (int i = 1; i < Experiences.transform.childCount; i++)
         {
-            Destroy(Experiences.transform.GetChild(i).gameObject);
+            if (i == 1)
+            {
+                for(int j=1;j< Experiences.transform.GetChild(i).childCount; j++)
+                { Destroy(Experiences.transform.GetChild(i).GetChild(j).gameObject); }
+            }
+            else Destroy(Experiences.transform.GetChild(i).gameObject);
         }
 
         //새 칩 로드
         for (int i = 0; i < newDailyRecord.experiences.Count; i++)
         {
-            if (i == 0) newHorizontalGroupObj = Instantiate(HorizontalGroupPrefab, Experiences.transform);
-            
+            if (i == 0) newHorizontalGroupObj = Experiences.transform.GetChild(1).gameObject;
+
             newExperience = Instantiate(selectedEX, newHorizontalGroupObj.transform);
-            //newExperience.name = i + "_";
+            
             newExperience.transform.GetChild(0).GetComponent<TMP_Text>().text = newDailyRecord.experiences[i];
             newExperience.transform.GetChild(1).GetComponent<Button>().onClick.AddListener(removeEXchip);
-            yield return new WaitForEndOfFrame();
 
-            if (newHorizontalGroupObj.GetComponent<RectTransform>().sizeDelta.x >= 195)
+            yield return new WaitForEndOfFrame();
+            newHorizontalGroupObj.GetComponent<HorizontalLayoutGroup>().spacing = 7.9f;
+            yield return new WaitForEndOfFrame();
+            newHorizontalGroupObj.GetComponent<HorizontalLayoutGroup>().spacing = 8;
+            yield return new WaitForEndOfFrame();
+            if (newHorizontalGroupObj.GetComponent<RectTransform>().sizeDelta.x >= 328)
             {
                 newHorizontalGroupObj = Instantiate(HorizontalGroupPrefab, Experiences.transform);
                 newExperience.transform.SetParent(newHorizontalGroupObj.transform);
             }
-            
         }
-        selectExButton.transform.SetAsLastSibling();
-        yield return new WaitForEndOfFrame();
 
         if (newHorizontalGroupObj == null) { yield break; }
-        newHorizontalGroupObj.GetComponent<HorizontalLayoutGroup>().spacing = 7.9f;
-        newHorizontalGroupObj.GetComponent<HorizontalLayoutGroup>().spacing = 8;
         Experiences.GetComponent<VerticalLayoutGroup>().spacing = 7.9f;
+        yield return new WaitForEndOfFrame();
         Experiences.GetComponent<VerticalLayoutGroup>().spacing = 8;
+        newHorizontalGroupObj = null;
 
-        experiencePage.SetActive(false);
+        experiencePage.transform.SetSiblingIndex(3);
     }
     //경험칩 제거 함수
     void removeEXchip()
     {
         GameObject button = EventSystem.current.currentSelectedGameObject;
         newDailyRecord.experiences.Remove(button.transform.parent.GetChild(0).GetComponent<TMP_Text>().text);
-        deletedEXchip.Add(button.transform.parent.GetChild(0).GetComponent<TMP_Text>().text);
-        /*for(int i = 0; i < selectedExChip.Count; i++)
+        //deletedEXchip.Add(button.transform.parent.GetChild(0).GetComponent<TMP_Text>().text);
+        for(int i = 0; i < selectedExChip.Count; i++)
         {
             if(selectedExChip[i].transform.GetChild(0).GetComponent<TMP_Text>().text == button.transform.parent.GetChild(0).GetComponent<TMP_Text>().text)
             {
                 selectedExChip[i].GetComponent<Toggle>().isOn = false;
+                selectedExChip[i].transform.GetChild(0).GetComponent<TMP_Text>().color = gray_700;
+                selectedExChip.Remove(selectedExChip[i]);
             }
-        }*/
-        if (button.transform.parent.parent.childCount == 1) { Destroy(button.transform.parent.parent.gameObject); }
+        }
+        if (button.transform.parent.parent.childCount == 1)
+        {   Destroy(button.transform.parent.parent.gameObject);
+            StartCoroutine(WritingContentSpacing());
+        }
         else { Destroy(button.transform.parent.gameObject); }
     }
     #endregion
@@ -844,128 +861,80 @@ public class WritingManager : MonoBehaviour
             if (writingArea.transform.GetChild(i).gameObject.activeSelf)
             {
                 activeObject.GetComponent<Toggle>().isOn = true;
-                activeObject.GetComponent<Image>().color = primary3;
-                activeObject.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
-                //activeObject.transform.GetChild(1).GetComponent<Image>().sprite = deleteIcon;
+                activeObject.GetComponent<Toggle>().interactable = false;
+                activeObject.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_400;
+                activeObject.transform.GetChild(1).GetComponent<Image>().color = gray_400;
+                primary3.a = 0/255f;
             }
             else
             {
                 activeObject.GetComponent<Toggle>().isOn = false;
-                activeObject.GetComponent<Image>().color = gray_300;
-                activeObject.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_700;
-                //activeObject.transform.GetChild(1).GetComponent<Image>().sprite = plusIcon;
+                activeObject.GetComponent<Toggle>().interactable = true;
+                activeObject.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_900;
+                activeObject.transform.GetChild(1).GetComponent<Image>().color = Color.white;
+                primary3.a = 13/255f;
             }
+            activeObject.transform.GetChild(2).GetComponent<Image>().color = primary3;
         }
+        primary3.a = 255 / 255f;
     }
     //칩 선택 시 반영
     public void changeChipColor(bool check)
     {
         GameObject selectedChip = EventSystem.current.currentSelectedGameObject;
-        //print(selectedChip.name);
+        
         if(selectedChip.name != "Button_AddInputField")
         {
             if (selectedChip.GetComponent<Toggle>().isOn ==true)
             {
-                selectedChip.GetComponent<Image>().color = primary3;
                 selectedChip.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
-                //selectedChip.transform.GetChild(1).GetComponent<Image>().sprite = deleteIcon;
+                selectedChip.transform.GetChild(1).GetComponent<Image>().color = primary3;
             }
             if (selectedChip.GetComponent<Toggle>().isOn ==false)
             {
-                selectedChip.GetComponent<Image>().color = gray_300;
-                selectedChip.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_700;
-                //selectedChip.transform.GetChild(1).GetComponent<Image>().sprite = plusIcon;
+                selectedChip.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_900;
+                selectedChip.transform.GetChild(1).GetComponent<Image>().color = Color.white;
             }
-            
         }
     }
     //추가완료 버튼
     int count;
+    bool firstAddField;
     public void comfirmAddInput()
     {
         count = 0;
+        firstAddField = true;
         for (int i = 1; i < 7; i++)
         {
             GameObject activeToggle = addInputFieldContainer.transform.GetChild(i).gameObject;
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "문제상황")
+            GameObject activeInputField = writingArea.transform.GetChild(i - 1).gameObject;
+            if (activeToggle.GetComponent<Toggle>().isOn)
             {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Problem.SetActive(true); count++; }
-                else { writing_Problem.SetActive(false); inputProblem.text = ""; }
+                if(activeInputField.activeSelf) { count++; }
+                else
+                {
+                    activeInputField.SetActive(true); count++;
+                    if (firstAddField)
+                    {
+                        height = 0;
+                        thisField = activeInputField.transform.GetChild(1).gameObject;
+                        writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 454;
+                        StartCoroutine(OnSelectInput());
+                        thisField.GetComponent<TMP_InputField>().ActivateInputField();
+                        firstAddField = false; }
+                }
             }
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "문제원인")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Cause.SetActive(true); count++; }
-                else { writing_Cause.SetActive(false); inputCause.text = ""; }
-            }
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "해결과정")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Solution.SetActive(true); count++; }
-                else { writing_Solution.SetActive(false); inputSolution.text = ""; }
-            }
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "잘한점")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Goodpoint.SetActive(true); count++; }
-                else { writing_Goodpoint.SetActive(false); inputGoodpoint.text = ""; }
-            }
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "부족한점")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Badpoint.SetActive(true); count++; }
-                else { writing_Badpoint.SetActive(false); inputBadpoint.text = ""; }
-            }
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "배운점")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Learning.SetActive(true); count++; }
-                else { writing_Learning.SetActive(false); inputLearning.text = ""; }
+            else
+            {   activeInputField.SetActive(false);
+                activeInputField.transform.GetChild(1).GetComponent<TMP_InputField>().text = "";
             }
         }
         if (count == 0) writingArea.SetActive(false);
         else writingArea.SetActive(true);
         addInputFieldContainer.transform.parent.gameObject.SetActive(false);
         StartCoroutine(WritingContentSpacing());
-        //StartCoroutine(AddInput());
     }
-    /*IEnumerator AddInput()
-    {
-        count = 0;
-        for (int i = 1; i < 7; i++)
-        {
-            GameObject activeToggle = addInputFieldContainer.transform.GetChild(i).gameObject;
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "문제상황")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Problem.SetActive(true); count++; }
-                else { writing_Problem.SetActive(false); inputProblem.text = ""; }
-            }
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "문제원인")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Cause.SetActive(true); count++; }
-                else { writing_Cause.SetActive(false); inputCause.text = ""; }
-            }
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "해결과정")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Solution.SetActive(true); count++; }
-                else { writing_Solution.SetActive(false); inputSolution.text = ""; }
-            }
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "잘한점")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Goodpoint.SetActive(true); count++; }
-                else { writing_Goodpoint.SetActive(false); inputGoodpoint.text = ""; }
-            }
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "부족한점")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Badpoint.SetActive(true); count++; }
-                else { writing_Badpoint.SetActive(false); inputBadpoint.text = ""; }
-            }
-            if (activeToggle.transform.GetChild(0).GetComponent<TMP_Text>().text == "배운점")
-            {
-                if (activeToggle.GetComponent<Toggle>().isOn) { writing_Learning.SetActive(true); count++; }
-                else { writing_Learning.SetActive(false); inputLearning.text = ""; }
-            }
-        }
-        if (count == 0) writingArea.SetActive(false);
-        else writingArea.SetActive(true);
-        addInputFieldContainer.transform.parent.gameObject.SetActive(false);
-    }*/
-    #endregion#
+    #endregion
 
     public void goFolder() { SceneManager.LoadScene("3_Folder");  }
 

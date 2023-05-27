@@ -23,7 +23,7 @@ public class UserInformation
 
     public string userName; //유저 이름
     public int kindOfJob; //직군
-    public string detailJob; //직무
+    public int detailJob; //직무
 
     public int userProfileImgNumber; //설정된 프로필 사진 뭔지
     public string companyName; //목표 회사

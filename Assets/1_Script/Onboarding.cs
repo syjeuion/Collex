@@ -155,7 +155,7 @@ public class Onboarding : MonoBehaviour
             UserManager.Instance.newUserInformation.userName = UserName;
             UserManager.Instance.newUserInformation.kindOfJob = UserJobIndex;
             if (UserDetailJobIndex < 4)
-            { UserManager.Instance.newUserInformation.detailJob = JobList[UserJobIndex, UserDetailJobIndex]; }
+            { UserManager.Instance.newUserInformation.detailJob = UserDetailJobIndex; }
             GetFirstTitles();
         }
     }
@@ -220,7 +220,7 @@ public class Onboarding : MonoBehaviour
         }
         else //countStep ==9 //마무리>직무선택후반응
         {
-            if (!string.IsNullOrEmpty(UserManager.Instance.newUserInformation.detailJob))
+            if (UserManager.Instance.newUserInformation.detailJob!=5)
             {   guideMessage.text = "맞아요!";
                 daJeongImg.sprite = DaJeongFaces[1];
                 countStep = 7;

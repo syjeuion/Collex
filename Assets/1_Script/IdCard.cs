@@ -44,7 +44,13 @@ public class IdCard : MonoBehaviour
     string[] Jobs = new string[5] { "기획","디자인","프론트엔드","백엔드","데이터"};
     int userJob;
     //int selectedJob;
-    string userDetailJob;
+    int userDetailJob;
+    private string[,] JobList = new string[5, 4]
+    {   {"서비스 기획","UX 기획","PM/PO","사업 기획"},
+        { "UX/UI 디자인", "영상 디자인", "브랜드 디자인", "그래픽 디자인" },
+        { "앱 개발", "웹 개발", "웹 퍼블리싱", "시스템 엔지니어" },
+        { "서버 개발", "IT 클라우드", "기술지원", "QA 엔지니어" },
+        { "데이터 분석", "데이터 엔지니어", "인공지능", "DBA" } };
 
     //사용 컬러
     Color primary1;
@@ -217,7 +223,7 @@ public class IdCard : MonoBehaviour
         {
             for (int ii = 1; ii < 5; ii++)
             {
-                if (jobContent.transform.GetChild(i).GetChild(ii).GetChild(1).GetComponent<TMP_Text>().text == UserManager.Instance.newUserInformation.detailJob)
+                if (jobContent.transform.GetChild(i).GetChild(ii).GetChild(1).GetComponent<TMP_Text>().text == JobList[userJob,userDetailJob])
                 {
                     jobContent.transform.GetChild(i).GetChild(ii).GetComponent<Toggle>().isOn = true;
                     return;
@@ -231,9 +237,9 @@ public class IdCard : MonoBehaviour
         GameObject currentObj = EventSystem.current.currentSelectedGameObject;
 
         if (currentObj.GetComponent<Toggle>() == null) return;
-        currentObj.GetComponent<Toggle>().isOn = true;
+        //currentObj.GetComponent<Toggle>().isOn = true;
 
-        userDetailJob = currentObj.transform.GetChild(1).GetComponent<TMP_Text>().text;
+        userDetailJob = currentObj.transform.GetSiblingIndex()-1;
         string jobGroup = currentObj.transform.parent.name;
         if (jobGroup == "PlannerGroup") userJob = 0;
         else if (jobGroup == "DesignerGroup") userJob = 1;
@@ -257,7 +263,7 @@ public class IdCard : MonoBehaviour
     //직군/직무 저장
     public void SaveChangeJob()
     {
-        EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = Jobs[userJob] + " · " + userDetailJob;
+        EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = Jobs[userJob] + " · " + JobList[userJob,userDetailJob];
         SetUserJobPage.SetActive(false);
     }
     #endregion

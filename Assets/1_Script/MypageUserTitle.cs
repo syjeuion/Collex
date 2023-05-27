@@ -23,6 +23,20 @@ public class MypageUserTitle : MonoBehaviour
         { usingGuidePage.SetActive(true);}
     }
 
+    private void Update()
+    {
+        if(usingGuideContent.anchoredPosition.y >= 2560)
+        {
+            if (usingGuidePage.transform.GetChild(0).GetChild(1).GetComponent<Toggle>().isOn != true)
+                {usingGuidePage.transform.GetChild(0).GetChild(1).GetComponent<Toggle>().isOn = true;}
+        }
+        else
+        {
+            if(usingGuidePage.transform.GetChild(0).GetChild(0).GetComponent<Toggle>().isOn != true)
+                {usingGuidePage.transform.GetChild(0).GetChild(0).GetComponent<Toggle>().isOn = true;}
+        }
+    }
+
     public void confirmButton()
     {
         if(userTitleScript.GetComponent<UserTitleManager>().whichTitle == 2)
@@ -78,10 +92,20 @@ public class MypageUserTitle : MonoBehaviour
     //가이드 페이지
     public void TabWritingTip()
     {
-        usingGuideContent.anchoredPosition = new Vector2(0, 0);
+        if (EventSystem.current.currentSelectedGameObject != null)
+        {
+            if (EventSystem.current.currentSelectedGameObject.name == "Tab_writingTip")
+                usingGuideContent.anchoredPosition = new Vector2(0, 0);
+        }
+        
     }
     public void TabUsingTip()
     {
-        usingGuideContent.anchoredPosition = new Vector2(0, 2260);
+        if (EventSystem.current.currentSelectedGameObject != null)
+        {
+            if (EventSystem.current.currentSelectedGameObject.name == "Tab_usingTip")
+                usingGuideContent.anchoredPosition = new Vector2(0, 2560);
+        }
+            
     }
 }
