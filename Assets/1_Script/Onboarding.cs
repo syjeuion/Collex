@@ -154,8 +154,7 @@ public class Onboarding : MonoBehaviour
         {
             UserManager.Instance.newUserInformation.userName = UserName;
             UserManager.Instance.newUserInformation.kindOfJob = UserJobIndex;
-            if (UserDetailJobIndex < 4)
-            { UserManager.Instance.newUserInformation.detailJob = UserDetailJobIndex; }
+            UserManager.Instance.newUserInformation.detailJob = UserDetailJobIndex;
             GetFirstTitles();
         }
     }

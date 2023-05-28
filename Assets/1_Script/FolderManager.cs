@@ -765,7 +765,7 @@ public class FolderManager : MonoBehaviour
             FolderInfo.transform.GetChild(3).gameObject.SetActive(false);
             //날짜 비교
             TimeSpan howManyDays = DateTime.Now - thisProject.startDate;
-            int howManyDaysInt = howManyDays.Days;
+            int howManyDaysInt = howManyDays.Days +1;
             if (howManyDaysInt > 9) RecordCount.transform.GetChild(1).GetComponent<TMP_Text>().text = "          동안";
             RecordCount.transform.GetChild(3).GetComponent<TMP_Text>().text = howManyDaysInt.ToString() + "일";
 

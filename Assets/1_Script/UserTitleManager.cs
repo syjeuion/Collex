@@ -12,7 +12,8 @@ public class UserTitleManager : MonoBehaviour
     //화면
     public GameObject UserTitlePage;
     public GameObject ConfirmButton;
-    public GameObject toolTip;
+    public GameObject toolTip1;
+    public GameObject toolTip2;
 
     public Sprite skeleton1;
     public Sprite skeleton2;
@@ -111,8 +112,8 @@ public class UserTitleManager : MonoBehaviour
         //처음 들어갔을때만 툴팁 띄워줌
         if (UserManager.Instance.newUserInformation.isItFirstTargetTitlePage == 0)
         {
-            StartCoroutine(toolTipCoroutine());
-            UserManager.Instance.newUserInformation.isItFirstTargetTitlePage=1;
+            StartCoroutine(toolTipCoroutine(toolTip1));
+            //UserManager.Instance.newUserInformation.isItFirstTargetTitlePage=1;
         }
     }
     //칭호컬렉션=2
@@ -120,8 +121,8 @@ public class UserTitleManager : MonoBehaviour
     {
         whichTitle = 2;
         UserTitlePage.transform.GetChild(0).GetComponent<TMP_Text>().text = "다양한 칭호를 조합해 보세요!";
-        UserTitlePage.transform.GetChild(6).GetChild(1).GetComponent<TMP_Text>().text = "칭호 컬렉션";
-        ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "목표 칭호로 설정하기";
+        UserTitlePage.transform.GetChild(6).GetChild(1).GetComponent<TMP_Text>().text = "나의 칭호";
+        ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "대표 칭호로 설정하기";
 
         ModiContent.transform.GetChild(0).GetComponent<Image>().sprite = skeleton1;
         NounContent.transform.GetChild(0).GetComponent<Image>().sprite = skeleton1;
@@ -130,8 +131,8 @@ public class UserTitleManager : MonoBehaviour
 
         if (UserManager.Instance.newUserInformation.isItFirstTitleCollection == 0)
         {
-            StartCoroutine(toolTipCoroutine());
-            UserManager.Instance.newUserInformation.isItFirstTitleCollection = 1;
+            StartCoroutine(toolTipCoroutine(toolTip1));
+            //UserManager.Instance.newUserInformation.isItFirstTitleCollection = 1;
         }
     }
     //대표칭호=3
@@ -149,7 +150,7 @@ public class UserTitleManager : MonoBehaviour
 
         if (UserManager.Instance.newUserInformation.isItFirstUserTitle == 0)
         {
-            StartCoroutine(toolTipCoroutine());
+            StartCoroutine(toolTipCoroutine(toolTip1));
             UserManager.Instance.newUserInformation.isItFirstUserTitle = 1;
         }
 
@@ -213,6 +214,7 @@ public class UserTitleManager : MonoBehaviour
     
     void setData(string orderCheck, int whichTitle, bool targetCheck)
     {
+        if (whichTitle == 2&& orderCheck=="뒤") setGaugePrefab("뒤", "사원", "Collex 입사 완료", 1);
         for (int i=0; i<27; i++) //칭호 개수
         {
             string[] column = new string[4];
@@ -296,16 +298,12 @@ public class UserTitleManager : MonoBehaviour
             if (whichTitle == 1)
             {
                 if (!string.IsNullOrWhiteSpace(nowTargetTitleModi))
-                {
-                    if (title == nowTargetTitleModi)
-                        newTitleObj.GetComponent<Toggle>().isOn = true;
-                }
+                {   if (title == nowTargetTitleModi)
+                    { newTitleObj.GetComponent<Toggle>().isOn = true; } }
             }
             else
-            {
-                if (title == nowUserTitleModi)
-                    newTitleObj.GetComponent<Toggle>().isOn = true;
-            }
+            {   if (title == nowUserTitleModi)
+                { newTitleObj.GetComponent<Toggle>().isOn = true; } }
             
         }
         if (orderCheck == "뒤")
@@ -316,26 +314,31 @@ public class UserTitleManager : MonoBehaviour
             if (whichTitle == 1)
             {
                 if (!string.IsNullOrWhiteSpace(nowTargetTitleNoun))
-                {
-                    if (title == nowTargetTitleNoun)
-                        newTitleObj.GetComponent<Toggle>().isOn = true;
-                }
+                {   if (title == nowTargetTitleNoun)
+                    { newTitleObj.GetComponent<Toggle>().isOn = true; } }
             }
             else
-            {
-                if (title == nowUserTitleNoun)
-                    newTitleObj.GetComponent<Toggle>().isOn = true;
+            {   if (title == nowUserTitleNoun)
+                { newTitleObj.GetComponent<Toggle>().isOn = true;}
             }
         }
 
         newTitleObj.transform.GetChild(2).GetComponent<TMP_Text>().text = title;
-        newTitleObj.transform.GetChild(3).GetComponent<TMP_Text>().text = description;
+        
         newTitleObj.transform.GetChild(1).GetChild(1).GetComponent<Image>().fillAmount = gaugeValue;
-        newTitleObj.transform.GetChild(1).GetChild(2).GetComponent<TMP_Text>().text = (Mathf.RoundToInt(gaugeValue*100)).ToString() + "%";
+        if (gaugeValue == 1)
+        {
+            newTitleObj.transform.GetChild(3).GetComponent<TMP_Text>().text = "[획득 완료] "+description;
+            newTitleObj.transform.GetChild(1).GetChild(2).gameObject.SetActive(false);
+            newTitleObj.transform.GetChild(1).GetChild(3).gameObject.SetActive(true);
+            newTitleObj.transform.SetSiblingIndex(1);
+        }
+        else
+        {
+            newTitleObj.transform.GetChild(3).GetComponent<TMP_Text>().text = "- " + description;
+            newTitleObj.transform.GetChild(1).GetChild(2).GetComponent<TMP_Text>().text = (Mathf.RoundToInt(gaugeValue * 100)).ToString() + "%"; }
+
         newTitleObj.GetComponent<Toggle>().onValueChanged.AddListener(UpdateTitle);
-
-        if (gaugeValue==1) newTitleObj.transform.SetSiblingIndex(1);
-
     }
     //대표칭호
     void setListPrefab(string orderCheck, string title)
@@ -383,6 +386,26 @@ public class UserTitleManager : MonoBehaviour
                     selectedModiData[2] = currentObj.transform.GetChild(1).GetChild(1).GetComponent<Image>().fillAmount.ToString();
                 }
                 selectedModi.GetComponent<TMP_Text>().text = selectedModiData[0];
+
+                if (whichTitle == 1)
+                {
+                    if (UserManager.Instance.newUserInformation.isItFirstTargetTitlePage == 0)
+                    {
+                        toolTip1.SetActive(false);
+                        StartCoroutine(toolTipCoroutine(toolTip2));
+                        UserManager.Instance.newUserInformation.isItFirstTargetTitlePage = 1;
+                    }
+                }
+                if (whichTitle == 2)
+                {
+                    if (UserManager.Instance.newUserInformation.isItFirstTitleCollection == 0)
+                    {
+                        toolTip1.SetActive(false);
+                        StartCoroutine(toolTipCoroutine(toolTip2));
+                        UserManager.Instance.newUserInformation.isItFirstTitleCollection = 1;
+                    }
+                }
+
             }
             if (currentObj.transform.parent.name == "NounContent")
             {
@@ -398,7 +421,7 @@ public class UserTitleManager : MonoBehaviour
                 selectedNoun.GetComponent<TMP_Text>().text = selectedNounData[0];
             }
             //칭호컬렉션에서 버튼 문구 변경
-            if (whichTitle == 2)
+            /*if (whichTitle == 2)
             {
                 if ((!string.IsNullOrWhiteSpace(selectedModiData[2]) && int.Parse(selectedModiData[2]) == 1)||
                         (!string.IsNullOrWhiteSpace(selectedNounData[2]) && int.Parse(selectedNounData[2]) == 1))
@@ -407,7 +430,7 @@ public class UserTitleManager : MonoBehaviour
                 }
                 else
                     ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "목표칭호로 설정하기";
-            }
+            }*/
         }
         if (check == false) //선택 해제
         {
@@ -479,23 +502,21 @@ public class UserTitleManager : MonoBehaviour
 
     #region 2.칭호컬렉션 저장
     public int condition;
-    GameObject popUp;
+    public GameObject popUp;
     public void saveTitleCollection()
     {
-        popUp = UserTitlePage.transform.GetChild(8).gameObject;
-        popUp.SetActive(true);
-
-        if (!string.IsNullOrWhiteSpace(selectedModiData[0]) && !string.IsNullOrWhiteSpace(selectedNounData[0])) //둘다 선택된 상태일 때
+        if ((!string.IsNullOrWhiteSpace(selectedModiData[0])&& selectedModiData[2] == "1")
+            && (!string.IsNullOrWhiteSpace(selectedNounData[0])&& int.Parse(selectedNounData[2]) == 1)) //둘다 선택된 상태일 때
         {
-            if (int.Parse(selectedModiData[2]) == 1 && int.Parse(selectedNounData[2]) == 1) //대표칭호로 설정
-            {
-                popUp.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text
-                    = "'" + selectedModiData[0] + " " + selectedNounData[0] + "'을/를 대표 칭호로\n설정할까요?";
-                popUp.GetComponent<RectTransform>().sizeDelta = new Vector2(312, 156);
-                condition = 1;
-            }
+            if (selectedModiData[0] == UserManager.Instance.newUserInformation.userTitleModi
+                && selectedNounData[0] == UserManager.Instance.newUserInformation.userTitleNoun)
+            { UserTitlePage.SetActive(false); return; }
 
-            else if (int.Parse(selectedModiData[2]) != 1 && int.Parse(selectedNounData[2]) == 1) //앞칭호 목표칭호
+            popUp.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text
+                    = "'" + selectedModiData[0] + " " + selectedNounData[0] + "'을/를 대표 칭호로\n설정할까요?";
+            popUp.GetComponent<RectTransform>().sizeDelta = new Vector2(312, 156);
+            condition = 1;
+            /*else if (int.Parse(selectedModiData[2]) != 1 && int.Parse(selectedNounData[2]) == 1) //앞칭호 목표칭호
             {
                 popUp.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text
                     = "'" + selectedModiData[0] + "'을/를 목표 칭호로 설정할까요?";
@@ -515,39 +536,26 @@ public class UserTitleManager : MonoBehaviour
                     = "'" + selectedModiData[0] + " " + selectedNounData[0] + "'을/를 목표 칭호로\n설정할까요?";
                 popUp.GetComponent<RectTransform>().sizeDelta = new Vector2(312, 156);
                 condition = 4;
-            }
+            }*/
         }
-        else if(string.IsNullOrWhiteSpace(selectedNounData[0])) //앞 선택
+        else if(!string.IsNullOrWhiteSpace(selectedModiData[0])&& selectedModiData[2] == "1") //앞 선택
         {
-            if(int.Parse(selectedModiData[2]) == 1)
-            {
-                popUp.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text
+            if (selectedModiData[0]==UserManager.Instance.newUserInformation.userTitleModi)
+            { UserTitlePage.SetActive(false); return; }
+            popUp.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text
                     = "'" + selectedModiData[0] + "'을/를 대표 칭호로 설정할까요?";
-                condition = 1;
-            }
-            else
-            {
-                popUp.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text
-                    = "'" + selectedModiData[0] + "'을/를 목표 칭호로 설정할까요?";
-                condition = 2;
-            }
+            condition = 1;
         }
-        else //뒤 선택
+        else if (!string.IsNullOrWhiteSpace(selectedNounData[0])&& selectedNounData[2] == "1")//뒤 선택
         {
-            if (int.Parse(selectedNounData[2]) == 1)
-            {
-                popUp.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text
-                    = "'" + selectedNounData[0] + "'을/를 대표 칭호로 설정할까요?";
-                condition = 1;
-            }
-            else
-            {
-                popUp.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text
-                    = "'" + selectedNounData[0] + "'을/를 목표 칭호로 설정할까요?";
-                condition = 3;
-            }
+            if (selectedNounData[0] == UserManager.Instance.newUserInformation.userTitleNoun)
+            { UserTitlePage.SetActive(false); return; }
+            popUp.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text
+                        = "'" + selectedNounData[0] + "'을/를 대표 칭호로 설정할까요?";
+            condition = 1;
         }
-
+        else { UserTitlePage.SetActive(false); return; }
+        popUp.SetActive(true);
     }
     public void popUpConfirmButton()
     {
@@ -563,14 +571,14 @@ public class UserTitleManager : MonoBehaviour
                 UserManager.Instance.newUserInformation.userTitleNoun = selectedNounData[0];
             }
             ReloadUserTitleUI();
-            UserTitlePage.SetActive(false);
+            //UserTitlePage.SetActive(false);
         }
-        else if(condition==2)
+        /*else if(condition==2)
             setData( "앞", whichTitle, true);
         else if(condition==3)
             setData("뒤", whichTitle, true);
         else
-            saveTargetTitle(2);
+            saveTargetTitle(2);*/
 
         popUp.SetActive(false);
         UserTitlePage.SetActive(false);
@@ -593,7 +601,7 @@ public class UserTitleManager : MonoBehaviour
     }
 
     //툴팁
-    IEnumerator toolTipCoroutine()
+    IEnumerator toolTipCoroutine(GameObject toolTip)
     {
         toolTip.SetActive(true);
         yield return new WaitForSeconds(3f);

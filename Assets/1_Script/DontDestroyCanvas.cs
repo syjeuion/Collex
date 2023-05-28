@@ -15,6 +15,7 @@ public class DontDestroyCanvas : MonoBehaviour
     MakeNewProject thisProject;
     DailyRecord newRecord;
 
+    //기록 상세 페이지
     public GameObject toastPopUp;
     public GameObject recordTitleContainer;
     public GameObject recordsContainer;
@@ -27,6 +28,10 @@ public class DontDestroyCanvas : MonoBehaviour
     //칭호 획득 시
     public GameObject ObtainTitlePage;
     public GameObject titleConfirmButton;
+    public GameObject TitleListPage; //여러개 동시 획득
+    public GameObject titleListContent;
+    public GameObject titleListPrefab;
+    GameObject newTitleList;
 
     public Animator fireCracker;
 
@@ -55,10 +60,10 @@ public class DontDestroyCanvas : MonoBehaviour
         if (UserManager.Instance.getTitle == 1 || UserManager.Instance.getTitle == 2)
         {
             ObtainTitlePage.SetActive(true);
-            setObtainTitlePage();
             getTitleCount = UserManager.Instance.nowGetTitle.Count;
+            setObtainTitlePage();
             if(UserManager.Instance.getTitle==1) UserManager.Instance.getTitle = 0;
-            if (UserManager.Instance.getTitle == 2) UserManager.Instance.getTitle = 3;
+            if (UserManager.Instance.getTitle == 2) UserManager.Instance.getTitle = 3; //온보딩 후
 
         }
     }
@@ -355,32 +360,60 @@ public class DontDestroyCanvas : MonoBehaviour
         }
         else
         {
-            nowTitle[0] = UserManager.Instance.nowGetTitle[order][0];
-            nowTitle[1] = UserManager.Instance.nowGetTitle[order][1];
-            nowTitle[2] = UserManager.Instance.nowGetTitle[order][2];
-
-            ObtainTitlePage.transform.GetChild(3).GetComponent<TMP_Text>().text = "‘" + nowTitle[1] + "’ 칭호를 획득했어요!";
-            string description = nowTitle[2];
-
-            if (description == "Collex 입사 완료" || description == "경험 첫 추가" || description == "입사동기 첫 추가" || description == "활동 첫 마무리")
-                ObtainTitlePage.transform.GetChild(2).GetComponent<TMP_Text>().text = description + "로";
-            else
-                ObtainTitlePage.transform.GetChild(2).GetComponent<TMP_Text>().text = description + "으로";
-
-            titleConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "대표 칭호로 설정하기";
-            ObtainTitlePage.transform.GetChild(4).gameObject.SetActive(true);
+            titleConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "확인";
             ObtainTitlePage.transform.GetChild(5).gameObject.SetActive(false);
-            
-            if (nowTitle[0] == "앞" && nowTitle[1] == UserManager.Instance.newUserInformation.targetTitleModi[0])
-                { UserManager.Instance.newUserInformation.targetTitleModi = new string[5]; }
-            if (nowTitle[0] == "뒤" && nowTitle[1] == UserManager.Instance.newUserInformation.targetTitleNoun[0])
-                { UserManager.Instance.newUserInformation.targetTitleNoun = new string[5]; }
+            if (getTitleCount == 1)
+            {
+                nowTitle[0] = UserManager.Instance.nowGetTitle[0][0];
+                nowTitle[1] = UserManager.Instance.nowGetTitle[0][1];
+                nowTitle[2] = UserManager.Instance.nowGetTitle[0][2];
 
-            if(SceneManager.GetActiveScene().name == "1_Home" && UserManager.Instance.newUserInformation.isItFirstTargetTitle!=0)
+                ObtainTitlePage.transform.GetChild(3).GetComponent<TMP_Text>().text = "‘" + nowTitle[1] + "’ 칭호를 획득했어요!";
+                string description = nowTitle[2];
+
+                if (description == "경험 첫 추가" || description == "입사동기 첫 추가" || description == "활동 첫 마무리")
+                    ObtainTitlePage.transform.GetChild(2).GetComponent<TMP_Text>().text = description + "로";
+                else
+                    ObtainTitlePage.transform.GetChild(2).GetComponent<TMP_Text>().text = description + "으로";
+
+                TitleListPage.SetActive(false);
+
+                //if (nowTitle[0] == "앞" && nowTitle[1] == UserManager.Instance.newUserInformation.targetTitleModi[0])
+                //{ UserManager.Instance.newUserInformation.targetTitleModi = new string[5]; }
+                //if (nowTitle[0] == "뒤" && nowTitle[1] == UserManager.Instance.newUserInformation.targetTitleNoun[0])
+                //{ UserManager.Instance.newUserInformation.targetTitleNoun = new string[5]; }
+
+                if (SceneManager.GetActiveScene().name == "1_Home" && UserManager.Instance.newUserInformation.isItFirstTargetTitle != 0)
                 { UserManager.Instance.checkHomeTargetTitle = true; }
+            }
+            else //칭호 여러개 동시 획득 시
+            {
+                TitleListPage.SetActive(true);
+                TitleListPage.transform.GetChild(1).GetComponent<TMP_Text>().text
+                    = "'" + UserManager.Instance.nowGetTitle[0][1] + "' 외 " + (getTitleCount - 1) + "개의 칭호를 획득했어요!";
+                for (int i = 0; i < getTitleCount; i++)
+                {
+                    newTitleList = Instantiate(titleListPrefab, titleListContent.transform);
+                    newTitleList.transform.GetChild(1).GetComponent<TMP_Text>().text = UserManager.Instance.nowGetTitle[i][1];
+                    newTitleList.transform.GetChild(2).GetComponent<TMP_Text>().text = "- "+UserManager.Instance.nowGetTitle[i][2];
+                }
+            }
         }
     }
-    public void titleCancel()
+    public void TitleConfirm()
+    {
+        if (UserManager.Instance.getTitle == 3)
+        {
+            StartCoroutine(TitleToHome());
+        }
+        else
+        {
+            ObtainTitlePage.SetActive(false);
+            UIController.instance.SetEnableCanvasState(true);
+            UserManager.Instance.nowGetTitle = new List<string[]>();
+        }
+    }
+    /*public void titleCancel()
     {
         if (order >= getTitleCount - 1)
         {
@@ -427,7 +460,7 @@ public class DontDestroyCanvas : MonoBehaviour
         }
         if(SceneManager.GetActiveScene().name == "1_Home"|| SceneManager.GetActiveScene().name == "6_Mypage")
         { UserTitleManager.ActionUserTitle(); }
-    }
+    }*/
     IEnumerator TitleToHome()
     {
         goHome();

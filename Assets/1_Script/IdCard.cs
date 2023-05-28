@@ -67,7 +67,12 @@ public class IdCard : MonoBehaviour
         ColorUtility.TryParseHtmlString("#949CA8", out gray500);
         ColorUtility.TryParseHtmlString("#FF3E49", out errorColor);
         
-        colorNumber = UserManager.Instance.newUserInformation.idCardColorNumber;
+        
+        if (UserManager.Instance.newUserInformation.titleCheck[27] == 0)
+        { colorNumber = 3; }
+        else
+        { colorNumber = UserManager.Instance.newUserInformation.idCardColorNumber; }
+
         profileNumber = UserManager.Instance.newUserInformation.userProfileImgNumber;
         setIdCard();
         changeCardColor();
@@ -172,15 +177,25 @@ public class IdCard : MonoBehaviour
         }
 
         //직군직무
-        if (userJob < 5)
-        {
-            EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text =
-            Jobs[userJob] + " · " + UserManager.Instance.newUserInformation.detailJob;
-        }
-        
+        SetJobTextUI();
+
         //setTitle(EditIdCardPage.transform.GetChild(4).GetChild(1).GetChild(0).gameObject, UserManager.Instance.newUserInformation.userTitleModi, UserManager.Instance.newUserInformation.userTitleNoun);
         EditIdCardPage.transform.GetChild(4).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text =
             UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
+    }
+    void SetJobTextUI()
+    {
+        if (userJob == 5)
+        { EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = "직군/직무 미선택"; }
+        else
+        {
+            EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text =
+            Jobs[userJob] + " · ";
+            if (userDetailJob >= 4)
+            { EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text += "직무 미선택"; }
+            else
+            { EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text += JobList[userJob, userDetailJob]; }
+        }
     }
 
     #region 사원증 프로필 이미지 선택
@@ -219,26 +234,19 @@ public class IdCard : MonoBehaviour
     {
         SetUserJobPage.SetActive(true);
         //if(jobContent.transform.FindChild(userJob)) //find로 찾는 방법 - 한글을 써야함
-        for (int i = 0; i < 5; i++)
-        {
-            for (int ii = 1; ii < 5; ii++)
-            {
-                if (jobContent.transform.GetChild(i).GetChild(ii).GetChild(1).GetComponent<TMP_Text>().text == JobList[userJob,userDetailJob])
-                {
-                    jobContent.transform.GetChild(i).GetChild(ii).GetComponent<Toggle>().isOn = true;
-                    return;
-                }
-            }
-        }
+        
+        if (userJob == 5) return;
+        if (userDetailJob >= 4) return;
+        
+        jobContent.transform.GetChild(userJob).GetChild(userDetailJob).GetComponent<Toggle>().isOn = true;
     }
     //직군/직무 선택할때 반영
     public void ChangeJob()
     {
         GameObject currentObj = EventSystem.current.currentSelectedGameObject;
-
+        
         if (currentObj.GetComponent<Toggle>() == null) return;
-        //currentObj.GetComponent<Toggle>().isOn = true;
-
+        
         userDetailJob = currentObj.transform.GetSiblingIndex()-1;
         string jobGroup = currentObj.transform.parent.name;
         if (jobGroup == "PlannerGroup") userJob = 0;
@@ -247,7 +255,7 @@ public class IdCard : MonoBehaviour
         else if (jobGroup == "BackEndGroup") userJob = 3;
         else if (jobGroup == "DataGroup") userJob = 4;
 
-        if (userDetailJob != UserManager.Instance.newUserInformation.detailJob)
+        /*if (userDetailJob != UserManager.Instance.newUserInformation.detailJob)
         {
             SetUserJobPage.transform.GetChild(2).GetComponent<Button>().interactable = true;
             SetUserJobPage.transform.GetChild(2).GetComponent<Image>().sprite = Button_Enabled;
@@ -258,12 +266,13 @@ public class IdCard : MonoBehaviour
             SetUserJobPage.transform.GetChild(2).GetComponent<Button>().interactable = false;
             SetUserJobPage.transform.GetChild(2).GetComponent<Image>().sprite = Button_Disabled;
             SetUserJobPage.transform.GetChild(2).GetChild(0).GetComponent<TMP_Text>().color = gray500;
-        }
+        }*/
     }
     //직군/직무 저장
     public void SaveChangeJob()
     {
-        EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = Jobs[userJob] + " · " + JobList[userJob,userDetailJob];
+        SetJobTextUI();
+        //EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = Jobs[userJob] + " · " + JobList[userJob,userDetailJob];
         SetUserJobPage.SetActive(false);
     }
     #endregion

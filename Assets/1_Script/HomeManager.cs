@@ -134,7 +134,8 @@ public class HomeManager : MonoBehaviour
                 {
                     TimeSpan howManyDays = DateTime.Now - newProject.lastRecordDate;
                     int howDays = howManyDays.Days;
-                    newFolder.transform.GetChild(4).GetComponent<TMP_Text>().text = "마지막 작성 " + howDays.ToString() + "일 전";
+                    if (howDays == 0) { newFolder.transform.GetChild(4).gameObject.SetActive(false); }
+                    else { newFolder.transform.GetChild(4).GetComponent<TMP_Text>().text = "마지막 작성 " + howDays.ToString() + "일 전"; }
                 }
                
                 ongoingCount += 1;
