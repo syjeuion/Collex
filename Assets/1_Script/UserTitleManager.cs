@@ -120,12 +120,10 @@ public class UserTitleManager : MonoBehaviour
     public void setTitleCollection() 
     {
         whichTitle = 2;
-        UserTitlePage.transform.GetChild(0).GetComponent<TMP_Text>().text = "다양한 칭호를 조합해 보세요!";
-        UserTitlePage.transform.GetChild(6).GetChild(1).GetComponent<TMP_Text>().text = "나의 칭호";
-        ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "대표 칭호로 설정하기";
 
-        ModiContent.transform.GetChild(0).GetComponent<Image>().sprite = skeleton1;
-        NounContent.transform.GetChild(0).GetComponent<Image>().sprite = skeleton1;
+        ConfirmButton.GetComponent<Image>().sprite = Button_Disabled;
+        ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray500;
+        ConfirmButton.GetComponent<Button>().interactable = false;
 
         titlePageInMy();
 
@@ -420,16 +418,18 @@ public class UserTitleManager : MonoBehaviour
                 }
                 selectedNoun.GetComponent<TMP_Text>().text = selectedNounData[0];
             }
+
             //칭호컬렉션에서 버튼 문구 변경
             /*if (whichTitle == 2)
             {
-                if ((!string.IsNullOrWhiteSpace(selectedModiData[2]) && int.Parse(selectedModiData[2]) == 1)||
+                if ((!string.IsNullOrWhiteSpace(selectedModiData[2]) && int.Parse(selectedModiData[2]) == 1) ||
                         (!string.IsNullOrWhiteSpace(selectedNounData[2]) && int.Parse(selectedNounData[2]) == 1))
                 {
-                    ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "대표칭호로 설정하기";
+                    ConfirmButton.GetComponent<Image>().sprite = Button_Enabled;
+
                 }
                 else
-                    ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "목표칭호로 설정하기";
+                { ConfirmButton.GetComponent<Image>().sprite = Button_Disabled; }
             }*/
         }
         if (check == false) //선택 해제
@@ -450,24 +450,27 @@ public class UserTitleManager : MonoBehaviour
         selectedModi.transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 4f;
 
         //버튼 활성화
-        if (whichTitle != 3)
+        if((whichTitle==1&&(!string.IsNullOrWhiteSpace(selectedModiData[0]) || !string.IsNullOrWhiteSpace(selectedNounData[0])))||
+            (whichTitle == 2 && (selectedModiData[2] == "1" || selectedNounData[2] == "1")))
         {
-            if (!string.IsNullOrWhiteSpace(selectedModiData[0]) || !string.IsNullOrWhiteSpace(selectedNounData[0]))
-            {
-                ConfirmButton.GetComponent<Image>().sprite = Button_Enabled;
-                ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = primary1;
-                ConfirmButton.GetComponent<Button>().interactable = true;
-            }
-            else
-            {
-                ConfirmButton.GetComponent<Image>().sprite = Button_Disabled;
-                ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray500;
-                ConfirmButton.GetComponent<Button>().interactable = false;
-            }
+            ConfirmButton.GetComponent<Image>().sprite = Button_Enabled;
+            ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = primary1;
+            ConfirmButton.GetComponent<Button>().interactable = true;
         }
-        
+        else
+        {
+            ConfirmButton.GetComponent<Image>().sprite = Button_Disabled;
+            ConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray500;
+            ConfirmButton.GetComponent<Button>().interactable = false;
+        }
     }
-    
+    //미리보기 탭 시 칭호 탭 변경
+    public void TouchTitleTab()
+    {
+        string tabName = EventSystem.current.currentSelectedGameObject.name;
+        if (tabName == "TitleModi") tabModi.GetComponent<Toggle>().isOn = true;
+        if (tabName == "TitleNoun") tabNoun.GetComponent<Toggle>().isOn = true;
+    }
     //탭 선택에 따라 컬러 변경
     public void ChangeTab()
     {
@@ -562,11 +565,11 @@ public class UserTitleManager : MonoBehaviour
         if (condition == 1)
         {
             //saveUserTitle();
-            if (!string.IsNullOrWhiteSpace(selectedModiData[0]))
+            if (!string.IsNullOrWhiteSpace(selectedModiData[0])&& selectedModiData[2]=="1")
             {
                 UserManager.Instance.newUserInformation.userTitleModi = selectedModiData[0];
             }
-            if (!string.IsNullOrWhiteSpace(selectedNounData[0]))
+            if (!string.IsNullOrWhiteSpace(selectedNounData[0]) && selectedNounData[2] == "1")
             {
                 UserManager.Instance.newUserInformation.userTitleNoun = selectedNounData[0];
             }

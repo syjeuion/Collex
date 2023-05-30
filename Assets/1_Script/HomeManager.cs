@@ -439,6 +439,6 @@ public class HomeManager : MonoBehaviour
     public void goRanking() { SceneManager.LoadScene("5_Ranking"); }
     public void goMypage() { SceneManager.LoadScene("6_Mypage"); }
 
-    //앱 종료될때
+    //앱 종료
     public void quitApplication() { Application.Quit(); }
 }

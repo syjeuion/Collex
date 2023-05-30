@@ -177,24 +177,24 @@ public class IdCard : MonoBehaviour
         }
 
         //직군직무
-        SetJobTextUI();
+        SetJobTextUI(UserManager.Instance.newUserInformation.kindOfJob, UserManager.Instance.newUserInformation.detailJob);
 
         //setTitle(EditIdCardPage.transform.GetChild(4).GetChild(1).GetChild(0).gameObject, UserManager.Instance.newUserInformation.userTitleModi, UserManager.Instance.newUserInformation.userTitleNoun);
         EditIdCardPage.transform.GetChild(4).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text =
             UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
     }
-    void SetJobTextUI()
+    void SetJobTextUI(int Job, int detailJob)
     {
-        if (userJob == 5)
+        if (Job == 5)
         { EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = "직군/직무 미선택"; }
         else
         {
             EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text =
-            Jobs[userJob] + " · ";
-            if (userDetailJob >= 4)
+            Jobs[Job] + " · ";
+            if (detailJob >= 4)
             { EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text += "직무 미선택"; }
             else
-            { EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text += JobList[userJob, userDetailJob]; }
+            { EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text += JobList[Job, detailJob]; }
         }
     }
 
@@ -238,7 +238,7 @@ public class IdCard : MonoBehaviour
         if (userJob == 5) return;
         if (userDetailJob >= 4) return;
         
-        jobContent.transform.GetChild(userJob).GetChild(userDetailJob).GetComponent<Toggle>().isOn = true;
+        jobContent.transform.GetChild(userJob).GetChild(userDetailJob+1).GetComponent<Toggle>().isOn = true;
     }
     //직군/직무 선택할때 반영
     public void ChangeJob()
@@ -271,7 +271,7 @@ public class IdCard : MonoBehaviour
     //직군/직무 저장
     public void SaveChangeJob()
     {
-        SetJobTextUI();
+        SetJobTextUI(userJob, userDetailJob);
         //EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = Jobs[userJob] + " · " + JobList[userJob,userDetailJob];
         SetUserJobPage.SetActive(false);
     }

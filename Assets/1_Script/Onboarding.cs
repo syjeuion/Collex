@@ -11,6 +11,7 @@ using TMPro;
 public class Onboarding : MonoBehaviour
 {
     //페이지
+    public GameObject QuitAlertPage;
     public GameObject onboardingUserPage;
     public GameObject onboardingGuidePage;
     public GameObject progressBar;
@@ -38,7 +39,7 @@ public class Onboarding : MonoBehaviour
     
     int countStep; //단계 체크
     string UserName; //유저 이름
-    int UserJobIndex; //직군
+    int UserJobIndex=7; //직군
     int UserDetailJobIndex=5; //직무
 
     //사용 컬러
@@ -110,6 +111,24 @@ public class Onboarding : MonoBehaviour
     }
     #endregion
 
+    //디바이스 뒤로가기
+    bool escapeCheck = true;
+    private void Update()
+    {
+        if (Input.GetKey(KeyCode.Escape)&&escapeCheck)
+        {
+            escapeCheck = false;
+            StartCoroutine(EscapeBackButton());
+        }
+    }
+    IEnumerator EscapeBackButton()
+    {
+        if (countStep == 0) { QuitAlertPage.SetActive(true); }
+        BackButton();
+        yield return new WaitForSeconds(0.1f);
+        escapeCheck = true;
+    }
+
     #region 다음/이전
     public void OnClickPage()
     {
@@ -131,6 +150,9 @@ public class Onboarding : MonoBehaviour
         {
             onboardingGuidePage.SetActive(false);
             onboardingUserPage.SetActive(true);
+            getUserName.SetActive(true);
+            getUserJob.SetActive(false);
+            getUserJobDetails.SetActive(false);
             StartCoroutine(ChangeProgressBar(true, 40*3, 40*4));
             countStep=3;
         }
@@ -140,6 +162,7 @@ public class Onboarding : MonoBehaviour
             onboardingUserPage.SetActive(true);
             getUserName.SetActive(false);
             getUserJob.SetActive(true);
+            getUserJobDetails.SetActive(false);
             StartCoroutine(ChangeProgressBar(true, 40 * 5, 40 * 6));
             countStep = 5;
         }
@@ -187,6 +210,9 @@ public class Onboarding : MonoBehaviour
         {
             onboardingGuidePage.SetActive(false);
             onboardingUserPage.SetActive(true);
+            getUserName.SetActive(true);
+            getUserJob.SetActive(false);
+            getUserJobDetails.SetActive(false);
             StartCoroutine(ChangeProgressBar(false, 40 * 5, 40 * 4));
             countStep = 3;
         }
@@ -289,7 +315,7 @@ public class Onboarding : MonoBehaviour
 
     #region 직군/직무 선택
     //직군 선택
-    
+    bool jobSameCheck = true;
     GameObject selectedJobObj;
     public void SaveUserJob()
     {
@@ -298,6 +324,8 @@ public class Onboarding : MonoBehaviour
 
         selectedJobObj = EventSystem.current.currentSelectedGameObject;
         selectedJobObj.transform.GetChild(1).gameObject.SetActive(true);
+        if (UserJobIndex == selectedJobObj.transform.GetSiblingIndex()) jobSameCheck = true;
+        else jobSameCheck = false;
         UserJobIndex = selectedJobObj.transform.GetSiblingIndex();
         
         if (UserJobIndex == 5)
@@ -324,6 +352,12 @@ public class Onboarding : MonoBehaviour
     {
         for (int i = 0; i < 4; i++)
         {
+            if (!jobSameCheck)
+            {
+                if (getUserJobDetails.transform.GetChild(i).GetChild(1).gameObject.activeSelf)
+                { getUserJobDetails.transform.GetChild(i).GetChild(1).gameObject.SetActive(false); }
+            }
+            
             getUserJobDetails.transform.GetChild(i).GetChild(0).GetComponent<TMP_Text>().text
             = "<color=#408BFD>" + JobList[UserJobIndex, i]+"</color>";
             string lastStr = JobList[UserJobIndex, i].Substring(JobList[UserJobIndex, i].Length - 1, 1);
@@ -413,4 +447,5 @@ public class Onboarding : MonoBehaviour
     }
 
     public void goHome() { SceneManager.LoadScene("1_Home"); }
+    public void quitApplication() { Application.Quit(); }
 }

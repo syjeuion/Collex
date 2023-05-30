@@ -20,7 +20,7 @@ public class MypageUserTitle : MonoBehaviour
     private void Start()
     {
         if (UserManager.Instance.clickHomeBanner)
-        { usingGuidePage.SetActive(true);}
+        { usingGuidePage.SetActive(true); UserManager.Instance.clickHomeBanner = false; }
     }
 
     private void Update()

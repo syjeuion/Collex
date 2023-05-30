@@ -34,6 +34,7 @@ public class DontDestroyCanvas : MonoBehaviour
     GameObject newTitleList;
 
     public Animator fireCracker;
+    public Animator fireCrackerList;
 
     private void Awake()
     {
@@ -96,9 +97,9 @@ public class DontDestroyCanvas : MonoBehaviour
     IEnumerator SetPage()
     {
         if (UserManager.Instance.bookmarks.Contains(thisProject.projectTitle + "\t" + newRecord.title))
-            transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Toggle>().isOn = true;
+            transform.GetChild(0).GetChild(1).GetChild(2).GetComponent<Toggle>().isOn = true;
         else
-            transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Toggle>().isOn = false;
+            transform.GetChild(0).GetChild(1).GetChild(2).GetComponent<Toggle>().isOn = false;
 
         recordTitleContainer.transform.GetChild(0).GetComponent<TMP_Text>().text = newRecord.title;
         recordTitleContainer.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = newRecord.date;
@@ -341,15 +342,12 @@ public class DontDestroyCanvas : MonoBehaviour
     string userJob;
     public void setObtainTitlePage()
     {
-        //애니메이션 실행
-        fireCracker.SetTrigger("startAni");
-
-        //GameObject canvas = GameObject.Find("Canvas");
-        //canvas.GetComponent<Canvas>().enabled = false; //중복 터치 방지
         UIController.instance.SetEnableCanvasState(false);
 
         if (UserManager.Instance.getTitle == 2)
-        {
+        {   
+            fireCracker.SetTrigger("startAni"); //애니메이션 실행
+
             ObtainTitlePage.transform.GetChild(2).GetComponent<TMP_Text>().text = "Collex 입사 완료로";
             ObtainTitlePage.transform.GetChild(3).GetComponent<TMP_Text>().text =
                 "‘신입 " + UserManager.Instance.newUserInformation.userTitleNoun + "’ 칭호를 획득했어요!";
@@ -362,8 +360,11 @@ public class DontDestroyCanvas : MonoBehaviour
         {
             titleConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "확인";
             ObtainTitlePage.transform.GetChild(5).gameObject.SetActive(false);
+            
             if (getTitleCount == 1)
             {
+                fireCracker.SetTrigger("startAni"); //애니메이션 실행
+
                 nowTitle[0] = UserManager.Instance.nowGetTitle[0][0];
                 nowTitle[1] = UserManager.Instance.nowGetTitle[0][1];
                 nowTitle[2] = UserManager.Instance.nowGetTitle[0][2];
@@ -389,6 +390,12 @@ public class DontDestroyCanvas : MonoBehaviour
             else //칭호 여러개 동시 획득 시
             {
                 TitleListPage.SetActive(true);
+
+                for(int i=0;i< titleListContent.transform.childCount; i++)
+                { Destroy(titleListContent.transform.GetChild(i).gameObject); }
+
+                fireCrackerList.SetTrigger("ObtainTitleList"); //애니메이션 실행
+
                 TitleListPage.transform.GetChild(1).GetComponent<TMP_Text>().text
                     = "'" + UserManager.Instance.nowGetTitle[0][1] + "' 외 " + (getTitleCount - 1) + "개의 칭호를 획득했어요!";
                 for (int i = 0; i < getTitleCount; i++)
@@ -467,9 +474,13 @@ public class DontDestroyCanvas : MonoBehaviour
         yield return new WaitForEndOfFrame();
         UIController.instance.SetEnableCanvasState(true);
         ObtainTitlePage.SetActive(false);
+        transform.GetChild(0).gameObject.SetActive(false);
     }
-
     #endregion
+    public void AppBarHomeButton()
+    {
+        StartCoroutine(TitleToHome());
+    }
 
     public void goHome() { SceneManager.LoadScene("1_Home"); }
     public void goWriting() { SceneManager.LoadScene("2_Writing"); }

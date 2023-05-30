@@ -171,8 +171,10 @@ public class WritingManager : MonoBehaviour
         //안드로이드 뒤로가기
         if (Input.GetKey(KeyCode.Escape))
         {
-            if (!string.IsNullOrEmpty(nowInputText))
-            { thisField.GetComponent<TMP_InputField>().text = nowInputText; nowInputText = ""; }
+            if (!string.IsNullOrEmpty(nowInputText)&&thisField!=null)
+            {   thisField.GetComponent<TMP_InputField>().text = nowInputText; nowInputText = "";
+                writingContent.GetComponent<VerticalLayoutGroup>().padding.bottom = 44;
+            }
             else { cancelWritingPage.SetActive(true); }
         }
         //if (clickCount == 2) { Application.Quit(); }두번 눌렀을때 종료?

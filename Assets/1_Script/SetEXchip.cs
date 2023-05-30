@@ -35,19 +35,24 @@ public class SetEXchip : MonoBehaviour
                 if (i == UserManager.Instance.newUserInformation.kindOfJob)
                 {   JobContent[i].transform.SetSiblingIndex(4);
                     int userDetailJob = UserManager.Instance.newUserInformation.detailJob;
-                    if (userDetailJob == 5)
+                    if (userDetailJob >= 4)
                     { JobContent[i].transform.GetChild(0).SetSiblingIndex(3); }
                     else { JobContent[i].transform.GetChild(userDetailJob).SetSiblingIndex(3); }
                     
                     if (i == 1)
                     {
                         //JobContent[i].transform.GetChild(userDetailJob + 1).SetSiblingIndex(4);
-                        JobContent[i].transform.GetChild(4).GetChild(0).GetChild(0).GetChild(userDetailJob).GetComponent<Toggle>().isOn = true;
+                        if (userDetailJob >= 4)
+                        { JobContent[i].transform.GetChild(4).GetChild(0).GetChild(0).GetChild(0).GetComponent<Toggle>().isOn = true; }
+                        else
+                        { JobContent[i].transform.GetChild(4).GetChild(0).GetChild(0).GetChild(userDetailJob).GetComponent<Toggle>().isOn = true; }
                     }
                     else
                     {
-                        //JobContent[i].transform.GetChild(userDetailJob).SetSiblingIndex(3);
-                        JobContent[i].transform.GetChild(4).GetChild(userDetailJob).GetComponent<Toggle>().isOn = true;
+                        if (userDetailJob >= 4)
+                        { JobContent[i].transform.GetChild(4).GetChild(0).GetComponent<Toggle>().isOn = true; }
+                        else
+                        { JobContent[i].transform.GetChild(4).GetChild(userDetailJob).GetComponent<Toggle>().isOn = true; }
                     }
                     break;
                 }

@@ -48,7 +48,8 @@ class MakeNewProject
 
     public string myRole;
     public string prize;
-    public string episodeType;
+    //public string episodeType;
+    public List<string> EpisodeTypes = new List<string>();
     public string Summary;
     public List<string> EpisodeSituation = new List<string>();
     public List<string> EpisodeAction = new List<string>();

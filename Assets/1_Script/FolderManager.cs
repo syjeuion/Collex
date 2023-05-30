@@ -16,7 +16,6 @@ public class FolderManager : MonoBehaviour
     #region 페이지
     public GameObject FolderPage;
     public GameObject FilterPage;
-    //public GameObject RecordInPage;
     public GameObject FinishUp_1;
     public GameObject FinishUp_2;
     public GameObject FinishUp_3;
@@ -342,12 +341,12 @@ public class FolderManager : MonoBehaviour
             return;
         }
         //대표에피소드 선택 안했을때
-        if (string.IsNullOrWhiteSpace(thisProject.episodeType))
-        {
-            return;
-        }
+        //if (string.IsNullOrWhiteSpace(thisProject.episodeType))
+        //{
+        //    return;
+        //}
 
-        if(thisProject.episodeType== "특별한 에피소드가 없었어요")
+        /*if (thisProject.EpisodeTypes.Count == 1 && thisProject.EpisodeTypes[0] == "특별한 에피소드가 없었어요")
         {
             FolderPage.SetActive(false);
             //RecordInPage.SetActive(false);
@@ -355,15 +354,12 @@ public class FolderManager : MonoBehaviour
             FinishUp_2.SetActive(false);
             ReportPage.SetActive(true);
             return;
-        }
-        else
-        {
-            if (thisProject.episodeType == "계속해서 노력했지만 아쉬운 점이 많았어요") episodePositive = false;
-            else episodePositive = true;
+        }*/
 
-            FinishUp_3.SetActive(true);
-            return;
-        }
+        if (thisProject.EpisodeTypes.Count == 1 && thisProject.EpisodeTypes[0] == "계속해서 노력했지만 아쉬운 점이 많았어요") episodePositive = false;
+        else episodePositive = true;
+
+        FinishUp_3.SetActive(true);
     }
     //Role & 한줄요약 안썼을때
     GameObject selectedField;
@@ -391,7 +387,7 @@ public class FolderManager : MonoBehaviour
     {
         if(selectedField.name == "Input_My Role")
         {
-            if (!string.IsNullOrWhiteSpace(inputMyRole.text) && !string.IsNullOrWhiteSpace(thisProject.episodeType))
+            if (!string.IsNullOrWhiteSpace(inputMyRole.text))
             {
                 finishUp2NextButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray900;
             }
@@ -412,33 +408,35 @@ public class FolderManager : MonoBehaviour
     }
 
     //대표 에피소드 선택 시 글씨 색 변경
-    Toggle lastToggle;
+    //Toggle lastToggle;
     public void changeTextColorToggleGroup()
     {
-        if(lastToggle!=null)
-            lastToggle.transform.GetChild(1).GetComponent<TMP_Text>().color = gray600;
+        //if(lastToggle!=null)
+        //    lastToggle.transform.GetChild(1).GetComponent<TMP_Text>().color = gray600;
 
         GameObject thisObj = EventSystem.current.currentSelectedGameObject;
+        string thisType = thisObj.transform.GetChild(1).GetComponent<TMP_Text>().text;
         Toggle thisToggle = thisObj.GetComponent<Toggle>();
         if (thisToggle == null) return;
 
         if (thisToggle.isOn)
         {
             thisToggle.transform.GetChild(1).GetComponent<TMP_Text>().color = primary3;
-            thisProject.episodeType = thisObj.transform.GetChild(1).GetComponent<TMP_Text>().text;
+            thisProject.EpisodeTypes.Add(thisType);
         }
         else
         {
             thisToggle.transform.GetChild(1).GetComponent<TMP_Text>().color = gray600;
-            thisProject.episodeType = "";
+            if (thisProject.EpisodeTypes.Contains(thisType))
+                { thisProject.EpisodeTypes.Remove(thisType); }
         }
 
-        if (!string.IsNullOrWhiteSpace(inputMyRole.text) && !string.IsNullOrWhiteSpace(thisProject.episodeType))
-        {
-            finishUp2NextButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray900;
-        }
-        else finishUp2NextButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray200;
-        lastToggle = thisToggle;
+        //if (!string.IsNullOrWhiteSpace(inputMyRole.text) && !string.IsNullOrWhiteSpace(thisProject.episodeType))
+        //{
+        //    finishUp2NextButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray900;
+        //}
+        //else finishUp2NextButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray200;
+        //lastToggle = thisToggle;
     }
 
     #region 에피소드 선택 페이지 세팅
@@ -781,14 +779,27 @@ public class FolderManager : MonoBehaviour
             //날짜 비교
             //endedDate = new DateTime(thisProject.endedYear, thisProject.endedMonth, thisProject.endedDay);
             TimeSpan howManyDays = thisProject.endedDate - thisProject.startDate;
-            int howManyDaysInt = howManyDays.Days;
+            int howManyDaysInt = howManyDays.Days+1;
             if (howManyDaysInt > 9) RecordCount.transform.GetChild(1).GetComponent<TMP_Text>().text = "          동안";
             RecordCount.transform.GetChild(3).GetComponent<TMP_Text>().text = howManyDaysInt.ToString() + "일";
 
             //대표에피소드
             MainEpisode.SetActive(true);
             mainEpisode_none.SetActive(false);
-            MainEpisode.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = thisProject.episodeType;
+            
+            if (thisProject.EpisodeTypes.Count == 0)
+            { MainEpisode.transform.GetChild(0).GetChild(1).gameObject.SetActive(false); }
+            else 
+            {
+                MainEpisode.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = "- "+thisProject.EpisodeTypes[0];
+                for (int i = 1; i < thisProject.EpisodeTypes.Count; i++)
+                {
+                    GameObject newEpisode = Instantiate(MainEpisode.transform.GetChild(0).GetChild(1).gameObject, MainEpisode.transform.GetChild(0).transform);
+                    newEpisode.GetComponent<TMP_Text>().text = "- " + thisProject.EpisodeTypes[i];
+                }
+            }
+            
+            //MainEpisode.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = thisProject.episodeType;
             MainEpisode.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.Summary;
 
             if(thisProject.EpisodeSituation.Count==0&& thisProject.EpisodeAction.Count == 0
