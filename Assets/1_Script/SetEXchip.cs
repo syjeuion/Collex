@@ -9,7 +9,7 @@ public class SetEXchip : MonoBehaviour
 {
     public GameObject WritingManager;
     public GameObject ChangeJobPage;
-    public GameObject skeleton;
+    //public GameObject skeleton;
 
     public GameObject[] JobContent;
     public GameObject horizontalGroup;
@@ -88,6 +88,7 @@ public class SetEXchip : MonoBehaviour
                 {
                     if (ii == 0)
                     {
+                        Destroy(container.transform.GetChild(0).gameObject);
                         newHorizontalGroup = Instantiate(horizontalGroup, container.transform);
                         newHorizontalGroup.GetComponent<HorizontalLayoutGroup>().padding.top = 24;
                         newHorizontalGroup.GetComponent<HorizontalLayoutGroup>().padding.left = 16;

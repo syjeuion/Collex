@@ -65,7 +65,9 @@ public class HomeManager : MonoBehaviour
 
         //이용팁 배너
         if (!UserManager.Instance.newUserInformation.homeBanner)
-        { BannerArea.SetActive(true); }
+        { BannerArea.SetActive(true);
+            BannerArea.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.userName + "님을 위한\nCollex 이용 Tip 보러가기!";
+        }
         else { BannerArea.SetActive(false); }
 
         UserTitleManager.ActionUserTitle();

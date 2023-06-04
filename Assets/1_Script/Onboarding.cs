@@ -56,6 +56,8 @@ public class Onboarding : MonoBehaviour
     #region 앱 시작 세팅
     private void Awake()
     {
+        TouchScreenKeyboard.hideInput=true;
+
         ColorUtility.TryParseHtmlString("#EFF5FF", out primary1);
         ColorUtility.TryParseHtmlString("#408BFD", out primary3);
         ColorUtility.TryParseHtmlString("#FF3E49", out errorColor);

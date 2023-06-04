@@ -834,14 +834,22 @@ public class WritingManager : MonoBehaviour
     //public Sprite deleteIcon;
 
     //인풋 필드 삭제
+    GameObject thisObj;
     public void DeleteInputField()
     {
-        GameObject thisObj = EventSystem.current.currentSelectedGameObject;
+        thisObj = EventSystem.current.currentSelectedGameObject;
+        RealDeleteInputField();
+        //if (!string.IsNullOrEmpty(thisObj.transform.parent.parent.GetChild(1).GetComponent<TMP_InputField>().text))
+        //{ writingPage.transform.GetChild(3).gameObject.SetActive(true); }
+        //else RealDeleteInputField();
+    }
+    public void RealDeleteInputField()
+    {
         thisObj.transform.parent.parent.gameObject.SetActive(false);
         thisObj.transform.parent.parent.GetChild(1).GetComponent<TMP_InputField>().text = "";
 
         count = 0;
-        for(int i = 0; i < 6; i++)
+        for (int i = 0; i < 6; i++)
         { if (writingArea.transform.GetChild(i).gameObject.activeSelf) { count++; } }
         if (count == 0) writingArea.SetActive(false);
         StartCoroutine(WritingContentSpacing());

@@ -11,6 +11,7 @@ public class MypageUserTitle : MonoBehaviour
     public GameObject userTitleScript;
     public GameObject changeTitleText;
     public GameObject toastPopUp;
+    public TMP_Text usingGuideBannerText;
 
     public GameObject usingGuidePage;
 
@@ -21,6 +22,7 @@ public class MypageUserTitle : MonoBehaviour
     {
         if (UserManager.Instance.clickHomeBanner)
         { usingGuidePage.SetActive(true); UserManager.Instance.clickHomeBanner = false; }
+        usingGuideBannerText.text = UserManager.Instance.newUserInformation.userName + "님을 위한\nCollex 이용 Tip 보러가기!";
     }
 
     private void Update()
