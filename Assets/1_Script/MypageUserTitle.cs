@@ -38,7 +38,7 @@ public class MypageUserTitle : MonoBehaviour
                 {usingGuidePage.transform.GetChild(0).GetChild(0).GetComponent<Toggle>().isOn = true;}
         }
     }
-
+    #region 칭호 관련
     public void confirmButton()
     {
         if(userTitleScript.GetComponent<UserTitleManager>().whichTitle == 2)
@@ -90,8 +90,9 @@ public class MypageUserTitle : MonoBehaviour
         yield return new WaitForSeconds(3f);
         toastPopUp.SetActive(false);
     }
+    #endregion
 
-    //가이드 페이지
+    #region 가이드 페이지
     public void TabWritingTip()
     {
         if (EventSystem.current.currentSelectedGameObject != null)
@@ -110,4 +111,12 @@ public class MypageUserTitle : MonoBehaviour
         }
             
     }
+    #endregion
+
+    #region 환경설정
+    public void GoPersonalInformationWeb()
+    {
+        Application.OpenURL("https://www.notion.so/03a02b0487dd41d89161ee69a9f462b9?pvs=4");
+    }
+    #endregion
 }

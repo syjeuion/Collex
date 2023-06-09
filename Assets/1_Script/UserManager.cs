@@ -12,6 +12,8 @@ using Newtonsoft.Json;
 
 public class UserInformation
 {
+    public bool agreementForApp; //약관동의 체크
+
     public int isItFirst; //폴더 생성이 처음
     public int isItFirstTargetTitle; //목표칭호 설정이 처음
     public int isItFirstTargetTitlePage; //목표칭호 페이지 처음인지

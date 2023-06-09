@@ -27,6 +27,7 @@ public class SetEXchip : MonoBehaviour
     bool firstOpen = true;
     public void SetExChipPage()
     {
+        JobContent[0].transform.parent.gameObject.SetActive(true);
         JobContent[0].transform.parent.SetSiblingIndex(4);
         if (firstOpen)
         {

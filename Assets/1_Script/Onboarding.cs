@@ -17,6 +17,12 @@ public class Onboarding : MonoBehaviour
     public GameObject progressBar;
     public Image backButtonIcon;
 
+    //약관동의
+    public GameObject AgreementsPage;
+    public GameObject agreeConfirmButton;
+    public Sprite buttonDisabled;
+    public Sprite buttonEnabled;
+
     //유저 페이지 오브젝트
     public GameObject getUserName;
     public GameObject inputUserName;
@@ -73,10 +79,14 @@ public class Onboarding : MonoBehaviour
 
         StartCoroutine(WaitSplash());
     }
-    //온보딩 했으면 홈으로 바로넘어가기
+    
     IEnumerator WaitSplash()
     {
         yield return new WaitForSeconds(1.5f);
+        //약관동의 체크
+        if (UserManager.Instance.newUserInformation.agreementForApp) { AgreementsPage.SetActive(false); }
+        else { AgreementsPage.SetActive(true); }
+        //온보딩 했으면 홈으로 바로넘어가기
         if (!string.IsNullOrWhiteSpace(UserManager.Instance.newUserInformation.userName)) { goHome(); }
     }
     //PlayerPrefs 불러오는 함수
@@ -110,6 +120,37 @@ public class Onboarding : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(bookmarkData))
             UserManager.Instance.bookmarks = JsonConvert.DeserializeObject<List<string>>(bookmarkData);
         UserManager.Instance.firstOpen = false;
+    }
+    #endregion
+
+    #region 약관동의 관련
+    //체크 클릭 시 버튼 활성화
+    public void AgreeToggleCheck()
+    {
+        Toggle agreeToggle = EventSystem.current.currentSelectedGameObject.GetComponent<Toggle>();
+        if (agreeToggle.isOn)
+        {
+            agreeConfirmButton.GetComponent<Button>().interactable = true;
+            agreeConfirmButton.GetComponent<Image>().sprite = buttonEnabled;
+            agreeConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = primary1;
+        }
+        else
+        {
+            agreeConfirmButton.GetComponent<Button>().interactable = false;
+            agreeConfirmButton.GetComponent<Image>().sprite = buttonDisabled;
+            agreeConfirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_400;
+        }
+    }
+    //시작하기 버튼 클릭
+    public void AgreeConfirmButton()
+    {
+        UserManager.Instance.newUserInformation.agreementForApp = true;
+        AgreementsPage.SetActive(false);
+    }
+    //개인정보처리약관 웹페이지 이동
+    public void AgreeGoWeb()
+    {
+        Application.OpenURL("https://www.notion.so/03a02b0487dd41d89161ee69a9f462b9?pvs=4");
     }
     #endregion
 
