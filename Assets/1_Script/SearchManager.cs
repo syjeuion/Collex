@@ -37,12 +37,21 @@ public class SearchManager : MonoBehaviour
     public Sprite searchIcon;
     public Sprite deleteIcon;
 
-    
+
 
     //컬러
-    Color grayColor_BD = new Color(0.74f, 0.74f, 0.74f); //#BDBDBD
-    Color grayColor_42 = new Color(0.26f, 0.26f, 0.26f); //#424242
-    Color grayColor_E0 = new Color(0.88f, 0.88f, 0.88f); //#E0E0E0
+    Color primary3;
+    Color gray_300;
+    Color gray_400;
+    Color gray_800;
+
+    private void Awake()
+    {
+        ColorUtility.TryParseHtmlString("#408BFD", out primary3);
+        ColorUtility.TryParseHtmlString("#DDE0E3", out gray_300);
+        ColorUtility.TryParseHtmlString("#B6BBC3", out gray_400);
+        ColorUtility.TryParseHtmlString("#3C4149", out gray_800);
+    }
 
     private void Start()
     {
@@ -78,6 +87,7 @@ public class SearchManager : MonoBehaviour
             if (i == 0) newHorizontalGroup = Instantiate(horizontalGroup, parent.transform);
             
             newSearchChip = Instantiate(searchChipPrefab, newHorizontalGroup.transform);
+            newSearchChip.GetComponent<Button>().onClick.AddListener(ChipSearch);
             newSearchChip.transform.GetChild(0).GetComponent<TMP_Text>().text = sortedKey[i];
             yield return new WaitForEndOfFrame();
 
@@ -104,7 +114,7 @@ public class SearchManager : MonoBehaviour
         inputSearchKeyword.text = "";
 
         SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().sprite = searchIcon;
-        SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = grayColor_BD;
+        SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = gray_400;
         JobExperiences.transform.parent.gameObject.SetActive(true);
         ScrollView.SetActive(false);
     }
@@ -115,9 +125,9 @@ public class SearchManager : MonoBehaviour
             SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().sprite = searchIcon;
 
         if (!string.IsNullOrWhiteSpace(inputSearchKeyword.text))
-            SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = grayColor_BD;
+            SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = gray_400;
         else
-            SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = grayColor_E0;
+            SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = gray_300;
     }
 
     public void searchAndCloseIcon()
@@ -132,23 +142,25 @@ public class SearchManager : MonoBehaviour
             {
                 inputSearchKeyword.text = "";
                 SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().sprite = searchIcon;
-                SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = grayColor_BD;
+                SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = gray_400;
             }
         }
     }
 
     void letsSearch()
     {
-        SearchBar.transform.GetChild(0).gameObject.SetActive(true);
-        SearchBar.transform.GetChild(1).GetComponent<RectTransform>().sizeDelta = new Vector2(292, SearchBar.transform.GetChild(1).GetComponent<RectTransform>().sizeDelta.y);
-        SearchBar.GetComponent<HorizontalLayoutGroup>().padding.left = 4;
-        
-        SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().sprite = deleteIcon;
-        SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = grayColor_42;
-        
-        JobExperiences.transform.parent.gameObject.SetActive(false);
-        ScrollView.SetActive(true);
-        StartCoroutine(KeywordSearch());
+        StartCoroutine(KeywordSearch(inputSearchKeyword.text));
+    }
+
+    //키워드 검색
+    public void ChipSearch()
+    {
+        TMP_Text thisChip = EventSystem.current.currentSelectedGameObject.transform.GetChild(0).GetComponent<TMP_Text>();
+
+        //thisChip.color = primary3;
+        string keyword = thisChip.text;
+        inputSearchKeyword.text = keyword;
+        StartCoroutine(KeywordSearch(keyword));
     }
 
     #region 검색
@@ -156,12 +168,22 @@ public class SearchManager : MonoBehaviour
     string searchResultWriting;
     string capas;
     
-    IEnumerator KeywordSearch()
+    IEnumerator KeywordSearch(string searchWord)
     {
+        SearchBar.transform.GetChild(0).gameObject.SetActive(true);
+        SearchBar.transform.GetChild(1).GetComponent<RectTransform>().sizeDelta = new Vector2(292, SearchBar.transform.GetChild(1).GetComponent<RectTransform>().sizeDelta.y);
+        SearchBar.GetComponent<HorizontalLayoutGroup>().padding.left = 4;
+
+        SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().sprite = deleteIcon;
+        SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = gray_800;
+
+        JobExperiences.transform.parent.gameObject.SetActive(false);
+        ScrollView.SetActive(true);
+
         SearchResultContent.transform.GetChild(0).gameObject.SetActive(true);
 
-        string pattern = @inputSearchKeyword.text;
-        string replacement = "<color=#408BFD>" + inputSearchKeyword.text + "</color>";
+        string pattern = @searchWord;
+        string replacement = "<color=#408BFD>" + searchWord + "</color>";
 
         //기존 결과 리셋
         for (int i=2;i<SearchResultContent.transform.childCount;i++)
@@ -174,10 +196,10 @@ public class SearchManager : MonoBehaviour
             //해당 폴더 내 모든 기록 스캔
             foreach(string records in newProject.records.Values)
             {
-                if (records.Contains(inputSearchKeyword.text)) //해당 기록이 검색어를 포함하고 있으면
+                if (records.Contains(searchWord)) //해당 기록이 검색어를 포함하고 있으면
                 {
                     DailyRecord newRecord = JsonConvert.DeserializeObject<DailyRecord>(records);
-                    if (newRecord.title.Contains(inputSearchKeyword.text))
+                    if (newRecord.title.Contains(searchWord))
                         recordTitle = Regex.Replace(newRecord.title, pattern, replacement);
                     else
                         recordTitle = newRecord.title;
@@ -189,7 +211,7 @@ public class SearchManager : MonoBehaviour
                     for(int i=0;i<writingKeys.Count;i++)
                     {
                         searchResultWriting = "";//초기화
-                        if (newRecord.writings[writingKeys[i]].Contains(inputSearchKeyword.text)) //포함하고 있으면
+                        if (newRecord.writings[writingKeys[i]].Contains(searchWord)) //포함하고 있으면
                         {
                             searchResultWriting = Regex.Replace(newRecord.writings[writingKeys[i]], pattern, replacement);
                             break;
@@ -205,7 +227,8 @@ public class SearchManager : MonoBehaviour
                         else if (i != 0) { capas += " ・ "; }
                         capas += newRecord.capabilities[i];
                     }
-                    
+                    capas = Regex.Replace(capas, pattern, replacement);
+
                     newSearchResult = Instantiate(SearchResultField, SearchResultContent.transform);
                     newSearchResult.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = newProject.projectTitle;
                     newSearchResult.transform.GetChild(1).GetComponent<TMP_Text>().text = recordTitle;

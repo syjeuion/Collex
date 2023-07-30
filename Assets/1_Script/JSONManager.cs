@@ -22,11 +22,6 @@ class MakeNewProject
     public DateTime startDate;
     public DateTime endedDate;
     public DateTime lastRecordDate;
-    //public string startDate;
-    //public string endedDate;
-    //public int startYear; public int startMonth; public int startDay;
-    //public int endedYear; public int endedMonth; public int endedDay;
-    //public int lastRecordYear; public int lastRecordMonth; public int lastRecordDay;
 
     //"내용,날짜,등등"
     public Dictionary<string, string> records = new Dictionary<string, string>(); //기록저장소<제목,내용>

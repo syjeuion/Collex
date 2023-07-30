@@ -116,7 +116,7 @@ public class MypageUserTitle : MonoBehaviour
     #region 환경설정
     public void GoPersonalInformationWeb()
     {
-        Application.OpenURL("https://www.notion.so/03a02b0487dd41d89161ee69a9f462b9?pvs=4");
+        Application.OpenURL("https://sites.google.com/view/collex/%EA%B0%9C%EC%9D%B8%EC%A0%95%EB%B3%B4-%EC%B2%98%EB%A6%AC%EB%B0%A9%EC%B9%A8?authuser=0");
     }
     #endregion
 }

@@ -102,6 +102,7 @@ public class FolderManager : MonoBehaviour
     public GameObject ReportScript;
 
     //색상
+    Color primary1;
     Color primary3;
     Color gray200;
     Color gray300;
@@ -112,6 +113,7 @@ public class FolderManager : MonoBehaviour
 
     private void Awake()
     {
+        ColorUtility.TryParseHtmlString("#EFF5FF", out primary1);
         ColorUtility.TryParseHtmlString("#408BFD", out primary3);
         ColorUtility.TryParseHtmlString("#EBEDEF", out gray200);
         ColorUtility.TryParseHtmlString("#DDE0E3", out gray300);
@@ -141,6 +143,7 @@ public class FolderManager : MonoBehaviour
         {
             defaultTitles.Add(keys);
         }
+        StartCoroutine(SetExFilder());
 
         //폴더 정보
         titleArea.transform.GetChild(0).GetComponent<TMP_Text>().text = thisProject.projectType;
@@ -181,49 +184,89 @@ public class FolderManager : MonoBehaviour
     }
 
     #region 필터
+    //필터 탭
+    //[SerializeField] GameObject[] filterTab;
+    [SerializeField] GameObject[] filterPanels;
+    public void ClickFilterTab()
+    {
+        int siblingIndex = EventSystem.current.currentSelectedGameObject.transform.GetSiblingIndex();
+        filterPanels[siblingIndex].transform.SetSiblingIndex(5);
+        filterTabs.transform.GetChild(siblingIndex).GetComponent<Toggle>().isOn = true;
+    }
     //오픈 필터 페이지
     public void openFilter()
     {
+        FilterPage.transform.SetSiblingIndex(1);
         FilterPage.SetActive(true);
-        GameObject currentObject = EventSystem.current.currentSelectedGameObject;
-        if (currentObject.name == "Filter_capability") { filterTabs.transform.GetChild(1).GetComponent<Toggle>().isOn = true; }
-        if (currentObject.name == "Filter_hashtag") { filterTabs.transform.GetChild(2).GetComponent<Toggle>().isOn = true; }
+        ClickFilterTab();
+    }
+
+    //경험 필터 칩 로드
+    public GameObject panel_Experience;
+    public GameObject filterChip;
+    GameObject newFilterChip;
+    IEnumerator SetExFilder()
+    {
+        for(int i = 0; i < panel_Experience.transform.childCount; i++)
+        {
+            Destroy(panel_Experience.transform.GetChild(i).gameObject);
+        }
+
+        List<string> keys = new List<string>();
+        foreach (string key in thisProject.experiences.Keys) keys.Add(key);
+        for(int i=0; i < keys.Count; i++)
+        {
+            if (i == 0) { newHorizontalGroup = Instantiate(horizontalGroup, panel_Experience.transform); }
+            newFilterChip = Instantiate(filterChip, newHorizontalGroup.transform);
+            newFilterChip.transform.GetChild(1).GetComponent<TMP_Text>().text = keys[i];
+            newFilterChip.GetComponent<Toggle>().onValueChanged.AddListener(UpdateFilter);
+            yield return new WaitForEndOfFrame();
+
+            newHorizontalGroup.GetComponent<HorizontalLayoutGroup>().spacing = 7.9f;
+            newHorizontalGroup.GetComponent<HorizontalLayoutGroup>().spacing = 8f;
+            yield return new WaitForEndOfFrame();
+
+            if (newHorizontalGroup.GetComponent<RectTransform>().sizeDelta.x >= 350)
+            {
+                newHorizontalGroup = Instantiate(horizontalGroup, panel_Experience.transform);
+                newFilterChip.transform.SetParent(newHorizontalGroup.transform);
+            }
+        }
     }
 
     //선택된 필터 리스트들
+    List<string> filterEx = new List<string>();
     List<string> filterCapa = new List<string>();
     List<string> filterHash = new List<string>();
+    List<string> filterQues = new List<string>();
+
     //필터 업데이트
-    public void UpdateFilter()
+    public void UpdateFilter(bool check)
     {
         GameObject currentObject = EventSystem.current.currentSelectedGameObject;
-        TMP_Text newFilter = currentObject.transform.GetChild(1).GetComponent<TMP_Text>();
+        bool isOn = currentObject.GetComponent<Toggle>().isOn;
+        TMP_Text filterText = currentObject.transform.GetChild(1).GetComponent<TMP_Text>();
 
-        if (currentObject.GetComponent<Toggle>().isOn == true)
+        if (currentObject.transform.parent.parent.name == "Panel_Experience")
+        { CheckFilterLists(filterEx, isOn, filterText); }
+        else if (currentObject.transform.parent.name == "Panel_Capability")
+        { CheckFilterLists(filterCapa, isOn, filterText); }
+        else if (currentObject.transform.parent.name == "Panel_Hashtag")
+        { CheckFilterLists(filterHash, isOn, filterText); }
+        else if (currentObject.transform.parent.name == "Panel_Question")
+        { CheckFilterLists(filterQues, isOn, filterText); }
+    }
+    void CheckFilterLists(List<string> list, bool check, TMP_Text filterText)
+    {
+        if (check)
         {
-            newFilter.color = primary3;
-            if (currentObject.transform.parent.name == "Panel_Capability")
-            {
-                if (!filterCapa.Contains(newFilter.text)) { filterCapa.Add(newFilter.text); }
-            }
-            if (currentObject.transform.parent.name == "Panel_Hashtag")
-            {
-                if (!filterHash.Contains(newFilter.text)) { filterHash.Add(newFilter.text); }
-            }
-
+            filterText.color = primary3;
+            if (!list.Contains(filterText.text)) { list.Add(filterText.text); }
         }
-        if (currentObject.GetComponent<Toggle>().isOn == false)
+        else
         {
-            newFilter.color = gray700;
-
-            if (currentObject.transform.parent.name == "Panel_Capability")
-            {
-                if (filterCapa.Contains(newFilter.text)) { filterCapa.Remove(newFilter.text); }
-            }
-            if (currentObject.transform.parent.name == "Panel_Hashtag")
-            {
-                if (filterHash.Contains(newFilter.text)) { filterHash.Remove(newFilter.text); }
-            }
+            filterText.color = gray700;
+            if (list.Contains(filterText.text)) { list.Remove(filterText.text); }
         }
     }
 
@@ -231,10 +274,10 @@ public class FolderManager : MonoBehaviour
     public void outputFilter()
     {
         //선택된 필터가 없는 경우
-        if (filterCapa.Count <= 0 && filterHash.Count <= 0)
+        if (filterEx.Count <= 0 &&filterCapa.Count <= 0 && filterHash.Count <= 0 && filterQues.Count <= 0)
         {
             StartCoroutine(outputRecords(defaultTitles));
-            explanation.GetComponent<Text>().text = "아직 작성된 기록이 없네요!\n나의 직무 경험을 바로 기록해 볼까요?";
+            explanation.GetComponent<TMP_Text>().text = "아직 작성된 기록이 없네요!\n나의 직무 경험을 바로 기록해 볼까요?";
         }
         else
         {
@@ -243,6 +286,11 @@ public class FolderManager : MonoBehaviour
             {
                 string getRecordData = thisProject.records[keys];
                 DailyRecord newDailyRecord = JsonConvert.DeserializeObject<DailyRecord>(getRecordData);
+                foreach(string ex in filterEx)
+                {
+                    if(newDailyRecord.experiences.Contains(ex) && !filterTitles.Contains(keys))
+                    { filterTitles.Add(keys); }
+                }
                 foreach (string capa in filterCapa)
                 {
                     if (newDailyRecord.capabilities.Contains(capa) && !filterTitles.Contains(keys))
@@ -253,15 +301,55 @@ public class FolderManager : MonoBehaviour
                     if (newDailyRecord.hashtags.Contains(hash) && !filterTitles.Contains(keys))
                     { filterTitles.Add(keys); }
                 }
+                foreach (string ques in filterQues)
+                {
+                    if (newDailyRecord.writings[ques]!="" && !filterTitles.Contains(keys))
+                    { filterTitles.Add(keys); }
+                }
             }
+            StartCoroutine(ChangeFilterChips(filterEx, filterChips[0], filters[0]));
+            StartCoroutine(ChangeFilterChips(filterCapa, filterChips[1], filters[1]));
+            StartCoroutine(ChangeFilterChips(filterHash, filterChips[2], filters[2]));
+            StartCoroutine(ChangeFilterChips(filterQues, filterChips[3], filters[3]));
 
             StartCoroutine(outputRecords(filterTitles));
             explanation.GetComponent<TMP_Text>().text = "조건에 해당하는 기록이 없어요.\n다른 조건으로 다시 설정해 보세요!";
         }
-        FilterPage.SetActive(false);
+        FilterPage.transform.SetSiblingIndex(0);
     }
-    #endregion
-
+    //폴더 페이지에서 필터 상태 변경
+    [SerializeField] GameObject[] filterChips;
+    string[] filters = new string[4] { "경험", "역량", "#태그", "질문종류" };
+    [SerializeField] Sprite[] filterSprites; //0,1:배경, 2,3:아이콘
+    IEnumerator ChangeFilterChips(List<string> thisList,GameObject thisFilterChip,string filter)
+    {
+        if (thisList.Count <= 0)
+        {
+            thisFilterChip.GetComponent<Image>().sprite = filterSprites[0];
+            thisFilterChip.GetComponent<HorizontalLayoutGroup>().reverseArrangement = false;
+            thisFilterChip.transform.GetChild(0).GetComponent<TMP_Text>().text = filter;
+            thisFilterChip.transform.GetChild(0).GetComponent<TMP_Text>().color = gray700;
+            thisFilterChip.transform.GetChild(1).GetComponent<Image>().sprite = filterSprites[2];
+            thisFilterChip.transform.GetChild(1).GetComponent<Image>().color = gray300;
+        }
+        else
+        {
+            thisFilterChip.GetComponent<Image>().sprite = filterSprites[1];
+            thisFilterChip.GetComponent<HorizontalLayoutGroup>().reverseArrangement = true;
+            if (thisList.Count == 1)
+            { thisFilterChip.transform.GetChild(0).GetComponent<TMP_Text>().text = thisList[0]; }
+            else
+            { thisFilterChip.transform.GetChild(0).GetComponent<TMP_Text>().text = thisList[0] + " 외 " + (thisList.Count - 1).ToString(); }
+            
+            thisFilterChip.transform.GetChild(0).GetComponent<TMP_Text>().color = primary1;
+            thisFilterChip.transform.GetChild(1).GetComponent<Image>().sprite = filterSprites[3];
+            thisFilterChip.transform.GetChild(1).GetComponent<Image>().color = primary1;
+        }
+        yield return new WaitForEndOfFrame();
+        thisFilterChip.transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 7.9f;
+        thisFilterChip.transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 8;
+    }
+    
     //기록리스트 출력
     public IEnumerator outputRecords(List<string> titles)
     {
@@ -306,8 +394,13 @@ public class FolderManager : MonoBehaviour
             explanation.SetActive(false);
         else
             explanation.SetActive(true);
+
+        yield return new WaitForEndOfFrame();
+        filterChips[0].transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 7.9f;
+        filterChips[0].transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 8;
     }
-    
+    #endregion
+
     //기록 상세페이지
     public void clickRecord()
     {
