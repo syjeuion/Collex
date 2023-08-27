@@ -448,7 +448,6 @@ public class WritingManager : MonoBehaviour
     {
         newDailyRecord.title = inputTitle.text;
         newDailyRecord.date = todayDate.text;
-        //newDailyRecord.date = UserManager.Instance.calendarDate;
         newDailyRecord.writings["활동내용"] = inputPractice.text;
 
         if (!string.IsNullOrWhiteSpace(inputProblem.text))
@@ -497,6 +496,35 @@ public class WritingManager : MonoBehaviour
         forcount = 5; saveToggle(Capabilities);
         forcount = 12; saveToggle(Hashtags);
 
+        //기록 요일 저장
+        UserManager.Instance.newUserInformation.recordDayOfWeek[getDayOfWeek()]++;
+        //이번달 기록 개수 저장
+        if(UserManager.Instance.newUserInformation.recordCountedMonth != DateTime.Now.Month)
+        {
+            UserManager.Instance.newUserInformation.recordCountedMonth = DateTime.Now.Month;
+            UserManager.Instance.newUserInformation.recordCountThisMonth=1;
+        }
+        else
+        {
+            UserManager.Instance.newUserInformation.recordCountThisMonth++;
+        }
+
+        //이번주 기록 개수 저장
+        if (DateTime.Now.DayOfWeek == DayOfWeek.Monday && thisProject.lastRecordDate != DateTime.Now)
+        {
+            if((DateTime.Now - thisProject.lastRecordDate).Days > 14){
+                UserManager.Instance.newUserInformation.recordCountLastWeek = 0;
+            }
+            else{
+                UserManager.Instance.newUserInformation.recordCountLastWeek = UserManager.Instance.newUserInformation.recordCountThisWeek;
+            }
+            UserManager.Instance.newUserInformation.recordCountThisWeek = 1;
+        }
+        else
+        {
+            UserManager.Instance.newUserInformation.recordCountThisWeek++;
+        }
+
         //선택된 경험 폴더 딕셔너리에 저장
         if (newDailyRecord.experiences.Count != 0)
         {
@@ -510,9 +538,8 @@ public class WritingManager : MonoBehaviour
             UserManager.Instance.checkTitle("앞", 12, 14);
             UserManager.Instance.checkTitle("앞", 13, 14);
         }
-        
 
-        //폴더에 기록 저장
+        //폴더에 기록 저장newDailyRecord.dateTime = DateTime.Now; //날짜저장
         string newDailyRecordJSON = JsonConvert.SerializeObject(newDailyRecord);
 
         if (newDailyRecord.title == UserManager.Instance.pushedRecord) //기록 수정하기에서 제목 안바꿨을때
@@ -585,6 +612,22 @@ public class WritingManager : MonoBehaviour
                 UserManager.Instance.checkTitle("뒤", 16, 16);
             }
         }
+    }
+    //오늘 요일
+    private string getDayOfWeek()
+    {
+        string day="";
+        switch (DateTime.Now.DayOfWeek)
+        {
+            case DayOfWeek.Monday: day = "월"; break;
+            case DayOfWeek.Tuesday: day = "화"; break;
+            case DayOfWeek.Wednesday: day = "수"; break;
+            case DayOfWeek.Thursday: day = "목"; break;
+            case DayOfWeek.Friday: day = "금"; break;
+            case DayOfWeek.Saturday: day = "토"; break;
+            case DayOfWeek.Sunday: day = "일"; break;
+        }
+        return day;
     }
     #endregion
 
