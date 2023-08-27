@@ -51,8 +51,12 @@ public class HomeManager : MonoBehaviour
     public Sprite[] myProfileImgs;
 
     //응원문구
-    string[] cheerUpMessage = new string[]
-    { "Collex에 입사한 걸 환영해요!","꾸준한 기록으로 목표를 이루어 볼까요?", "오늘도 기록을 해볼까요?", "끝까지 최선을 다해봐요!", "열심히 잘하고 있어요!" };
+    string[] cheerUpMessage = new string[] {
+        "Collex에 입사한 걸 환영해요!",
+        "꾸준한 기록으로 목표를 이루어 볼까요?",
+        "오늘도 기록을 해볼까요?",
+        "끝까지 최선을 다해봐요!",
+        "열심히 잘하고 있어요!" };
 
     
     #region start_홈화면 셋팅
@@ -309,7 +313,7 @@ public class HomeManager : MonoBehaviour
         {
             if (Types.transform.GetChild(i).GetComponent<Toggle>().isOn)
             {
-                UserManager.Instance.projectType[Types.transform.GetChild(i).name] += 1;
+                UserManager.Instance.newUserInformation.projectType[Types.transform.GetChild(i).name] += 1;
                 newProject.projectType = Types.transform.GetChild(i).name;
             }
         }

@@ -60,6 +60,7 @@ class DailyRecord
     public string title;
     //public DateTime date;
     public string date;
+    public DateTime dateTime;
     //public string dateDT;
     public List<string> experiences = new List<string>();
     

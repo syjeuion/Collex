@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 //using System.IO;
 using UnityEngine;
 //using UnityEngine.UI;
@@ -26,6 +27,7 @@ public class UserInformation
     public string userName; //유저 이름
     public int kindOfJob; //직군
     public int detailJob; //직무
+    public DateTime userSignUpDate; //가입 날짜
 
     public int userProfileImgNumber; //설정된 프로필 사진 뭔지
     public string companyName; //목표 회사
@@ -38,6 +40,17 @@ public class UserInformation
     public string[] targetTitleNoun = new string[5];
 
     public int[] titleCheck = new int[30]; //type별 획득 개수
+
+    public int recordCountedMonth; //저장하고 있는 '이번달'이 언젠지
+    public int recordCountThisMonth;//이번달 기록 개수
+    public int recordCountThisWeek;//이번주 기록 개수
+    public int recordCountLastWeek;//저번주 기록 개수
+
+    public Dictionary<string, int> projectType = new Dictionary<string, int>() //폴더 타입
+        { {"프로젝트",0 },{"인턴십",0 },{"공모전",0 } };
+
+    public Dictionary<string, int> recordDayOfWeek= new Dictionary<string, int>() //기록 작성 요일
+        { {"월",0},{"화",0},{"수",0},{"목",0},{"금",0},{"토",0},{"일",0} };
 }
 
 public class UserManager : Singleton<UserManager>
@@ -97,8 +110,7 @@ public class UserManager : Singleton<UserManager>
 
     #region 기록 정보
     public Dictionary<string, string> folders = new Dictionary<string, string>(); //폴더저장소<제목,내용>
-    public Dictionary<string, int> projectType = new Dictionary<string, int>()
-        { {"프로젝트",0 },{"인턴십",0 },{"공모전",0 } };
+    
     public Dictionary<string, int> Allcapabilites = new Dictionary<string, int>() //전체 역량 수 - 리포트
         { {"커뮤니케이션능력",0},{"리더십",0},{"문제해결능력",0},{"통찰력",0},{"팀워크",0} };
     public Dictionary<string, int> AllExperiences = new Dictionary<string, int>(); //전체 경험 수 - 검색
