@@ -93,6 +93,9 @@ public class GoogleSigninManager : MonoBehaviour
             AddToInformation("Email = " + task.Result.Email);
             AddToInformation("Google ID Token = " + task.Result.IdToken);
             AddToInformation("Email = " + task.Result.Email);
+            //print("UserAuthCode: " + task.Result.AuthCode);
+            //print("UserGetHashCode: " + task.Result.GetHashCode());
+            //print("UserId: " + task.Result.UserId);
             SignInWithGoogleOnFirebase(task.Result.IdToken);
         }
     }
@@ -111,6 +114,7 @@ public class GoogleSigninManager : MonoBehaviour
             }
             else
             {
+                //성공시 실행
                 AddToInformation("Sign In Successful.");
                 SigninPage.SetActive(false);
             }

@@ -82,3 +82,42 @@ class Episode
     public string content;
     public string date;
 }
+
+//유저 DB 데이터 구조
+class UserDB
+{
+    //기본 정보
+    public string userEmail;
+    public string userName;
+    public string userTitle;
+    public string userJob;
+    //사원증 정보
+    public string userWishCompany;
+    public int userProfileImg;
+    //기록 정보
+    public int totalFolderCount;
+    public int projectFolderCount;
+    public int contestFolderCount;
+    public int internshipFolderCount;
+    public List<string> topThreeExperiences = new List<string>();
+    public List<string> topThreeCapabilities = new List<string>();
+
+    //친구 리스트
+    public List<FriendDB> friendsList = new List<FriendDB>();
+}
+
+//친구 리스트 데이터 구조
+class FriendDB
+{
+    //기본 정보
+    public string userEmail;
+    public string userName;
+    public string userTitle;
+    public string userJob;
+}
+
+////유저 이름 중복 체크 UserNameList 데이터 구조
+//class UserNameList
+//{
+//    public Dictionary<string, string> userNameList = new Dictionary<string, string>(); 
+//}

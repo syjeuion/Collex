@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
 using TMPro;
+using Firebase.Database;
 
 public class Onboarding : MonoBehaviour
 {
@@ -48,6 +49,9 @@ public class Onboarding : MonoBehaviour
     int UserJobIndex=7; //직군
     int UserDetailJobIndex=5; //직무
 
+    //유저 이름 중복 방지 리스트 UserNameList
+    List<string> userNameList = new List<string>();
+
     //사용 컬러
     Color primary1;
     Color primary3;
@@ -78,7 +82,10 @@ public class Onboarding : MonoBehaviour
         if (UserManager.Instance.firstOpen) {  GetPlayerPrefs(); }
 
         StartCoroutine(WaitSplash());
+
+        
     }
+    
     
     IEnumerator WaitSplash()
     {
@@ -123,6 +130,7 @@ public class Onboarding : MonoBehaviour
     }
     #endregion
 
+
     #region 약관동의 관련
     //체크 클릭 시 버튼 활성화
     public void AgreeToggleCheck()
@@ -146,6 +154,7 @@ public class Onboarding : MonoBehaviour
     {
         UserManager.Instance.newUserInformation.agreementForApp = true;
         AgreementsPage.SetActive(false);
+        getUserNameList();
     }
     //개인정보처리약관 웹페이지 이동
     public void AgreeGoWeb()
@@ -309,6 +318,7 @@ public class Onboarding : MonoBehaviour
     public void OnSelectInputName()
     {
         inputUserName.transform.GetChild(1).gameObject.SetActive(true);
+        inputUserName.transform.GetChild(3).gameObject.SetActive(false);
         inputUserName.transform.GetChild(1).GetComponent<Image>().color = primary3;
         inputUserName.transform.GetChild(2).GetComponent<TMP_Text>().color = primary3;
     }
@@ -326,7 +336,7 @@ public class Onboarding : MonoBehaviour
             confirmButton.GetComponent<Image>().color = gray_200;
             confirmButton.transform.GetChild(0).GetComponent<TMP_Text>().color = gray_500;
         }
-        else if(inputLength<=10)
+        else if (inputLength <= 10)
         {
             confirmButton.GetComponent<Button>().interactable = true;
             confirmButton.GetComponent<Image>().color = primary3;
@@ -338,6 +348,8 @@ public class Onboarding : MonoBehaviour
             inputUserName.transform.GetChild(1).GetComponent<Image>().color = errorColor;
             inputUserName.transform.GetChild(2).GetComponent<TMP_Text>().color = errorColor;
         }
+
+
     }
     public void OnDeselectInputName()
     {
@@ -345,14 +357,62 @@ public class Onboarding : MonoBehaviour
         inputUserName.transform.GetChild(2).GetComponent<TMP_Text>().color = gray_500;
     }
     //이름 저장
-    public void SaveUserName()
+    private void SaveUserName()
     {
-        UserName = inputUserName.GetComponent<TMP_InputField>().text;
         onboardingGuidePage.SetActive(true);
         onboardingUserPage.SetActive(false);
         guideMessage.text = "좋아요, "+UserName+"님!\n저희 팀에서 어떤 업무를 담당할지 아시죠?";
         StartCoroutine(ChangeProgressBar(true, 40*4, 40*5));
         countStep = 4;
+    }
+
+    //이름 중복 체크 - 리스트 받아오기
+    public void getUserNameList()
+    {
+        DatabaseReference userNameDB = FirebaseDatabase.DefaultInstance.GetReference("userNameList");
+        userNameDB.GetValueAsync().ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError("checkNameOverlap Error");
+            }
+            else if (task.IsCompleted)
+            {
+                DataSnapshot snapshot = task.Result;
+                foreach (var user in snapshot.Children)
+                {
+                    Debug.Log(user.Key);
+                    userNameList.Add(user.Key);
+                }
+            }
+        });
+    }
+    //이름 중복 체크 후 이름 저장
+    public void checkNameOverlap()
+    {
+        //getUserNameList();
+        UserName = inputUserName.GetComponent<TMP_InputField>().text;
+        if (userNameList.Contains(UserName))
+        {
+            inputUserName.transform.GetChild(1).gameObject.SetActive(true);
+            inputUserName.transform.GetChild(1).GetComponent<Image>().color = errorColor;
+            inputUserName.transform.GetChild(3).gameObject.SetActive(true);
+        }
+        else
+        {
+            SaveUserName(); //이름 저장
+            //userNameList.Add(userName);
+            DatabaseReference userNameDB = FirebaseDatabase.DefaultInstance.GetReference("userNameList");
+            Dictionary<string, object> newUserName = new Dictionary<string, object>();
+            newUserName.Add(UserName, UserName);
+            userNameDB.UpdateChildrenAsync(newUserName).ContinueWith(task =>
+            {
+                if (task.IsCompleted)
+                {
+                    Debug.Log("update user name completed");
+                }
+            });
+        }
     }
     #endregion
 
