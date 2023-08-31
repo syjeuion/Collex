@@ -23,11 +23,8 @@ public class OverallReportManager : MonoBehaviour
     public GameObject page_overallReport;
 
     //내부 변수
-    string[] home_descriptions = new string[] {
-        "아직 기록하지 않았어요!",
-        "2주 이상 기록하지 않았어요!",
-        "2주 이상 기록해 보세요!"};
-    int totalRecordCount = UserManager.Instance.newUserInformation.titleCheck[7];
+    string[] home_descriptions;
+    int totalRecordCount;
     int thisWeekRecordCount;
     int dayGap;
 
@@ -37,6 +34,13 @@ public class OverallReportManager : MonoBehaviour
     private void Awake()
     {
         ColorUtility.TryParseHtmlString("#408BFD", out primary3);
+
+        home_descriptions = new string[] {
+        "아직 기록하지 않았어요!",
+        "2주 이상 기록하지 않았어요!",
+        "2주 이상 기록해 보세요!"};
+
+        totalRecordCount = UserManager.Instance.newUserInformation.titleCheck[7];
     }
 
     void Start()

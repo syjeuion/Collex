@@ -13,6 +13,8 @@ using Newtonsoft.Json;
 
 public class UserInformation
 {
+    public string userEmail; //유저 Email
+
     public bool agreementForApp; //약관동의 체크
 
     public int isItFirst; //폴더 생성이 처음
