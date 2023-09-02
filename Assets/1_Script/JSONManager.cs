@@ -87,30 +87,26 @@ class Episode
 class UserDB
 {
     //기본 정보
-    public string userEmail;
-    public string userName;
-    public string userTitle;
-    public string userJob;
+    public UserDefaultInformation userInformation = new UserDefaultInformation();
     //사원증 정보
     public string userWishCompany;
-    public int userProfileImg;
     //기록 정보
     public int totalFolderCount;
     public int projectFolderCount;
     public int contestFolderCount;
     public int internshipFolderCount;
-    public List<string> topThreeExperiences = new List<string>();
-    public List<string> topThreeCapabilities = new List<string>();
+    public string[] topThreeExperiences = new string[3];
+    public string[] topThreeCapabilities = new string[3];
 
     //친구 리스트
-    public List<FriendDB> friendsList = new List<FriendDB>();
+    public List<UserDefaultInformation> friendsList = new List<UserDefaultInformation>();
 }
 
 //친구 리스트 데이터 구조
-class FriendDB
+class UserDefaultInformation
 {
     //기본 정보
-    public string userEmail;
+    public int userProfileImg;
     public string userName;
     public string userTitle;
     public string userJob;

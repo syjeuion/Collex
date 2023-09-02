@@ -12,6 +12,7 @@ using Firebase.Database;
 public class Onboarding : MonoBehaviour
 {
     //페이지
+    public GameObject SignInPage;
     public GameObject QuitAlertPage;
     public GameObject onboardingUserPage;
     public GameObject onboardingGuidePage;
@@ -90,11 +91,15 @@ public class Onboarding : MonoBehaviour
     IEnumerator WaitSplash()
     {
         yield return new WaitForSeconds(1.5f);
+        //로그인 체크
+        //if(!string.IsNullOrEmpty(UserManager.Instance.newUserInformation.userEmail)) { SignInPage.SetActive(false); }
+        //else { SignInPage.SetActive(true); }
         //약관동의 체크
-        if (UserManager.Instance.newUserInformation.agreementForApp) { AgreementsPage.SetActive(false); }
+        if (UserManager.Instance.newUserInformation.agreementForApp) { AgreementsPage.SetActive(false);}
         else { AgreementsPage.SetActive(true); }
         //온보딩 했으면 홈으로 바로넘어가기
         if (!string.IsNullOrWhiteSpace(UserManager.Instance.newUserInformation.userName)) { goHome(); }
+        else { getUserNameList(); } //온보딩 시작 시 userDB 불러오기
     }
     //PlayerPrefs 불러오는 함수
     public void GetPlayerPrefs()
@@ -154,7 +159,6 @@ public class Onboarding : MonoBehaviour
     {
         UserManager.Instance.newUserInformation.agreementForApp = true;
         AgreementsPage.SetActive(false);
-        getUserNameList();
     }
     //개인정보처리약관 웹페이지 이동
     public void AgreeGoWeb()
@@ -367,10 +371,11 @@ public class Onboarding : MonoBehaviour
     }
 
     //이름 중복 체크 - 리스트 받아오기
-    public void getUserNameList()
+    private void getUserNameList()
     {
-        DatabaseReference userNameDB = FirebaseDatabase.DefaultInstance.GetReference("userNameList");
-        userNameDB.GetValueAsync().ContinueWith(task =>
+        DatabaseReference userDB = FirebaseDatabase.DefaultInstance.GetReference("userList");
+        print("getUserList");
+        userDB.GetValueAsync().ContinueWith(task =>
         {
             if (task.IsFaulted)
             {
@@ -381,7 +386,6 @@ public class Onboarding : MonoBehaviour
                 DataSnapshot snapshot = task.Result;
                 foreach (var user in snapshot.Children)
                 {
-                    Debug.Log(user.Key);
                     userNameList.Add(user.Key);
                 }
             }
@@ -401,17 +405,7 @@ public class Onboarding : MonoBehaviour
         else
         {
             SaveUserName(); //이름 저장
-            //userNameList.Add(userName);
-            DatabaseReference userNameDB = FirebaseDatabase.DefaultInstance.GetReference("userNameList");
-            Dictionary<string, object> newUserName = new Dictionary<string, object>();
-            newUserName.Add(UserName, UserName);
-            userNameDB.UpdateChildrenAsync(newUserName).ContinueWith(task =>
-            {
-                if (task.IsCompleted)
-                {
-                    Debug.Log("update user name completed");
-                }
-            });
+            
         }
     }
     #endregion
@@ -525,6 +519,26 @@ public class Onboarding : MonoBehaviour
             UserManager.Instance.newUserInformation.userTitleNoun = "개발자";
         }
 
+        //온보딩 정보 파이어베이스에 저장
+        DatabaseReference userNameDB = FirebaseDatabase.DefaultInstance.GetReference("userList");
+
+        UserDB newUserData = new UserDB();
+        newUserData.userInformation.userName = UserName;
+        newUserData.userInformation.userJob = JobList[UserManager.Instance.newUserInformation.kindOfJob, UserManager.Instance.newUserInformation.detailJob];
+        newUserData.userInformation.userTitle = UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
+
+        string newUserDataStr = JsonConvert.SerializeObject(newUserData);
+
+        userNameDB.Child(UserName).SetRawJsonValueAsync(newUserDataStr).ContinueWith(task =>
+        {
+            if (task.IsCompleted)
+            {
+                Debug.Log("update user name completed");
+            }
+        });
+
+
+        //칭호 획득창 띄우기
         UserManager.Instance.getTitle = 2;
     }
 

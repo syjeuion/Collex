@@ -17640,7 +17640,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1863750303
 RectTransform:
   m_ObjectHideFlags: 0
@@ -18025,6 +18025,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 404fb36c337604562ab4968c24eef2a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SignInPage: {fileID: 1863750302}
   QuitAlertPage: {fileID: 1793609991}
   onboardingUserPage: {fileID: 692923978}
   onboardingGuidePage: {fileID: 1421629200}

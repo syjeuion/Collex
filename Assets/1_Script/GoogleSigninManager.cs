@@ -96,11 +96,11 @@ public class GoogleSigninManager : MonoBehaviour
             //print("UserAuthCode: " + task.Result.AuthCode);
             //print("UserGetHashCode: " + task.Result.GetHashCode());
             //print("UserId: " + task.Result.UserId);
-            SignInWithGoogleOnFirebase(task.Result.IdToken);
+            SignInWithGoogleOnFirebase(task.Result.IdToken, task.Result.Email);
         }
     }
 
-    private void SignInWithGoogleOnFirebase(string idToken)
+    private void SignInWithGoogleOnFirebase(string idToken, string userEmail)
     {
         Credential credential = GoogleAuthProvider.GetCredential(idToken, null);
 
@@ -116,6 +116,7 @@ public class GoogleSigninManager : MonoBehaviour
             {
                 //성공시 실행
                 AddToInformation("Sign In Successful.");
+                UserManager.Instance.newUserInformation.userEmail = userEmail;
                 SigninPage.SetActive(false);
             }
         });

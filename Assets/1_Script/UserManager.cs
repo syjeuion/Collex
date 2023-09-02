@@ -241,12 +241,5 @@ public class UserManager : Singleton<UserManager>
         string bookmarkData = JsonConvert.SerializeObject(bookmarks);
         PlayerPrefs.SetString("BookmarkData", bookmarkData);
     }
-
-    //PlayerPrefs 리셋-초기화 
-    private void Reset()
-    {
-        PlayerPrefs.DeleteAll();
-        print("Reset");
-    }
     #endregion
 }
