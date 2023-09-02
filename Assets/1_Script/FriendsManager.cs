@@ -28,6 +28,9 @@ public class FriendsManager : MonoBehaviour
 
     //유저 이름 리스트
     private List<string> userNameList = new List<string>();
+    //현재 유저 이름
+    string thisUserName;
+    UserDB thisUserDB;
 
     //데이터베이스 레퍼런스
     DatabaseReference userListDB;
@@ -47,6 +50,22 @@ public class FriendsManager : MonoBehaviour
             //// ValueEventListener를 사용하여 데이터 읽어오기
             //playerReference.ValueChanged += HandlePlayerDataChange;
         });
+        //현재 유저의 정보 받아오기
+        thisUserName = UserManager.Instance.newUserInformation.userName;
+        DatabaseReference thisUserReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(thisUserName);
+        thisUserReference.GetValueAsync().ContinueWith(task =>
+        {
+            if (task.IsFaulted) { Debug.Log("getThisUserDB : IsFaulted"); }
+            else if (task.IsCompleted)
+            {
+                thisUserDB = JsonConvert.DeserializeObject<UserDB>(task.Result.GetRawJsonValue());
+            }
+        });
+        //친구 신청 있으면 알람 띄워주기
+        if (thisUserDB.friendsRequestList.Count > 0)
+        {
+
+        }
 
         //유저 이름 저장 리스트
         userListDB = FirebaseDatabase.DefaultInstance.GetReference("userList");
@@ -86,7 +105,7 @@ public class FriendsManager : MonoBehaviour
             }
             else if (task.IsCompleted)
             {
-                //DataSnapshot snapshot = task.Result;
+                //!!!UserDefaultInformation만 받아오는 형태로 수정하기!!!
                 UserDB newUserData = JsonConvert.DeserializeObject<UserDB>(task.Result.GetRawJsonValue());
                 List<UserDefaultInformation> usersFriendsList = new List<UserDefaultInformation>();
                 print(newUserData.friendsList.Count);
@@ -108,16 +127,18 @@ public class FriendsManager : MonoBehaviour
         });
     }
 
+    #region 친구 이름 검색하기
     //친구 이름으로 검색하기
     UserDefaultInformation searchedUser;
+    string searchedName;
     public async void SearchUserName()
     {
-        string searchedName = searchText.text;
+        searchedName = searchText.text;
         if (userNameList.Contains(searchedName) && searchedName!=UserManager.Instance.newUserInformation.userName)
         {
             try
             {
-                searchedUser = await GetUserInformationAsync(searchedName); //데이터 받아올 때까지 기다렸다가
+                searchedUser = await GetUserInformationAsync(); //데이터 받아올 때까지 기다렸다가
                 SetSearchedUserUI(searchedUser); //받아오면 UI 출력하기
             }
             catch (Exception e) { Debug.LogError("Error: " + e.Message); } //예외처리
@@ -125,7 +146,7 @@ public class FriendsManager : MonoBehaviour
         else { print("해당하는 유저 이름이 없습니다."); }
     }
     //유저 정보 데이터 받아오기
-    private async Task<UserDefaultInformation> GetUserInformationAsync(string searchedName)
+    private async Task<UserDefaultInformation> GetUserInformationAsync()
     {
         var taskResult = await userListDB.Child(searchedName).Child("userInformation").GetValueAsync();
         searchedUser = JsonConvert.DeserializeObject<UserDefaultInformation>(taskResult.GetRawJsonValue());
@@ -134,7 +155,6 @@ public class FriendsManager : MonoBehaviour
     //UI처리
     private void SetSearchedUserUI(UserDefaultInformation searchedUserInfo)
     {
-        print(searchedUser.userName);
         //newFriendProfile = Instantiate(prefabs_singleFriendProfile, scrollView_content_searchedfriend.transform);
         //newFriendProfile.transform.GetChild(0).GetComponent<Image>().sprite = array_profileImg[searchedUserInfo.userProfileImg];
         //newFriendProfile.transform.GetChild(1).GetComponent<TMP_Text>().text = searchedUserInfo.userTitle + " · " + searchedUserInfo.userJob;
@@ -144,6 +164,31 @@ public class FriendsManager : MonoBehaviour
         searchedFriendProfile.transform.GetChild(1).GetComponent<TMP_Text>().text = searchedUserInfo.userTitle + " · " + searchedUserInfo.userJob;
         searchedFriendProfile.transform.GetChild(2).GetComponent<TMP_Text>().text = searchedUserInfo.userName;
     }
+    #endregion
 
-    //푸시 보내기
+    //친구 요청 보내기
+    DatabaseReference searchedUserDBReference;
+    public async void sendRequestFriend()
+    {
+        UserDB userDB = await GetSearchedUserDB();
+        UpdateSearchedUserDB(userDB);
+    }
+    //검색된 유저의 DB 받아와서 현재 유저 정보 넣기
+    private async Task<UserDB> GetSearchedUserDB()
+    {
+        searchedUserDBReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(searchedName);
+        var taskResult = await searchedUserDBReference.GetValueAsync();
+        UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        userDB.friendsRequestList.Add(thisUserDB.userInformation);
+        return userDB;
+    }
+    //다시 검색된 유저 DB 업데이트 하기
+    private void UpdateSearchedUserDB(UserDB userDB)
+    {
+        string newFriendRequestListJson = JsonConvert.SerializeObject(userDB);
+        searchedUserDBReference.SetRawJsonValueAsync(newFriendRequestListJson).ContinueWith(task =>
+        {
+            if (task.IsCompleted) { Debug.Log("UpdateSearchedUserDB : IsCompleted"); }
+        });
+    }
 }

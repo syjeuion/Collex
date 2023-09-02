@@ -98,6 +98,8 @@ class UserDB
     public string[] topThreeExperiences = new string[3];
     public string[] topThreeCapabilities = new string[3];
 
+    //요청온 친구 리스트
+    public List<UserDefaultInformation> friendsRequestList = new List<UserDefaultInformation>();
     //친구 리스트
     public List<UserDefaultInformation> friendsList = new List<UserDefaultInformation>();
 }
