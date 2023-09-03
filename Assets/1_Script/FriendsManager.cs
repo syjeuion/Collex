@@ -25,6 +25,8 @@ public class FriendsManager : MonoBehaviour
 
     //입사동기 페이지
     public GameObject friendsPage;
+    public GameObject menuArea;
+    public GameObject dialog_edit_friend_dialog;
     public GameObject content_friendsList;
     public GameObject prefabs_singleFriendProfile;
     GameObject newFriendProfile;
@@ -46,7 +48,7 @@ public class FriendsManager : MonoBehaviour
     UserDB thisUserDB;
 
     //데이터베이스 레퍼런스
-    DatabaseReference userListDB;
+    //DatabaseReference userListDB;
     DatabaseReference thisUserReference;
 
     //시작 시 firebase 초기화
@@ -94,7 +96,7 @@ public class FriendsManager : MonoBehaviour
     //전체 유저 이름 리스트 불러와서 저장
     private void GetUserNameList()
     {
-        userListDB = FirebaseDatabase.DefaultInstance.GetReference("userList");
+        DatabaseReference userListDB = FirebaseDatabase.DefaultInstance.GetReference("userList");
         userListDB.GetValueAsync().ContinueWith(task =>
         {
             if (task.IsFaulted) { Debug.LogError("getUserNameList Error"); }
@@ -135,9 +137,10 @@ public class FriendsManager : MonoBehaviour
                 newFriendProfile.transform.GetChild(0).GetComponent<Image>().sprite = array_profileImg[newUserInfo.userProfileImg];
                 newFriendProfile.transform.GetChild(1).GetComponent<TMP_Text>().text = newUserInfo.userTitle + " · " + newUserInfo.userJob;
                 newFriendProfile.transform.GetChild(2).GetComponent<TMP_Text>().text = newUserInfo.userName;
+                newFriendProfile.transform.GetChild(3).GetComponent<Button>().onClick.AddListener(SetDialogEditFriend);
             }
         }
-        else { friendsPage.transform.GetChild(1).gameObject.SetActive(true); }
+        else { friendsPage.transform.GetChild(2).gameObject.SetActive(true); }
         DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
     }
 
@@ -276,6 +279,12 @@ public class FriendsManager : MonoBehaviour
         notificationPage.SetActive(true);
         CheckRequestFriend();
     }
+    //알림 페이지 닫기
+    public void CloseNotificationPage()
+    {
+        notificationPage.SetActive(false);
+        home_icon_notification.sprite = selector_icon_notification[0];
+    }
     //요청 온 친구 리스트 띄우기
     private async void CheckRequestFriend()
     {
@@ -289,12 +298,12 @@ public class FriendsManager : MonoBehaviour
             foreach (RequestFriendInfo requestFriend in thisUserDB.friendsRequestList)
             {
                 newAlarmRequestFriend = Instantiate(prefabs_alarm_requestFriend, content_notificationList.transform);
-                newAlarmRequestFriend.transform.GetChild(1).GetComponent<TMP_Text>().text = requestFriend.requestDate;
-                newAlarmRequestFriend.transform.GetChild(2).GetChild(0).GetComponent<Image>().sprite = array_profileImg[requestFriend.userInformation.userProfileImg];
-                newAlarmRequestFriend.transform.GetChild(2).GetChild(1).GetComponent<TMP_Text>().text = requestFriend.userInformation.userJob;
-                newAlarmRequestFriend.transform.GetChild(2).GetChild(2).GetComponent<TMP_Text>().text = requestFriend.userInformation.userName;
-                newAlarmRequestFriend.transform.GetChild(3).GetComponent<Button>().onClick.AddListener(UpdateFriendsList);
-                newAlarmRequestFriend.transform.GetChild(4).GetComponent<Button>().onClick.AddListener(DeleteRequestFriend);
+                //newAlarmRequestFriend.transform.GetChild(1).GetComponent<TMP_Text>().text = requestFriend.requestDate;
+                newAlarmRequestFriend.transform.GetChild(0).GetChild(0).GetComponent<Image>().sprite = array_profileImg[requestFriend.userInformation.userProfileImg];
+                newAlarmRequestFriend.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = requestFriend.userInformation.userJob;
+                newAlarmRequestFriend.transform.GetChild(0).GetChild(2).GetComponent<TMP_Text>().text = requestFriend.userInformation.userName;
+                newAlarmRequestFriend.transform.GetChild(1).GetComponent<Button>().onClick.AddListener(UpdateFriendsList);
+                newAlarmRequestFriend.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(DeleteRequestFriend);
             }
         }
     }
@@ -337,6 +346,60 @@ public class FriendsManager : MonoBehaviour
     }
     #endregion
 
+    #region 입사동기 목록 편집하기
+    //편집화면으로 세팅
+    public void SetEditFriendsList()
+    {
+        //메뉴 버튼 비활성화
+        menuArea.SetActive(false);
+        //앱바 교체
+        friendsPage.transform.GetChild(5).gameObject.SetActive(true);
+        //리스트에 - 버튼 활성화
+        for(int i=0; i<content_friendsList.transform.childCount; i++)
+        {
+            content_friendsList.transform.GetChild(i).GetChild(3).gameObject.SetActive(true);
+        }
+    }
+    //디폴트 화면으로 되돌리기 //편집 완료
+    public void ReturnDefaultFriendPage()
+    {
+        //앱바 교체
+        friendsPage.transform.GetChild(5).gameObject.SetActive(false);
+        //리스트에 - 버튼 비활성화
+        for (int i = 0; i < content_friendsList.transform.childCount; i++)
+        {
+            content_friendsList.transform.GetChild(i).GetChild(3).gameObject.SetActive(false);
+        }
+        //모든 친구가 삭제되었으면 empty area 활성화
+        if (content_friendsList.transform.childCount == 0)
+        {
+            friendsPage.transform.GetChild(2).gameObject.SetActive(true);
+        }
+        //서버 업데이트
+        UpdateUserDB(thisUserName,thisUserDB);
+    }
+    //리스트에서 삭제 아이콘 클릭 시 삭제 dialog 오픈
+    GameObject selectedUserProfileObj;
+    int selectedUserIndex;
+    private void SetDialogEditFriend()
+    {
+        selectedUserProfileObj = EventSystem.current.currentSelectedGameObject;
+        selectedUserIndex = selectedUserProfileObj.transform.parent.GetSiblingIndex();
+
+        dialog_edit_friend_dialog.transform.parent.gameObject.SetActive(true);
+        dialog_edit_friend_dialog.transform.GetChild(1).GetComponent<TMP_Text>().text =
+            $"'{thisUserDB.friendsList[selectedUserIndex].userName}'님을 입사동기 목록에서 삭제할까요?";
+    }
+    //dialog 삭제하기
+    public void DialogDeleteFriend()
+    {
+        thisUserDB.friendsList.RemoveAt(selectedUserIndex);
+        Destroy(selectedUserProfileObj.transform.parent.gameObject);
+        dialog_edit_friend_dialog.transform.parent.gameObject.SetActive(false);
+    }
+    #endregion
+
+    #region 데이터 처리
     //DB에서 유저 data 가져오기
     private async Task<UserDB> GetUserDB(String userName)
     {
@@ -361,4 +424,5 @@ public class FriendsManager : MonoBehaviour
     //    searchedUser = JsonConvert.DeserializeObject<UserDefaultInformation>(taskResult.GetRawJsonValue());
     //    return searchedUser;
     //}
+    #endregion
 }
