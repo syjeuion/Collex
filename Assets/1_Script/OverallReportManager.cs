@@ -231,8 +231,9 @@ public class OverallReportManager : MonoBehaviour
     {
         for (int i = 0; i < sortedKeys.Count; i++)
         {
-            if (sortedValues[i] == 0) { sortedValues[i] = 10; }
-            else { sortedValues[i] *= 10; }
+            //if (sortedValues[i] == 0) { sortedValues[i] = 10; }
+            //else { sortedValues[i] *= 10; }
+            sortedValues[i] *= 10;
 
             if (sortedKeys[i] == "월")
             {

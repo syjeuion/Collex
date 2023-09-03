@@ -99,7 +99,7 @@ class UserDB
     public string[] topThreeCapabilities = new string[3];
 
     //요청온 친구 리스트
-    public List<UserDefaultInformation> friendsRequestList = new List<UserDefaultInformation>();
+    public List<RequestFriendInfo> friendsRequestList = new List<RequestFriendInfo>();
     //친구 리스트
     public List<UserDefaultInformation> friendsList = new List<UserDefaultInformation>();
 }
@@ -112,6 +112,12 @@ class UserDefaultInformation
     public string userName;
     public string userTitle;
     public string userJob;
+}
+//친구 요청 데이터 구조
+class RequestFriendInfo
+{
+    public string requestDate;
+    public UserDefaultInformation userInformation = new UserDefaultInformation();
 }
 
 ////유저 이름 중복 체크 UserNameList 데이터 구조
