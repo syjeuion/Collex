@@ -30,8 +30,10 @@ public class FriendsManager : MonoBehaviour
     GameObject newFriendProfile;
 
     //입사동기 추가하기(검색)
+    public GameObject friendSearchPage;
     public TMP_InputField searchText;
     public GameObject searchedFriendProfile;
+    public GameObject snackBar;
 
     //프로필이미지
     public Sprite[] array_profileImg;
@@ -66,21 +68,7 @@ public class FriendsManager : MonoBehaviour
         thisUserName = UserManager.Instance.newUserInformation.userName;
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
         getThisUserDB();
-
-        //유저 이름 저장 리스트
-        userListDB = FirebaseDatabase.DefaultInstance.GetReference("userList");
-        userListDB.GetValueAsync().ContinueWith(task =>
-        {
-            if (task.IsFaulted) { Debug.LogError("getUserNameList Error"); }
-            else if (task.IsCompleted)
-            {
-                DataSnapshot snapshot = task.Result;
-                foreach(var userName in snapshot.Children)
-                {
-                    userNameList.Add(userName.Key);
-                }
-            }
-        });
+        
     }
     //현재 유저의 정보 받아오기
     private async void getThisUserDB()
@@ -90,6 +78,8 @@ public class FriendsManager : MonoBehaviour
             thisUserDB = await GetUserDB(thisUserName);
             //친구 신청 있으면 알람 띄워주기
             SelectorNotificationIcon();
+            //전체 유저 이름 리스트 불러와서 저장
+            GetUserNameList();
         }
         catch(Exception e) { Debug.LogError("Error: " + e.Message); }
     }
@@ -101,6 +91,24 @@ public class FriendsManager : MonoBehaviour
         else { home_icon_notification.sprite = selector_icon_notification[0]; }
         DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
     }
+    //전체 유저 이름 리스트 불러와서 저장
+    private void GetUserNameList()
+    {
+        userListDB = FirebaseDatabase.DefaultInstance.GetReference("userList");
+        userListDB.GetValueAsync().ContinueWith(task =>
+        {
+            if (task.IsFaulted) { Debug.LogError("getUserNameList Error"); }
+            else if (task.IsCompleted)
+            {
+                DataSnapshot snapshot = task.Result;
+                foreach (var userName in snapshot.Children)
+                {
+                    print(userName.Key);
+                    userNameList.Add(userName.Key);
+                }
+            }
+        });
+    }
 
     //입사동기 페이지 오픈
     public void OpenFriendsPage()
@@ -108,7 +116,6 @@ public class FriendsManager : MonoBehaviour
         friendsPage.SetActive(true);
         GetFriendsList();
     }
-
     //친구 리스트 불러오기
     private async void GetFriendsList()
     {
@@ -116,11 +123,12 @@ public class FriendsManager : MonoBehaviour
         thisUserDB = await GetUserDB(thisUserName);
         if (thisUserDB.friendsList!=null&& thisUserDB.friendsList.Count > 0)
         {
+
             //기존 리스트 초기화
             for(int i=0; i< content_friendsList.transform.childCount; i++)
             { Destroy(content_friendsList.transform.GetChild(i).gameObject); }
 
-            friendsPage.transform.GetChild(1).gameObject.SetActive(false);
+            friendsPage.transform.GetChild(2).gameObject.SetActive(false); //empty page 삭제
             foreach(UserDefaultInformation newUserInfo in thisUserDB.friendsList)
             {
                 newFriendProfile = Instantiate(prefabs_singleFriendProfile, content_friendsList.transform);
@@ -134,64 +142,130 @@ public class FriendsManager : MonoBehaviour
     }
 
     #region 친구 이름 검색하기
+    //검색 페이지 오픈
+    public void OpenSearchPage()
+    {
+        friendSearchPage.SetActive(true);
+        //검색바 리셋
+        friendSearchPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text = "";
+        //검색 결과 리셋
+        searchedFriendProfile.SetActive(false);
+    }
     //친구 이름으로 검색하기
-    UserDefaultInformation searchedUser;
+    //UserDefaultInformation searchedUser;
     string searchedName;
     public async void SearchUserName()
     {
         searchedName = searchText.text;
         if (userNameList.Contains(searchedName) && searchedName!=UserManager.Instance.newUserInformation.userName)
         {
+            print("searched");
+            friendSearchPage.transform.GetChild(3).gameObject.SetActive(false);
             DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
             try
             {
-                searchedUser = await GetUserInformationAsync(searchedName); //데이터 받아올 때까지 기다렸다가
-                SetSearchedUserUI(searchedUser); //받아오면 UI 출력하기
+                //searchedUser = await GetUserInformationAsync(searchedName); //데이터 받아올 때까지 기다렸다가
+                UserDB userDB = await GetUserDB(searchedName);
+
+                SetSearchedUserUI(userDB); //받아오면 UI 출력하기
             }
             catch (Exception e) { Debug.LogError("Error: " + e.Message); } //예외처리
         }
-        else { print("해당하는 유저 이름이 없습니다."); }
+        else {
+            print("fail");
+            searchedFriendProfile.SetActive(false);
+            friendSearchPage.transform.GetChild(3).gameObject.SetActive(true);
+        }
     }
     
     //UI처리
-    private void SetSearchedUserUI(UserDefaultInformation searchedUserInfo)
+    private void SetSearchedUserUI(UserDB userDB)
     {
         searchedFriendProfile.SetActive(true);
-        searchedFriendProfile.transform.GetChild(0).GetComponent<Image>().sprite = array_profileImg[searchedUserInfo.userProfileImg];
-        searchedFriendProfile.transform.GetChild(1).GetComponent<TMP_Text>().text = searchedUserInfo.userTitle + " · " + searchedUserInfo.userJob;
-        searchedFriendProfile.transform.GetChild(2).GetComponent<TMP_Text>().text = searchedUserInfo.userName;
+        //이미 요청 보낸 유저면 취소 버튼 뜨게
+        bool alreadyRequest = false;
+        for(int i=0; i<userDB.friendsRequestList.Count; i++)
+        {
+            if (userDB.friendsRequestList[i].userInformation.userName == thisUserName)
+            { alreadyRequest = true; }
+        }
+        if (alreadyRequest)
+        {
+            searchedFriendProfile.transform.GetChild(3).GetChild(0).GetComponent<TMP_Text>().text = "취소";
+        }
+        else { searchedFriendProfile.transform.GetChild(3).GetChild(0).GetComponent<TMP_Text>().text = "추가"; }
+
+        UserDefaultInformation userInfo = userDB.userInformation;
+
+        searchedFriendProfile.transform.GetChild(0).GetComponent<Image>().sprite = array_profileImg[userInfo.userProfileImg];
+        searchedFriendProfile.transform.GetChild(1).GetComponent<TMP_Text>().text = userInfo.userTitle + " · " + userInfo.userJob;
+        searchedFriendProfile.transform.GetChild(2).GetComponent<TMP_Text>().text = userInfo.userName;
         DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
     }
     #endregion
 
     #region 친구 요청 보내기
     //친구 요청 보내기
-    DatabaseReference searchedUserDBReference;
-    public async void sendRequestFriend()
+    public void FriendAddOrCancel()
     {
-        UserDB userDB = await GetSearchedUserDB();
-        UpdateSearchedUserDB(userDB);
+        GameObject button = EventSystem.current.currentSelectedGameObject;
+        TMP_Text btnText = button.transform.GetChild(0).GetComponent<TMP_Text>();
+        print(btnText.text);
+        if(btnText.text == "추가")
+        {
+            SendRequestFriend();
+            btnText.text = "취소";
+        }
+        else
+        {
+            CancelRequestFriend();
+            btnText.text = "추가";
+        }
     }
-    //검색된 유저의 DB 받아와서 현재 유저 정보 넣기
-    private async Task<UserDB> GetSearchedUserDB()
+    //추가 버튼
+    private async void SendRequestFriend()
     {
-        searchedUserDBReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(searchedName);
-        var taskResult = await searchedUserDBReference.GetValueAsync();
-        UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        //snackBar 띄우기
+        StartCoroutine(SetSnackBar());
+
+        //검색된 유저의 DB 받아오기
+        print("next");
+        UserDB userDB = await GetUserDB(searchedName);
+
+        //현재 유저 정보 넣기
         RequestFriendInfo newRequestFriendInfo = new RequestFriendInfo();
         newRequestFriendInfo.requestDate = DateTime.Now.ToString("yyyy.MM.dd");
         newRequestFriendInfo.userInformation = thisUserDB.userInformation;
         userDB.friendsRequestList.Add(newRequestFriendInfo);
-        return userDB;
+
+        //다시 검색된 유저 DB 업데이트 하기
+        UpdateUserDB(searchedName, userDB);
     }
-    //다시 검색된 유저 DB 업데이트 하기
-    private void UpdateSearchedUserDB(UserDB userDB)
+    IEnumerator SetSnackBar()
     {
-        string newFriendRequestListJson = JsonConvert.SerializeObject(userDB);
-        searchedUserDBReference.SetRawJsonValueAsync(newFriendRequestListJson).ContinueWith(task =>
+        snackBar.SetActive(true);
+        snackBar.transform.GetChild(0).GetComponent<TMP_Text>().text =
+            searchedName + "님에게 입사동기를 신청했어요!\n상대가 수락하면 랭킹에서 볼 수 있어요.";
+        yield return new WaitForSeconds(3f);
+        snackBar.SetActive(false);
+    }
+    //취소 버튼
+    private async void CancelRequestFriend()
+    {
+        //검색된 유저의 DB 받아오기
+        UserDB userDB = await GetUserDB(searchedName);
+
+        //현재 유저 정보 빼기
+        //userDB.friendsRequestList.RemoveAt(userDB.friendsRequestList.Count - 1); //마지막에 추가된 유저 빼기
+        for(int i=0; i<userDB.friendsRequestList.Count; i++)
         {
-            if (task.IsCompleted) { Debug.Log("UpdateSearchedUserDB : IsCompleted"); }
-        });
+            print(userDB.friendsRequestList[i].userInformation.userName);
+            if(userDB.friendsRequestList[i].userInformation.userName == thisUserName)
+            { userDB.friendsRequestList.RemoveAt(i); }
+        }
+
+        //다시 검색된 유저 DB 업데이트 하기
+        UpdateUserDB(searchedName, userDB);
     }
     #endregion
 
@@ -203,8 +277,9 @@ public class FriendsManager : MonoBehaviour
         CheckRequestFriend();
     }
     //요청 온 친구 리스트 띄우기
-    private void CheckRequestFriend()
+    private async void CheckRequestFriend()
     {
+        thisUserDB = await GetUserDB(thisUserName);
         if (thisUserDB.friendsRequestList.Count > 0)
         {
             //기존 리스트 초기화
@@ -219,6 +294,7 @@ public class FriendsManager : MonoBehaviour
                 newAlarmRequestFriend.transform.GetChild(2).GetChild(1).GetComponent<TMP_Text>().text = requestFriend.userInformation.userJob;
                 newAlarmRequestFriend.transform.GetChild(2).GetChild(2).GetComponent<TMP_Text>().text = requestFriend.userInformation.userName;
                 newAlarmRequestFriend.transform.GetChild(3).GetComponent<Button>().onClick.AddListener(UpdateFriendsList);
+                newAlarmRequestFriend.transform.GetChild(4).GetComponent<Button>().onClick.AddListener(DeleteRequestFriend);
             }
         }
     }
@@ -231,17 +307,31 @@ public class FriendsManager : MonoBehaviour
         int thisObjIndex = thisObj.transform.GetSiblingIndex();
         UserDefaultInformation newFriendInfo = thisUserDB.friendsRequestList[thisObjIndex].userInformation;
         thisUserDB.friendsList.Add(newFriendInfo);
+
         //기존 request list에서 해당 유저 정보 삭제
         thisUserDB.friendsRequestList.RemoveAt(thisObjIndex);
+
         //현재 유저 DB 업데이트
         UpdateUserDB(thisUserName, thisUserDB);
 
         //요청한 유저의 DB에 현재 유저 정보 추가
         UserDB friendDB = await GetUserDB(newFriendInfo.userName);
+        friendDB.friendsList.Add(thisUserDB.userInformation);
         UpdateUserDB(newFriendInfo.userName, friendDB);
 
-        
+        Destroy(thisObj); //알람 삭제
+    }
+    //거절 시 친구 요청 리스트에서 삭제
+    private void DeleteRequestFriend()
+    {
+        GameObject thisObj = EventSystem.current.currentSelectedGameObject.transform.parent.gameObject;
 
+        //기존 request list에서 해당 유저 정보 삭제
+        int thisObjIndex = thisObj.transform.GetSiblingIndex();
+        thisUserDB.friendsRequestList.RemoveAt(thisObjIndex);
+
+        //현재 유저 DB 업데이트
+        UpdateUserDB(thisUserName, thisUserDB);
 
         Destroy(thisObj); //알람 삭제
     }
@@ -265,10 +355,10 @@ public class FriendsManager : MonoBehaviour
     }
 
     //DB에서 유저 기본 정보만 가져오기
-    private async Task<UserDefaultInformation> GetUserInformationAsync(String userName)
-    {
-        var taskResult = await userListDB.Child(userName).Child("userInformation").GetValueAsync();
-        searchedUser = JsonConvert.DeserializeObject<UserDefaultInformation>(taskResult.GetRawJsonValue());
-        return searchedUser;
-    }
+    //private async Task<UserDefaultInformation> GetUserInformationAsync(String userName)
+    //{
+    //    var taskResult = await userListDB.Child(userName).Child("userInformation").GetValueAsync();
+    //    searchedUser = JsonConvert.DeserializeObject<UserDefaultInformation>(taskResult.GetRawJsonValue());
+    //    return searchedUser;
+    //}
 }
