@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Linq;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,6 +9,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using TMPro;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
+using Firebase.Database;
 
 public class WritingManager : MonoBehaviour
 {
@@ -580,7 +583,53 @@ public class WritingManager : MonoBehaviour
         //폴더 다시 JSON으로 변환
         string newFolderData = JsonConvert.SerializeObject(thisProject);
         UserManager.Instance.folders[thisProject.projectTitle] = newFolderData;
+
+        //파이어베이스 저장
+        DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
+        UpdateRecordInfo();
+    }
+    private async void UpdateRecordInfo()
+    {
+        string userName = UserManager.Instance.newUserInformation.userName;
+        UserDB userDB = await GetUserDB(userName);
+
+        //경험
+        userDB.topThreeExperiences = SortDictionary(UserManager.Instance.AllExperiences);
+        userDB.topThreeCapabilities = SortDictionary(UserManager.Instance.Allcapabilites);
+
+        UpdateUserDB(userName, userDB);
+
+        //끝나면 폴더로 이동
+        DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
         goFolder();
+    }
+    //딕셔너리 내림차순 정렬
+    private string[] SortDictionary(Dictionary<string,int> dic)
+    {
+        Dictionary<string, int> sortedDic = dic.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+
+        //키 리스트
+        List<string> sortedKeys = new List<string>();
+        foreach (string key in sortedDic.Keys) sortedKeys.Add(key);
+
+        string[] sortedArr = new string[3];
+
+        if (sortedKeys.Count < 3)
+        {
+            for(int i = 0; i < sortedKeys.Count; i++)
+            {
+                sortedArr[i] = sortedKeys[i];
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                sortedArr[i] = sortedKeys[i];
+            }
+        }
+        
+        return sortedArr;
     }
 
     //딕셔너리에 저장하는 함수
@@ -986,6 +1035,25 @@ public class WritingManager : MonoBehaviour
         else writingArea.SetActive(true);
         addInputFieldContainer.transform.parent.gameObject.SetActive(false);
         StartCoroutine(WritingContentSpacing());
+    }
+    #endregion
+
+    #region 파이어베이스 realTimeDB
+    //DB에서 유저 data 가져오기
+    private async Task<UserDB> GetUserDB(string userName)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        var taskResult = await dataReference.GetValueAsync();
+        UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        return userDB;
+    }
+
+    //DB에 유저 data 저장하기
+    private async void UpdateUserDB(string userName, UserDB userDB)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        string userDBstr = JsonConvert.SerializeObject(userDB);
+        await dataReference.SetRawJsonValueAsync(userDBstr);
     }
     #endregion
 

@@ -6,6 +6,9 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Networking;
 using TMPro;
+using System.Threading.Tasks;
+using Firebase.Database;
+using Newtonsoft.Json;
 
 public class UserTitleManager : MonoBehaviour
 {
@@ -601,7 +604,41 @@ public class UserTitleManager : MonoBehaviour
             UserManager.Instance.selectedNoun = selectedNounData[0];
         }
         UserTitlePage.SetActive(false);
+
+        //파이어베이스 업데이트
+        UpdateUserTitle(selectedModiData[0], selectedNounData[0]);
     }
+    private async void UpdateUserTitle(string modi, string noun)
+    {
+        string userName = UserManager.Instance.newUserInformation.userName;
+        UserDB userDB = await GetUserDB(userName);
+
+        string userTitle = modi;
+        if (!string.IsNullOrEmpty(noun)) { userTitle += " " + noun; }
+        userDB.userInformation.userTitle = userTitle;
+
+        UpdateUserDB(userName, userDB);
+    }
+
+    #region 파이어베이스 realTimeDB
+    //DB에서 유저 data 가져오기
+    private async Task<UserDB> GetUserDB(string userName)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        var taskResult = await dataReference.GetValueAsync();
+        UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        return userDB;
+    }
+
+    //DB에 유저 data 저장하기
+    private async void UpdateUserDB(string userName, UserDB userDB)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        string userDBstr = JsonConvert.SerializeObject(userDB);
+        await dataReference.SetRawJsonValueAsync(userDBstr);
+    }
+    #endregion
+
 
     //툴팁
     IEnumerator toolTipCoroutine(GameObject toolTip)

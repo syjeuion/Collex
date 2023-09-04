@@ -526,7 +526,7 @@ public class Onboarding : MonoBehaviour
         newUserData.userInformation.userName = UserName;
         newUserData.userInformation.userJob = JobList[UserManager.Instance.newUserInformation.kindOfJob, UserManager.Instance.newUserInformation.detailJob];
         newUserData.userInformation.userTitle = UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
-
+        
         string newUserDataStr = JsonConvert.SerializeObject(newUserData);
 
         userNameDB.Child(UserName).SetRawJsonValueAsync(newUserDataStr).ContinueWith(task =>

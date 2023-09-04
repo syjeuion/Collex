@@ -90,7 +90,7 @@ class UserDB
     public UserDefaultInformation userInformation = new UserDefaultInformation();
     //사원증 정보
     public string userWishCompany;
-    public int idcardColor =3;
+    public int idcardColor = 3;
     //기록 정보
     public int totalFolderCount;
     public int projectFolderCount;

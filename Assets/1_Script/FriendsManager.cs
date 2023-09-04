@@ -92,18 +92,23 @@ public class FriendsManager : MonoBehaviour
     //현재 유저의 정보 받아오기
     private async void getThisUserDB()
     {
-        try
-        {
-            thisUserDB = await GetUserDB(thisUserName);
-            //친구 신청 있으면 알람 띄워주기
-            SelectorNotificationIcon();
-            //전체 유저 이름 리스트 불러와서 저장
-            GetUserNameList();
-        }
-        catch(Exception e)
-        {   Debug.LogError("Error: " + e.Message);
-            DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
-        }
+        //try
+        //{
+        //    thisUserDB = await GetUserDB(thisUserName);
+        //    //친구 신청 있으면 알람 띄워주기
+        //    SelectorNotificationIcon();
+        //    //전체 유저 이름 리스트 불러와서 저장
+        //    GetUserNameList();
+        //}
+        //catch(Exception e)
+        //{   Debug.LogError("Error: " + e.Message);
+        //    DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+        //}
+        thisUserDB = await GetUserDB(thisUserName);
+        //친구 신청 있으면 알람 띄워주기
+        SelectorNotificationIcon();
+        //전체 유저 이름 리스트 불러와서 저장
+        GetUserNameList();
     }
     //알림 아이콘
     private void SelectorNotificationIcon()
@@ -221,7 +226,7 @@ public class FriendsManager : MonoBehaviour
         if (userNameList.Contains(searchedName) && searchedName!=UserManager.Instance.newUserInformation.userName)
         {
             print("searched");
-            friendSearchPage.transform.GetChild(3).gameObject.SetActive(false);
+            friendSearchPage.transform.GetChild(2).gameObject.SetActive(false);
             DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
             try
             {
@@ -358,6 +363,7 @@ public class FriendsManager : MonoBehaviour
         thisUserDB = await GetUserDB(thisUserName);
         if (thisUserDB.friendsRequestList.Count > 0)
         {
+            notificationPage.transform.GetChild(2).gameObject.SetActive(false);
             //기존 리스트 초기화
             for (int i = 0; i < content_notificationList.transform.childCount; i++)
             { Destroy(content_notificationList.transform.GetChild(i).gameObject); }
@@ -372,6 +378,10 @@ public class FriendsManager : MonoBehaviour
                 newAlarmRequestFriend.transform.GetChild(1).GetComponent<Button>().onClick.AddListener(UpdateFriendsList);
                 newAlarmRequestFriend.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(DeleteRequestFriend);
             }
+        }
+        else
+        {
+            notificationPage.transform.GetChild(2).gameObject.SetActive(true);
         }
     }
     //수락 시 친구 리스트 업데이트
@@ -397,6 +407,7 @@ public class FriendsManager : MonoBehaviour
         UpdateUserDB(newFriendInfo.userName, friendDB);
 
         Destroy(thisObj); //알람 삭제
+        CheckNotiEmpty();
     }
     //거절 시 친구 요청 리스트에서 삭제
     private void DeleteRequestFriend()
@@ -411,6 +422,15 @@ public class FriendsManager : MonoBehaviour
         UpdateUserDB(thisUserName, thisUserDB);
 
         Destroy(thisObj); //알람 삭제
+        CheckNotiEmpty();
+    }
+    //알림 비워져 있으면 empty area 띄우기
+    private void CheckNotiEmpty()
+    {
+        if (thisUserDB.friendsRequestList.Count == 0)
+        {
+            notificationPage.transform.GetChild(2).gameObject.SetActive(true);
+        }
     }
     #endregion
 
@@ -548,16 +568,25 @@ public class FriendsManager : MonoBehaviour
 
     #region 데이터 처리
     //DB에서 유저 data 가져오기
-    private async Task<UserDB> GetUserDB(String userName)
+    private async Task<UserDB> GetUserDB(string userName)
     {
+        UserDB userDB = new UserDB();
         DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
-        var taskResult = await dataReference.GetValueAsync();
-        UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        try
+        {
+            var taskResult = await dataReference.GetValueAsync();
+            userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error: " + e.Message);
+            DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+        }
         return userDB;
     }
 
-    //DB에 유저 data 저장하기
-    private async void UpdateUserDB(String userName, UserDB userDB)
+        //DB에 유저 data 저장하기
+        private async void UpdateUserDB(string userName, UserDB userDB)
     {
         DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
         string userDBstr = JsonConvert.SerializeObject(userDB);

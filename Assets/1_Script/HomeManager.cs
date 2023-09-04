@@ -9,6 +9,8 @@ using System.IO;
 using System;
 using UnityEngine.EventSystems;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
+using Firebase.Database;
 
 
 public class HomeManager : MonoBehaviour
@@ -327,7 +329,25 @@ public class HomeManager : MonoBehaviour
 
         folderSetting(); //리스트 출력
 
+        //파이어베이스 업데이트
+        UpdateFolderCount();
     }
+    private async void UpdateFolderCount()
+    {
+        string userName = UserManager.Instance.newUserInformation.userName;
+        UserDB userDB = await GetUserDB(userName);
+
+        int contestCount = UserManager.Instance.newUserInformation.projectType["공모전"];
+        int projectCount = UserManager.Instance.newUserInformation.projectType["프로젝트"];
+        int internshipCount = UserManager.Instance.newUserInformation.projectType["인턴십"];
+        userDB.totalFolderCount = contestCount + projectCount + internshipCount;
+        userDB.contestFolderCount = contestCount;
+        userDB.projectFolderCount = projectCount;
+        userDB.internshipFolderCount = internshipCount;
+
+        UpdateUserDB(userName, userDB);
+    }
+
     #endregion
     #endregion
 
@@ -432,6 +452,25 @@ public class HomeManager : MonoBehaviour
         yield return new WaitForSeconds(3f);
         toastPopUp.SetActive(false);
     }
+
+    #region 파이어베이스 realTimeDB
+    //DB에서 유저 data 가져오기
+    private async Task<UserDB> GetUserDB(string userName)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        var taskResult = await dataReference.GetValueAsync();
+        UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        return userDB;
+    }
+
+    //DB에 유저 data 저장하기
+    private async void UpdateUserDB(string userName, UserDB userDB)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        string userDBstr = JsonConvert.SerializeObject(userDB);
+        await dataReference.SetRawJsonValueAsync(userDBstr);
+    }
+    #endregion
 
     //씬 관리
     public void goFolder()

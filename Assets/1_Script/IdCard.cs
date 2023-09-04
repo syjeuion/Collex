@@ -6,6 +6,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
 using TMPro;
+using System.Threading.Tasks;
+using Firebase.Database;
 
 public class IdCard : MonoBehaviour
 {
@@ -59,6 +61,8 @@ public class IdCard : MonoBehaviour
     Color gray500;
     Color errorColor;
 
+    string userName;
+
     private void Start()
     {
         ColorUtility.TryParseHtmlString("#EFF5FF", out primary1);
@@ -66,7 +70,6 @@ public class IdCard : MonoBehaviour
         ColorUtility.TryParseHtmlString("#DDE0E3", out gray300);
         ColorUtility.TryParseHtmlString("#949CA8", out gray500);
         ColorUtility.TryParseHtmlString("#FF3E49", out errorColor);
-        
         
         if (UserManager.Instance.newUserInformation.titleCheck[27] == 0)
         { colorNumber = 3; }
@@ -79,6 +82,8 @@ public class IdCard : MonoBehaviour
 
         userJob = UserManager.Instance.newUserInformation.kindOfJob;
         userDetailJob = UserManager.Instance.newUserInformation.detailJob;
+
+        userName = UserManager.Instance.newUserInformation.userName;
 
         if (UserManager.Instance.editProfileInHome) { setEditIdCard(); }
     }
@@ -151,6 +156,15 @@ public class IdCard : MonoBehaviour
         colorOption.transform.GetChild(colorNumber).gameObject.SetActive(false);
         IdCardSection.transform.GetChild(1).GetComponent<Toggle>().isOn = false;
         colorOption.SetActive(false);
+
+        //파이어베이스 업데이트
+        UpdateIdcardColor();
+    }
+    private async void UpdateIdcardColor()
+    {
+        UserDB userDB = await GetUserDB(userName);
+        userDB.idcardColor = colorNumber;
+        UpdateUserDB(userName, userDB);
     }
     #endregion
 
@@ -358,7 +372,31 @@ public class IdCard : MonoBehaviour
 
         if (UserManager.Instance.editProfileInHome) { goHome(); UserManager.Instance.editProfileInHome = false; }
         else { EditIdCardPage.SetActive(false); setIdCard(); }
-        
+
+        //파이어베이스 업데이트
+        UpdateUserInfo();
+    }
+    private async void UpdateUserInfo()
+    {
+        UserDB userDB = await GetUserDB(userName);
+        userDB.userWishCompany = UserManager.Instance.newUserInformation.companyName;
+
+        UserDefaultInformation userInfo = userDB.userInformation;
+        userInfo.userProfileImg = profileNumber;
+        userInfo.userName = UserManager.Instance.newUserInformation.userName;
+        userInfo.userJob = JobList[userJob, userDetailJob];
+
+        if(userName != UserManager.Instance.newUserInformation.userName)
+        {
+            UpdateUserDB(userName, null);
+            userName = UserManager.Instance.newUserInformation.userName;
+            UpdateUserDB(userName, userDB);
+        }
+        else
+        {
+            UpdateUserDB(userName, userDB);
+        }
+
     }
     #endregion
 
@@ -419,6 +457,25 @@ public class IdCard : MonoBehaviour
 
         if (bookmarkContent.transform.childCount != 1)
             bookmarkContent.transform.GetChild(0).gameObject.SetActive(false);
+    }
+    #endregion
+
+    #region 파이어베이스 realTimeDB
+    //DB에서 유저 data 가져오기
+    private async Task<UserDB> GetUserDB(string userName)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        var taskResult = await dataReference.GetValueAsync();
+        UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        return userDB;
+    }
+
+    //DB에 유저 data 저장하기
+    private async void UpdateUserDB(string userName, UserDB userDB)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        string userDBstr = JsonConvert.SerializeObject(userDB);
+        await dataReference.SetRawJsonValueAsync(userDBstr);
     }
     #endregion
 
