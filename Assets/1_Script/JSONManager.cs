@@ -90,6 +90,7 @@ class UserDB
     public UserDefaultInformation userInformation = new UserDefaultInformation();
     //사원증 정보
     public string userWishCompany;
+    public int idcardColor =3;
     //기록 정보
     public int totalFolderCount;
     public int projectFolderCount;
@@ -101,7 +102,8 @@ class UserDB
     //요청온 친구 리스트
     public List<RequestFriendInfo> friendsRequestList = new List<RequestFriendInfo>();
     //친구 리스트
-    public List<UserDefaultInformation> friendsList = new List<UserDefaultInformation>();
+    //public List<UserDefaultInformation> friendsList = new List<UserDefaultInformation>();
+    public Dictionary<string, UserDefaultInformation> friendsDictionary = new Dictionary<string, UserDefaultInformation>();
 }
 
 //친구 리스트 데이터 구조
@@ -117,6 +119,12 @@ class UserDefaultInformation
 class RequestFriendInfo
 {
     public string requestDate;
+    public UserDefaultInformation userInformation = new UserDefaultInformation();
+}
+//응원하기 알림 리스트
+class CheerUpNotiInfo
+{
+    public DateTime date;
     public UserDefaultInformation userInformation = new UserDefaultInformation();
 }
 
