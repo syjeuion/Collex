@@ -32,13 +32,14 @@ public class FriendsManager : MonoBehaviour
         //편집하기
     public GameObject menuArea;
     public GameObject dialog_edit_friend_dialog;
-    //사원증
+        //사원증
     public GameObject idcard_front;
     public GameObject idcard_back;
     public Animator friendIdcardAni;
 
     //입사동기 추가하기(검색)
     public GameObject friendSearchPage;
+    public GameObject SearchButtonGroup;
     public TMP_InputField searchText;
     public GameObject searchedFriendProfile;
     public GameObject snackBar;
@@ -132,6 +133,7 @@ public class FriendsManager : MonoBehaviour
     }
     #endregion
 
+    #region 입사동기 페이지 오픈
     //입사동기 페이지 오픈
     public void OpenFriendsPage()
     {
@@ -169,6 +171,7 @@ public class FriendsManager : MonoBehaviour
             friendsPage.transform.GetChild(2).gameObject.SetActive(true); }
         DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
     }
+    #endregion
 
     #region 친구 이름 검색하기
     //검색 페이지 오픈
@@ -176,14 +179,43 @@ public class FriendsManager : MonoBehaviour
     {
         friendSearchPage.SetActive(true);
         //검색바 리셋
-        friendSearchPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text = "";
+        searchText.text = "";
         //검색 결과 리셋
         searchedFriendProfile.SetActive(false);
     }
+    //검색 버튼 클릭
+    public void SearchButton()
+    {
+        //검색 실행
+        SearchUserName();
+
+        //x버튼 활성화, 검색 버튼 비활성화
+        SearchButtonGroup.transform.GetChild(0).gameObject.SetActive(true);
+        SearchButtonGroup.transform.GetChild(1).gameObject.SetActive(false);
+    }
+    //x버튼 클릭
+    public void SearchDeleteButton()
+    {
+        searchText.text = "";
+        //x버튼 비활성화, 검색 버튼 활성화
+        SearchButtonGroup.transform.GetChild(0).gameObject.SetActive(false);
+        SearchButtonGroup.transform.GetChild(1).gameObject.SetActive(true);
+        friendSearchPage.transform.GetChild(2).gameObject.SetActive(false);
+    }
+    //검색어 입력 도중 상태 체크
+    public void CheckInputFieldOnChanged()
+    {
+        if (!string.IsNullOrWhiteSpace(searchText.text))
+        {
+            //x버튼 활성화
+            SearchButtonGroup.transform.GetChild(0).gameObject.SetActive(true);
+            SearchButtonGroup.transform.GetChild(1).gameObject.SetActive(true);
+        }
+        else { SearchButtonGroup.transform.GetChild(0).gameObject.SetActive(false); }
+    }
     //친구 이름으로 검색하기
-    //UserDefaultInformation searchedUser;
     string searchedName;
-    public async void SearchUserName()
+    private async void SearchUserName()
     {
         searchedName = searchText.text;
         if (userNameList.Contains(searchedName) && searchedName!=UserManager.Instance.newUserInformation.userName)
@@ -201,12 +233,12 @@ public class FriendsManager : MonoBehaviour
             catch (Exception e) { Debug.LogError("Error: " + e.Message); } //예외처리
         }
         else {
-            print("fail");
+            //검색 결과 없을 때
+            print("searched nothing");
             searchedFriendProfile.SetActive(false);
-            friendSearchPage.transform.GetChild(3).gameObject.SetActive(true);
+            friendSearchPage.transform.GetChild(2).gameObject.SetActive(true);
         }
     }
-    
     //UI처리
     private void SetSearchedUserUI(UserDB userDB)
     {

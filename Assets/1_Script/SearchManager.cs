@@ -14,6 +14,7 @@ public class SearchManager : MonoBehaviour
     //Search Bar
     public GameObject SearchBar;
     public TMP_InputField inputSearchKeyword;
+    public GameObject buttonGroup;
 
     //검색 전 칩 로드
     public GameObject JobExperiences;
@@ -33,10 +34,6 @@ public class SearchManager : MonoBehaviour
     public GameObject SearchResultContent;
     public GameObject SearchResultField;
     GameObject newSearchResult;
-
-    public Sprite searchIcon;
-    public Sprite deleteIcon;
-
 
 
     //컬러
@@ -113,43 +110,34 @@ public class SearchManager : MonoBehaviour
         SearchBar.GetComponent<HorizontalLayoutGroup>().padding.left = 16;
         inputSearchKeyword.text = "";
 
-        SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().sprite = searchIcon;
-        SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = gray_400;
         JobExperiences.transform.parent.gameObject.SetActive(true);
         ScrollView.SetActive(false);
     }
 
     public void checkInputNull()
     {
-        if(SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().sprite != searchIcon)
-            SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().sprite = searchIcon;
-
         if (!string.IsNullOrWhiteSpace(inputSearchKeyword.text))
-            SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = gray_400;
-        else
-            SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = gray_300;
-    }
-
-    public void searchAndCloseIcon()
-    {
-        if (string.IsNullOrWhiteSpace(inputSearchKeyword.text)) return;
-        GameObject currentObj = EventSystem.current.currentSelectedGameObject;
-        if(currentObj.name == "SearchButton")
         {
-            if (currentObj.transform.GetChild(0).GetComponent<Image>().sprite == searchIcon)
-                letsSearch(); 
-            else if(currentObj.transform.GetChild(0).GetComponent<Image>().sprite == deleteIcon)
-            {
-                inputSearchKeyword.text = "";
-                SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().sprite = searchIcon;
-                SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = gray_400;
-            }
+            //x버튼 활성화
+            buttonGroup.transform.GetChild(0).gameObject.SetActive(true);
+            buttonGroup.transform.GetChild(1).gameObject.SetActive(true);
         }
+        else { buttonGroup.transform.GetChild(0).gameObject.SetActive(false); }
     }
 
-    void letsSearch()
+    //직접 검색어 입력해서 검색
+    //직접 검색
+    public void letsSearch()
     {
         StartCoroutine(KeywordSearch(inputSearchKeyword.text));
+    }
+    //검색바 단어 지우기
+    public void DeleteSearchKeyword()
+    {
+        inputSearchKeyword.text = "";
+        //x버튼 비활성화, 검색 버튼 활성화
+        buttonGroup.transform.GetChild(0).gameObject.SetActive(false);
+        buttonGroup.transform.GetChild(1).gameObject.SetActive(true);
     }
 
     //키워드 검색
@@ -170,12 +158,13 @@ public class SearchManager : MonoBehaviour
     
     IEnumerator KeywordSearch(string searchWord)
     {
+        //서치바 세팅
         SearchBar.transform.GetChild(0).gameObject.SetActive(true);
         SearchBar.transform.GetChild(1).GetComponent<RectTransform>().sizeDelta = new Vector2(292, SearchBar.transform.GetChild(1).GetComponent<RectTransform>().sizeDelta.y);
         SearchBar.GetComponent<HorizontalLayoutGroup>().padding.left = 4;
-
-        SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().sprite = deleteIcon;
-        SearchBar.transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<Image>().color = gray_800;
+        //x버튼 활성화, 검색 버튼 비활성화
+        buttonGroup.transform.GetChild(0).gameObject.SetActive(true);
+        buttonGroup.transform.GetChild(1).gameObject.SetActive(false);
 
         JobExperiences.transform.parent.gameObject.SetActive(false);
         ScrollView.SetActive(true);
