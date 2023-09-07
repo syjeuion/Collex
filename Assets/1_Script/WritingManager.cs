@@ -14,6 +14,9 @@ using Firebase.Database;
 
 public class WritingManager : MonoBehaviour
 {
+    //UserId
+    string userId;
+
     MakeNewProject thisProject = new MakeNewProject();
     DailyRecord newDailyRecord = new DailyRecord();
 
@@ -94,6 +97,8 @@ public class WritingManager : MonoBehaviour
             thisProject = JsonConvert.DeserializeObject<MakeNewProject>(thisFolderDatas);
         }
         if (!string.IsNullOrWhiteSpace(UserManager.Instance.pushedRecord)) setModify();
+
+        userId = UserManager.Instance.newUserInformation.userId;
     }
 
     #region 기록 수정하기
@@ -590,14 +595,14 @@ public class WritingManager : MonoBehaviour
     }
     private async void UpdateRecordInfo()
     {
-        string userName = UserManager.Instance.newUserInformation.userName;
-        UserDB userDB = await GetUserDB(userName);
+        UserDB userDB = await GetUserDB(userId);
 
         //경험
         userDB.topThreeExperiences = SortDictionary(UserManager.Instance.AllExperiences);
+        //역량
         userDB.topThreeCapabilities = SortDictionary(UserManager.Instance.Allcapabilites);
 
-        UpdateUserDB(userName, userDB);
+        UpdateUserDB(userId, userDB);
 
         //끝나면 폴더로 이동
         DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
@@ -1040,18 +1045,18 @@ public class WritingManager : MonoBehaviour
 
     #region 파이어베이스 realTimeDB
     //DB에서 유저 data 가져오기
-    private async Task<UserDB> GetUserDB(string userName)
+    private async Task<UserDB> GetUserDB(string userId)
     {
-        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
         var taskResult = await dataReference.GetValueAsync();
         UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
         return userDB;
     }
 
     //DB에 유저 data 저장하기
-    private async void UpdateUserDB(string userName, UserDB userDB)
+    private async void UpdateUserDB(string userId, UserDB userDB)
     {
-        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
         string userDBstr = JsonConvert.SerializeObject(userDB);
         await dataReference.SetRawJsonValueAsync(userDBstr);
     }

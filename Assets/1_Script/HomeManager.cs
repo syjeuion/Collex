@@ -59,34 +59,37 @@ public class HomeManager : MonoBehaviour
         "오늘도 기록을 해볼까요?",
         "끝까지 최선을 다해봐요!",
         "열심히 잘하고 있어요!" };
-
+    //파이어베이스 데이터
+    UserDB thisUserDB;
+    string thisUserId;
+    string userName;
     
     #region start_홈화면 셋팅
     private void Start()
     {
-        userProfiles.transform.GetChild(0).GetComponent<Image>().sprite = myProfileImgs[UserManager.Instance.newUserInformation.userProfileImgNumber];
+        //유저 프로필
+        //userProfiles.transform.GetChild(0).GetComponent<Image>().sprite = myProfileImgs[UserManager.Instance.newUserInformation.userProfileImgNumber];
+
+        //UserDB 가져오기
+        thisUserId = UserManager.Instance.newUserInformation.userId;
+        GetThisUserDB();
 
         //홈 스크롤 시 앱바 색상 변경용도
         wholeContentRect = Home_MainContent.GetComponent<RectTransform>();
 
-        //이용팁 배너
-        if (!UserManager.Instance.newUserInformation.homeBanner)
-        { BannerArea.SetActive(true);
-            BannerArea.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.userName + "님을 위한\nCollex 이용 Tip 보러가기!";
-        }
-        else { BannerArea.SetActive(false); }
+        
 
         UserTitleManager.ActionUserTitle();
-        userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = "\n"+UserManager.Instance.newUserInformation.userName + "님!";
-        
+        //userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = "\n"+UserManager.Instance.newUserInformation.userName + "님!";
+
         //목표칭호 세팅
-        if (UserManager.Instance.newUserInformation.isItFirstTargetTitle != 0)
-        {
-            Destroy(modiContainer.transform.parent.GetChild(0).gameObject);
-            Destroy(modiContainer.transform.parent.GetChild(1).gameObject);
-            setTargetTitle(modiContainer, UserManager.Instance.newUserInformation.targetTitleModi);
-            setTargetTitle(nounContainer, UserManager.Instance.newUserInformation.targetTitleNoun);
-        }
+        //if (UserManager.Instance.newUserInformation.isItFirstTargetTitle != 0)
+        //{
+        //    Destroy(modiContainer.transform.parent.GetChild(0).gameObject);
+        //    Destroy(modiContainer.transform.parent.GetChild(1).gameObject);
+        //    setTargetTitle(modiContainer, UserManager.Instance.newUserInformation.targetTitleModi);
+        //    setTargetTitle(nounContainer, UserManager.Instance.newUserInformation.targetTitleNoun);
+        //}
 
         //폴더 세팅
         if (UserManager.Instance.newUserInformation.isItFirst == 0)
@@ -116,7 +119,31 @@ public class HomeManager : MonoBehaviour
         //폴더 삭제로 홈으로 넘어왔을때
         if (UserManager.Instance.checkFolderDelete)
         { StartCoroutine(setSnackBar(SnackBar)); UserManager.Instance.checkFolderDelete = false; }
+        
+    }
+    //UserDB 가져오기
+    private async void GetThisUserDB()
+    {
+        thisUserDB = await GetUserDB(thisUserId);
+        userName = thisUserDB.userInformation.userName;
+        userProfiles.transform.GetChild(0).GetComponent<Image>().sprite = myProfileImgs[thisUserDB.userInformation.userProfileImg];
+        userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = "\n" + userName + "님!";
+        UpdateUserManager(thisUserDB);
+    }
+    //UserDB에서 유저 이름, profileImg UserManager에 저장
+    private void UpdateUserManager(UserDB userDB)
+    {
+        UserManager.Instance.newUserInformation.userName = userName;
+        UserManager.Instance.newUserInformation.idCardColorNumber = userDB.idcardColor;
+        UserManager.Instance.newUserInformation.userProfileImgNumber = userDB.userInformation.userProfileImg;
 
+        //이용팁 배너
+        if (!UserManager.Instance.newUserInformation.homeBanner)
+        {
+            BannerArea.SetActive(true);
+            BannerArea.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = userName + "님을 위한\nCollex 이용 Tip 보러가기!";
+        }
+        else { BannerArea.SetActive(false); }
     }
     //폴더 세팅 함수
     void folderSetting()
@@ -332,22 +359,19 @@ public class HomeManager : MonoBehaviour
         //파이어베이스 업데이트
         UpdateFolderCount();
     }
-    private async void UpdateFolderCount()
+    private void UpdateFolderCount()
     {
-        string userName = UserManager.Instance.newUserInformation.userName;
-        UserDB userDB = await GetUserDB(userName);
-
         int contestCount = UserManager.Instance.newUserInformation.projectType["공모전"];
         int projectCount = UserManager.Instance.newUserInformation.projectType["프로젝트"];
         int internshipCount = UserManager.Instance.newUserInformation.projectType["인턴십"];
-        userDB.totalFolderCount = contestCount + projectCount + internshipCount;
-        userDB.contestFolderCount = contestCount;
-        userDB.projectFolderCount = projectCount;
-        userDB.internshipFolderCount = internshipCount;
 
-        UpdateUserDB(userName, userDB);
+        thisUserDB.totalFolderCount = contestCount + projectCount + internshipCount;
+        thisUserDB.contestFolderCount = contestCount;
+        thisUserDB.projectFolderCount = projectCount;
+        thisUserDB.internshipFolderCount = internshipCount;
+
+        UpdateUserDB(thisUserId, thisUserDB);
     }
-
     #endregion
     #endregion
 
@@ -455,18 +479,17 @@ public class HomeManager : MonoBehaviour
 
     #region 파이어베이스 realTimeDB
     //DB에서 유저 data 가져오기
-    private async Task<UserDB> GetUserDB(string userName)
+    private async Task<UserDB> GetUserDB(string userId)
     {
-        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
         var taskResult = await dataReference.GetValueAsync();
         UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
         return userDB;
     }
-
     //DB에 유저 data 저장하기
-    private async void UpdateUserDB(string userName, UserDB userDB)
+    private async void UpdateUserDB(string userId, UserDB userDB)
     {
-        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
         string userDBstr = JsonConvert.SerializeObject(userDB);
         await dataReference.SetRawJsonValueAsync(userDBstr);
     }

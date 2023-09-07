@@ -4,9 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
+using Firebase.Database;
 using Google;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
 
 public class GoogleSigninManager : MonoBehaviour
 {
@@ -92,15 +95,15 @@ public class GoogleSigninManager : MonoBehaviour
             AddToInformation("Welcome: " + task.Result.DisplayName + "!");
             AddToInformation("Email = " + task.Result.Email);
             AddToInformation("Google ID Token = " + task.Result.IdToken);
-            AddToInformation("Email = " + task.Result.Email);
+            //AddToInformation("Email = " + task.Result.Email); 
             //print("UserAuthCode: " + task.Result.AuthCode);
             //print("UserGetHashCode: " + task.Result.GetHashCode());
-            //print("UserId: " + task.Result.UserId);
-            SignInWithGoogleOnFirebase(task.Result.IdToken, task.Result.Email);
+            print("UserId: " + task.Result.UserId);
+            SignInWithGoogleOnFirebase(task.Result.IdToken, task.Result.UserId);
         }
     }
 
-    private void SignInWithGoogleOnFirebase(string idToken, string userEmail)
+    private void SignInWithGoogleOnFirebase(string idToken, string userId)
     {
         Credential credential = GoogleAuthProvider.GetCredential(idToken, null);
 
@@ -116,11 +119,53 @@ public class GoogleSigninManager : MonoBehaviour
             {
                 //성공시 실행
                 AddToInformation("Sign In Successful.");
-                UserManager.Instance.newUserInformation.userEmail = userEmail;
+                UserManager.Instance.newUserInformation.userId = userId;
+                checkOnboarding(userId);
                 SigninPage.SetActive(false);
             }
         });
     }
+    //해당 유저가 이미 온보딩 했던 유저인지 확인
+    private async void checkOnboarding(string userId)
+    {
+        //해당 유저 이메일이 userList에 있는지 확인
+        bool isThereUserEmail = await GetUserEmailList(userId);
+        if (isThereUserEmail)
+        {
+            UserDB userDB = await GetUserDB(userId);
+            //이미 해당 유저 데이터가 존재하고 이름도 존재한다면
+            if (!string.IsNullOrEmpty(userDB.userInformation.userName))
+            {
+                SceneManager.LoadScene("1_Home");
+            }
+            else { return; }
+        }
+        else { return; }
+    }
+    //유저 이메일 리스트 가져오기
+    private async Task<bool> GetUserEmailList(string userId)
+    {
+        bool isThereUserEmail = false;
+
+        DatabaseReference userList = FirebaseDatabase.DefaultInstance.GetReference("userList");
+        print("getUserList");
+        try
+        {
+            var taskResult = await userList.GetValueAsync();
+            foreach(var user in taskResult.Children)
+            {
+                if (user.Key == userId) { isThereUserEmail = true; }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error: " + e.Message);
+            DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+        }
+        print("istThereUserEmail : "+isThereUserEmail);
+        return isThereUserEmail;
+    }
+
 
     public void OnSignInSilently()
     {
@@ -141,6 +186,24 @@ public class GoogleSigninManager : MonoBehaviour
         AddToInformation("Calling Games SignIn");
 
         GoogleSignIn.DefaultInstance.SignIn().ContinueWith(OnAuthenticationFinished);
+    }
+
+    //DB에서 유저 data 가져오기
+    private async Task<UserDB> GetUserDB(string userId)
+    {
+        UserDB userDB = new UserDB();
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
+        try
+        {
+            var taskResult = await dataReference.GetValueAsync();
+            userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error: " + e.Message);
+            //DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+        }
+        return userDB;
     }
 
     private void AddToInformation(string str) { print(str); }

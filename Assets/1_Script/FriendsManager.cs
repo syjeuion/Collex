@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -51,7 +52,7 @@ public class FriendsManager : MonoBehaviour
     private List<string> userNameList = new List<string>();
 
     //현재 유저 이름
-    string thisUserName;
+    string thisUserId;
     UserDB thisUserDB;
 
     //데이터베이스 레퍼런스
@@ -84,7 +85,7 @@ public class FriendsManager : MonoBehaviour
             //playerReference.ValueChanged += HandlePlayerDataChange;
         });
         //현재 유저의 정보 받아오기
-        thisUserName = UserManager.Instance.newUserInformation.userName;
+        thisUserId = UserManager.Instance.newUserInformation.userId;
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
         getThisUserDB();
         
@@ -92,37 +93,41 @@ public class FriendsManager : MonoBehaviour
     //현재 유저의 정보 받아오기
     private async void getThisUserDB()
     {
-        //try
-        //{
-        //    thisUserDB = await GetUserDB(thisUserName);
-        //    //친구 신청 있으면 알람 띄워주기
-        //    SelectorNotificationIcon();
-        //    //전체 유저 이름 리스트 불러와서 저장
-        //    GetUserNameList();
-        //}
-        //catch(Exception e)
-        //{   Debug.LogError("Error: " + e.Message);
-        //    DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
-        //}
-        thisUserDB = await GetUserDB(thisUserName);
-        //친구 신청 있으면 알람 띄워주기
-        SelectorNotificationIcon();
-        //전체 유저 이름 리스트 불러와서 저장
-        GetUserNameList();
+        await Task.Delay(TimeSpan.FromSeconds(0.1f));
+        try
+        {
+            thisUserDB = await GetUserDB(thisUserId);
+            //친구 신청 있으면 알람 띄워주기
+            SelectorNotificationIcon();
+            //전체 유저 이름 리스트 불러와서 저장
+            GetUserNameList();
+        }
+        catch(Exception e) {
+            Debug.LogError("error: " + e.Message);
+            DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+            DontDestroyCanvas.openQuitAlert(); //강제 종료 알랏
+        }
+        
     }
     //알림 아이콘
     private void SelectorNotificationIcon()
     {
-        if (thisUserDB.friendsRequestList != null && thisUserDB.friendsRequestList.Count > 0){
-            home_icon_notification.sprite = selector_icon_notification[1]; }
+        if(thisUserDB.friendsRequestList != null)
+        {
+            if (thisUserDB.friendsRequestList.Count > 0)
+            {
+                home_icon_notification.sprite = selector_icon_notification[1];
+            }
+            else { home_icon_notification.sprite = selector_icon_notification[0]; }
+        }
         else { home_icon_notification.sprite = selector_icon_notification[0]; }
         DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
     }
     //전체 유저 이름 리스트 불러와서 저장
     private void GetUserNameList()
     {
-        DatabaseReference userListDB = FirebaseDatabase.DefaultInstance.GetReference("userList");
-        userListDB.GetValueAsync().ContinueWith(task =>
+        DatabaseReference userIdList = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
+        userIdList.GetValueAsync().ContinueWith(task =>
         {
             if (task.IsFaulted) { Debug.LogError("getUserNameList Error"); }
             else if (task.IsCompleted)
@@ -154,7 +159,7 @@ public class FriendsManager : MonoBehaviour
     private async void GetFriendsList()
     {
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
-        thisUserDB = await GetUserDB(thisUserName);
+        thisUserDB = await GetUserDB(thisUserId);
         print("get this user DB done");
         if (thisUserDB.friendsDictionary!=null&& thisUserDB.friendsDictionary.Count > 0)
         {
@@ -253,8 +258,8 @@ public class FriendsManager : MonoBehaviour
         bool alreadyRequest = false;
         for(int i=0; i<userDB.friendsRequestList.Count; i++)
         {
-            if (userDB.friendsRequestList[i].userInformation.userName == thisUserName)
-            { alreadyRequest = true; }
+            //if (userDB.friendsRequestList[i].userInformation.userName == thisUserName)
+            //{ alreadyRequest = true; }
         }
         if (alreadyRequest)
         {
@@ -266,7 +271,7 @@ public class FriendsManager : MonoBehaviour
         bool alreadyFriend = false;
         foreach(string key in userDB.friendsDictionary.Keys)
         {
-            if(key == thisUserName) { alreadyFriend = true; }
+            if(key == thisUserId) { alreadyFriend = true; }
         }
         if (alreadyFriend) { searchedFriendProfile.transform.GetChild(3).gameObject.SetActive(false); }
 
@@ -335,8 +340,8 @@ public class FriendsManager : MonoBehaviour
         for(int i=0; i<userDB.friendsRequestList.Count; i++)
         {
             print(userDB.friendsRequestList[i].userInformation.userName);
-            if(userDB.friendsRequestList[i].userInformation.userName == thisUserName)
-            { userDB.friendsRequestList.RemoveAt(i); }
+            //if(userDB.friendsRequestList[i].userInformation.userName == thisUserName)
+            //{ userDB.friendsRequestList.RemoveAt(i); }
         }
 
         //다시 검색된 유저 DB 업데이트 하기
@@ -360,7 +365,7 @@ public class FriendsManager : MonoBehaviour
     //요청 온 친구 리스트 띄우기
     private async void CheckRequestFriend()
     {
-        thisUserDB = await GetUserDB(thisUserName);
+        thisUserDB = await GetUserDB(thisUserId);
         if (thisUserDB.friendsRequestList.Count > 0)
         {
             notificationPage.transform.GetChild(2).gameObject.SetActive(false);
@@ -399,11 +404,11 @@ public class FriendsManager : MonoBehaviour
         thisUserDB.friendsRequestList.RemoveAt(thisObjIndex);
 
         //현재 유저 DB 업데이트
-        UpdateUserDB(thisUserName, thisUserDB);
+        UpdateUserDB(thisUserId, thisUserDB);
 
         //요청한 유저의 DB에 현재 유저 정보 추가
         UserDB friendDB = await GetUserDB(newFriendInfo.userName);
-        friendDB.friendsDictionary.Add(thisUserName,thisUserDB.userInformation);
+        friendDB.friendsDictionary.Add(thisUserId, thisUserDB.userInformation);
         UpdateUserDB(newFriendInfo.userName, friendDB);
 
         Destroy(thisObj); //알람 삭제
@@ -419,7 +424,7 @@ public class FriendsManager : MonoBehaviour
         thisUserDB.friendsRequestList.RemoveAt(thisObjIndex);
 
         //현재 유저 DB 업데이트
-        UpdateUserDB(thisUserName, thisUserDB);
+        UpdateUserDB(thisUserId, thisUserDB);
 
         Destroy(thisObj); //알람 삭제
         CheckNotiEmpty();
@@ -491,12 +496,12 @@ public class FriendsManager : MonoBehaviour
         thisUserDB.friendsDictionary.Remove(selectedUserName);
         Destroy(selectedUserProfileObj);
         dialog_edit_friend_dialog.transform.parent.gameObject.SetActive(false);
-        UpdateUserDB(thisUserName, thisUserDB);
+        UpdateUserDB(thisUserId, thisUserDB);
         print("this user friend dictionary remove done");
 
         //상대 유저 친구 리스트에서 삭제
         UserDB friendDB = await GetUserDB(selectedUserName);
-        friendDB.friendsDictionary.Remove(thisUserName);
+        friendDB.friendsDictionary.Remove(thisUserId);
         UpdateUserDB(selectedUserName, friendDB);
         print("friend user friend dictionary remove done");
     }
@@ -568,10 +573,10 @@ public class FriendsManager : MonoBehaviour
 
     #region 데이터 처리
     //DB에서 유저 data 가져오기
-    private async Task<UserDB> GetUserDB(string userName)
+    private async Task<UserDB> GetUserDB(string userId)
     {
         UserDB userDB = new UserDB();
-        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
         try
         {
             var taskResult = await dataReference.GetValueAsync();
@@ -581,18 +586,33 @@ public class FriendsManager : MonoBehaviour
         {
             Debug.LogError("Error: " + e.Message);
             DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+            DontDestroyCanvas.openQuitAlert(); //강제 종료 알랏
         }
         return userDB;
     }
 
-        //DB에 유저 data 저장하기
-        private async void UpdateUserDB(string userName, UserDB userDB)
+    //DB에 유저 data 저장하기
+    private async void UpdateUserDB(string userId, UserDB userDB)
     {
-        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
         string userDBstr = JsonConvert.SerializeObject(userDB);
         await dataReference.SetRawJsonValueAsync(userDBstr);
     }
+    //유저 이름으로 유저 Id 가져오기
+    private async Task<string> GetUserId(string userName)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
+        var taskResult = await dataReference.GetValueAsync();
 
+        Dictionary<string, string> userIdList = JsonConvert.DeserializeObject<Dictionary<string, string>>(taskResult.GetRawJsonValue());
+        string userId;
+        if (userIdList.Keys.Contains(userName))
+        {
+            userId = userIdList[userName];
+        }
+        else { userId = "1234"; }
+        return userId;
+    }
     //DB에서 유저 기본 정보만 가져오기
     //private async Task<UserDefaultInformation> GetUserInformationAsync(String userName)
     //{

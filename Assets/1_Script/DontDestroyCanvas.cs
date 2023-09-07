@@ -24,6 +24,7 @@ public class DontDestroyCanvas : MonoBehaviour
 
     public static Action setRecord; //페이지 세팅 함수
     public static Action<bool> controlProgressIndicator; //프로그래스 제어
+    public static Action openQuitAlert;
     public static DontDestroyCanvas Instance;
 
     //칭호 획득 시
@@ -39,6 +40,8 @@ public class DontDestroyCanvas : MonoBehaviour
 
     //ProgressIndicator
     public GameObject progressIndicatorPage;
+    //Quit alert
+    public GameObject quitAlertPage;
 
     private void Awake()
     {
@@ -54,6 +57,7 @@ public class DontDestroyCanvas : MonoBehaviour
 
         setRecord = () => { setRecordPage(); };
         controlProgressIndicator = (bool check) => { ControlProgressIndicator(check); };
+        openQuitAlert = () => { OpenQuitAlert(); };
     }
 
     //칭호 획득했는지 체크
@@ -500,6 +504,14 @@ public class DontDestroyCanvas : MonoBehaviour
         }
     }
 
+    //서버 오류 시 앱 강제 종료
+    public void OpenQuitAlert()
+    {
+        quitAlertPage.SetActive(true);
+    }
+
     public void goHome() { SceneManager.LoadScene("1_Home"); }
     public void goWriting() { SceneManager.LoadScene("2_Writing"); }
+
+    public void quitApplication() { Application.Quit(); }
 }

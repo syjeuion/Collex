@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -62,6 +63,10 @@ public class IdCard : MonoBehaviour
     Color errorColor;
 
     string userName;
+    string userId;
+    string userWishCompany;
+    int profileImgNum;
+    UserDB thisUserDB;
 
     private void Start()
     {
@@ -76,16 +81,37 @@ public class IdCard : MonoBehaviour
         else
         { colorNumber = UserManager.Instance.newUserInformation.idCardColorNumber; }
 
-        profileNumber = UserManager.Instance.newUserInformation.userProfileImgNumber;
-        setIdCard();
-        changeCardColor();
+        //profileNumber = UserManager.Instance.newUserInformation.userProfileImgNumber;
+        //setIdCard();
 
         userJob = UserManager.Instance.newUserInformation.kindOfJob;
         userDetailJob = UserManager.Instance.newUserInformation.detailJob;
 
-        userName = UserManager.Instance.newUserInformation.userName;
+        //userName = UserManager.Instance.newUserInformation.userName;
+        userId = UserManager.Instance.newUserInformation.userId;
+
+        changeCardColor();
+        DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
+        GetThisUserDB();
 
         if (UserManager.Instance.editProfileInHome) { setEditIdCard(); }
+    }
+    //UserDB 가져오기
+    private async void GetThisUserDB()
+    {
+        try
+        {
+            thisUserDB = await GetUserDB(userId);
+            userName = thisUserDB.userInformation.userName;
+            userWishCompany = thisUserDB.userWishCompany;
+            profileImgNum = thisUserDB.userInformation.userProfileImg;
+            setIdCard(profileImgNum, userWishCompany, userName);
+        }
+        catch(Exception e) {
+            Debug.LogError("Error: " + e.Message);
+            DontDestroyCanvas.openQuitAlert(); //강제 종료 알랏
+        }
+        DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
     }
 
     private void Update()
@@ -95,20 +121,20 @@ public class IdCard : MonoBehaviour
     }
 
     //사원증 세팅
-    public void setIdCard()
+    public void setIdCard(int profileNum, string company, string name)
     {
         //GameObject idCard = IdCardSection.transform.GetChild(1).gameObject;
 
         //프로필 이미지
-        userProfileImg.sprite = ProfileImgs[profileNumber];
+        userProfileImg.sprite = ProfileImgs[profileNum];
 
         //목표 회사
-        idCard.transform.GetChild(1).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.companyName;
+        idCard.transform.GetChild(1).GetComponent<TMP_Text>().text = company;
 
         //setTitle(idCard.transform.GetChild(2).gameObject, UserManager.Instance.newUserInformation.userTitleModi, UserManager.Instance.newUserInformation.userTitleNoun);//칭호
         //UIController.instance.ReloadUserTitleUI();
         UserTitleManager.ActionUserTitle();
-        idCard.transform.GetChild(3).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.userName; //유저 이름
+        idCard.transform.GetChild(3).GetComponent<TMP_Text>().text = name; //유저 이름
     }
 
     #region 사원증 컬러 변경
@@ -162,9 +188,9 @@ public class IdCard : MonoBehaviour
     }
     private async void UpdateIdcardColor()
     {
-        UserDB userDB = await GetUserDB(userName);
-        userDB.idcardColor = colorNumber;
-        UpdateUserDB(userName, userDB);
+        thisUserDB = await GetUserDB(userId);
+        thisUserDB.idcardColor = colorNumber;
+        UpdateUserDB(userId, thisUserDB);
     }
     #endregion
 
@@ -179,13 +205,13 @@ public class IdCard : MonoBehaviour
         EditIdCardPage.transform.GetChild(0).GetComponent<Image>().sprite = ProfileImgs[profileNumber];
 
         //이름
-        EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text = UserManager.Instance.newUserInformation.userName;
+        EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text = userName;
         EditIdCardPage.transform.GetChild(1).GetChild(2).GetComponent<TMP_Text>().text =
             EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text.Length.ToString() + "/10";
         //목표기업명
-        if (!string.IsNullOrWhiteSpace(UserManager.Instance.newUserInformation.companyName))
+        if (!string.IsNullOrWhiteSpace(userWishCompany))
         {
-            EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text = UserManager.Instance.newUserInformation.companyName;
+            EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text = userWishCompany;
             EditIdCardPage.transform.GetChild(2).GetChild(2).GetComponent<TMP_Text>().text =
                 EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text.Length.ToString() + "/10";
         }
@@ -329,9 +355,9 @@ public class IdCard : MonoBehaviour
     //사원증 수정에서 뒤로가기 눌렀을때 변경사항 체크
     public void CheckBackEditIDcard()
     {
-        if(UserManager.Instance.newUserInformation.userProfileImgNumber != profileNumber||
-            UserManager.Instance.newUserInformation.userName != EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text||
-            UserManager.Instance.newUserInformation.companyName != EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text||
+        if(profileImgNum != profileNumber||
+            userName != EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text||
+            userWishCompany != EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text||
             UserManager.Instance.newUserInformation.detailJob != userDetailJob||
             !string.IsNullOrWhiteSpace(UserManager.Instance.selectedModi)||
             !string.IsNullOrWhiteSpace(UserManager.Instance.selectedNoun))
@@ -350,10 +376,13 @@ public class IdCard : MonoBehaviour
         {
             return;
         }
-        UserManager.Instance.newUserInformation.userProfileImgNumber = profileNumber;
+        profileImgNum = profileNumber;
+        UserManager.Instance.newUserInformation.userProfileImgNumber = profileImgNum;
 
-        UserManager.Instance.newUserInformation.userName= EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text;
-        UserManager.Instance.newUserInformation.companyName= EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text;
+        userName = EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text;
+        UserManager.Instance.newUserInformation.userName = userName;
+
+        userWishCompany = EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text;
 
         UserManager.Instance.newUserInformation.kindOfJob = userJob;
         UserManager.Instance.newUserInformation.detailJob = userDetailJob;
@@ -371,32 +400,24 @@ public class IdCard : MonoBehaviour
         }
 
         if (UserManager.Instance.editProfileInHome) { goHome(); UserManager.Instance.editProfileInHome = false; }
-        else { EditIdCardPage.SetActive(false); setIdCard(); }
+        else { EditIdCardPage.SetActive(false); setIdCard(profileNumber, userWishCompany, userName); }
 
         //파이어베이스 업데이트
+        DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
         UpdateUserInfo();
     }
     private async void UpdateUserInfo()
     {
-        UserDB userDB = await GetUserDB(userName);
-        userDB.userWishCompany = UserManager.Instance.newUserInformation.companyName;
+        thisUserDB = await GetUserDB(userId);
+        thisUserDB.userWishCompany = userWishCompany;
+        thisUserDB.userInformation.userProfileImg = profileImgNum;
 
-        UserDefaultInformation userInfo = userDB.userInformation;
+        UserDefaultInformation userInfo = thisUserDB.userInformation;
         userInfo.userProfileImg = profileNumber;
         userInfo.userName = UserManager.Instance.newUserInformation.userName;
         userInfo.userJob = JobList[userJob, userDetailJob];
 
-        if(userName != UserManager.Instance.newUserInformation.userName)
-        {
-            UpdateUserDB(userName, null);
-            userName = UserManager.Instance.newUserInformation.userName;
-            UpdateUserDB(userName, userDB);
-        }
-        else
-        {
-            UpdateUserDB(userName, userDB);
-        }
-
+        UpdateUserDB(userId, thisUserDB);
     }
     #endregion
 
@@ -462,21 +483,31 @@ public class IdCard : MonoBehaviour
 
     #region 파이어베이스 realTimeDB
     //DB에서 유저 data 가져오기
-    private async Task<UserDB> GetUserDB(string userName)
+    private async Task<UserDB> GetUserDB(string id)
     {
-        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
-        var taskResult = await dataReference.GetValueAsync();
-        UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        UserDB userDB = new UserDB();
+        try
+        {
+            DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(id);
+            var taskResult = await dataReference.GetValueAsync();
+            userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+        }
+        catch(Exception e)
+        {
+            Debug.LogError("error: " + e.Message);
+            DontDestroyCanvas.openQuitAlert(); //강제 종료 알랏
+        }
+        DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
         return userDB;
     }
-
     //DB에 유저 data 저장하기
-    private async void UpdateUserDB(string userName, UserDB userDB)
+    private async void UpdateUserDB(string id, UserDB userDB)
     {
-        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userName);
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(id);
         string userDBstr = JsonConvert.SerializeObject(userDB);
         await dataReference.SetRawJsonValueAsync(userDBstr);
     }
+    
     #endregion
 
     //기록 상세페이지
