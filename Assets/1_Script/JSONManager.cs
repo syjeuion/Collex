@@ -106,10 +106,10 @@ class UserDB
 
     //친구 리스트 - {id:info}
     //public List<UserDefaultInformation> friendsList = new List<UserDefaultInformation>();
-    public Dictionary<string, UserDefaultInformation> friendsDictionary = new Dictionary<string, UserDefaultInformation>();
+    public Dictionary<string, FriendInfo> friendsDictionary = new Dictionary<string, FriendInfo>();
 }
 
-//친구 리스트 데이터 구조
+//유저 기본 정보 데이터 구조
 class UserDefaultInformation
 {
     //기본 정보
@@ -118,6 +118,13 @@ class UserDefaultInformation
     public string userTitle;
     public string userJob;
 }
+//친구 리스트 데이터 구조
+class FriendInfo
+{
+    public DateTime sendCheerUpDate;
+    public UserDefaultInformation userInformation = new UserDefaultInformation();
+}
+
 //친구 요청 데이터 구조
 class NotiInfo
 {

@@ -97,7 +97,7 @@ public class Onboarding : MonoBehaviour
         yield return checkOnboarding();
     }
 
-    bool homeCheck =false;
+    //bool homeCheck =false;
     private async Task checkOnboarding()
     {
         //로그인 체크
@@ -111,7 +111,7 @@ public class Onboarding : MonoBehaviour
 
             //Id가 DB에도 저장 되어있는지 확인 == 온보딩 했다는 뜻
             bool isUserIdInDB = await GetUserIdlList(userId);
-
+            print("isUserIdInDB: "+isUserIdInDB);
             if (isUserIdInDB)
             {
                 goHome();

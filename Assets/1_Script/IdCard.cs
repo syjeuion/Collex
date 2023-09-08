@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -379,8 +380,8 @@ public class IdCard : MonoBehaviour
         profileImgNum = profileNumber;
         UserManager.Instance.newUserInformation.userProfileImgNumber = profileImgNum;
 
-        userName = EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text;
-        UserManager.Instance.newUserInformation.userName = userName;
+        UserManager.Instance.newUserInformation.userName = EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text;
+        //UserManager.Instance.newUserInformation.userName = userName;
 
         userWishCompany = EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text;
 
@@ -400,7 +401,7 @@ public class IdCard : MonoBehaviour
         }
 
         if (UserManager.Instance.editProfileInHome) { goHome(); UserManager.Instance.editProfileInHome = false; }
-        else { EditIdCardPage.SetActive(false); setIdCard(profileNumber, userWishCompany, userName); }
+        else { EditIdCardPage.SetActive(false); setIdCard(profileNumber, userWishCompany, UserManager.Instance.newUserInformation.userName); }
 
         //파이어베이스 업데이트
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
@@ -418,6 +419,12 @@ public class IdCard : MonoBehaviour
         userInfo.userJob = JobList[userJob, userDetailJob];
 
         UpdateUserDB(userId, thisUserDB);
+
+        if(UserManager.Instance.newUserInformation.userName != userName)
+        {
+            UpdateUserIdList(userName, UserManager.Instance.newUserInformation.userName);
+            userName = UserManager.Instance.newUserInformation.userName;
+        }
     }
     #endregion
 
@@ -507,7 +514,20 @@ public class IdCard : MonoBehaviour
         string userDBstr = JsonConvert.SerializeObject(userDB);
         await dataReference.SetRawJsonValueAsync(userDBstr);
     }
-    
+    //유저 이름으로 유저 Id 가져오기
+    private async void UpdateUserIdList(string userName, string newUserName)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
+        var taskResult = await dataReference.GetValueAsync();
+
+        Dictionary<string, string> userIdDic = JsonConvert.DeserializeObject<Dictionary<string, string>>(taskResult.GetRawJsonValue());
+
+        userIdDic.Remove(userName);
+        userIdDic.Add(newUserName, userId);
+
+        string userIdDicStr = JsonConvert.SerializeObject(userIdDic);
+        await dataReference.SetRawJsonValueAsync(userIdDicStr);
+    }
     #endregion
 
     //기록 상세페이지
