@@ -53,6 +53,7 @@ public class FriendsManager : MonoBehaviour
 
     //현재 유저 이름
     string thisUserId;
+    string thisUserName;
     UserDB thisUserDB;
 
     //데이터베이스 레퍼런스
@@ -86,6 +87,7 @@ public class FriendsManager : MonoBehaviour
         });
         //현재 유저의 정보 받아오기
         thisUserId = UserManager.Instance.newUserInformation.userId;
+        thisUserName = UserManager.Instance.newUserInformation.userName;
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
         getThisUserDB();
         
@@ -193,7 +195,7 @@ public class FriendsManager : MonoBehaviour
         //검색 결과 리셋
         searchedFriendProfile.SetActive(false);
     }
-    //검색 버튼 클릭
+    //검색바 - 검색 버튼 클릭
     public void SearchButton()
     {
         //검색 실행
@@ -203,7 +205,7 @@ public class FriendsManager : MonoBehaviour
         SearchButtonGroup.transform.GetChild(0).gameObject.SetActive(true);
         SearchButtonGroup.transform.GetChild(1).gameObject.SetActive(false);
     }
-    //x버튼 클릭
+    //검색바 - x버튼 클릭
     public void SearchDeleteButton()
     {
         searchText.text = "";
@@ -212,7 +214,7 @@ public class FriendsManager : MonoBehaviour
         SearchButtonGroup.transform.GetChild(1).gameObject.SetActive(true);
         friendSearchPage.transform.GetChild(2).gameObject.SetActive(false);
     }
-    //검색어 입력 도중 상태 체크
+    //검색바 - 검색어 입력 도중 상태 체크
     public void CheckInputFieldOnChanged()
     {
         if (!string.IsNullOrWhiteSpace(searchText.text))
@@ -223,7 +225,7 @@ public class FriendsManager : MonoBehaviour
         }
         else { SearchButtonGroup.transform.GetChild(0).gameObject.SetActive(false); }
     }
-    //친구 이름으로 검색하기
+    //검색바 - 친구 이름으로 검색하기
     string searchedName;
     private async void SearchUserName()
     {
@@ -236,7 +238,8 @@ public class FriendsManager : MonoBehaviour
             try
             {
                 //searchedUser = await GetUserInformationAsync(searchedName); //데이터 받아올 때까지 기다렸다가
-                UserDB userDB = await GetUserDB(searchedName);
+                string searchedId = await GetUserId(searchedName);
+                UserDB userDB = await GetUserDB(searchedId);
 
                 SetSearchedUserUI(userDB); //받아오면 UI 출력하기
             }
@@ -258,8 +261,8 @@ public class FriendsManager : MonoBehaviour
         bool alreadyRequest = false;
         for(int i=0; i<userDB.friendsRequestList.Count; i++)
         {
-            //if (userDB.friendsRequestList[i].userInformation.userName == thisUserName)
-            //{ alreadyRequest = true; }
+            if (userDB.friendsRequestList[i].userInformation.userName == thisUserName)
+            { alreadyRequest = true; }
         }
         if (alreadyRequest)
         {
@@ -310,7 +313,8 @@ public class FriendsManager : MonoBehaviour
 
         //검색된 유저의 DB 받아오기
         print("next");
-        UserDB userDB = await GetUserDB(searchedName);
+        string searchedId = await GetUserId(searchedName);
+        UserDB userDB = await GetUserDB(searchedId);
 
         //현재 유저 정보 넣기
         RequestFriendInfo newRequestFriendInfo = new RequestFriendInfo();
@@ -319,7 +323,7 @@ public class FriendsManager : MonoBehaviour
         userDB.friendsRequestList.Add(newRequestFriendInfo);
 
         //다시 검색된 유저 DB 업데이트 하기
-        UpdateUserDB(searchedName, userDB);
+        UpdateUserDB(searchedId, userDB);
     }
     IEnumerator SetSnackBar()
     {
@@ -333,19 +337,20 @@ public class FriendsManager : MonoBehaviour
     private async void CancelRequestFriend()
     {
         //검색된 유저의 DB 받아오기
-        UserDB userDB = await GetUserDB(searchedName);
+        string searchedId = await GetUserId(searchedName);
+        UserDB userDB = await GetUserDB(searchedId);
 
         //현재 유저 정보 빼기
         //userDB.friendsRequestList.RemoveAt(userDB.friendsRequestList.Count - 1); //마지막에 추가된 유저 빼기
         for(int i=0; i<userDB.friendsRequestList.Count; i++)
         {
             print(userDB.friendsRequestList[i].userInformation.userName);
-            //if(userDB.friendsRequestList[i].userInformation.userName == thisUserName)
-            //{ userDB.friendsRequestList.RemoveAt(i); }
+            if(userDB.friendsRequestList[i].userInformation.userName == thisUserName)
+            { userDB.friendsRequestList.RemoveAt(i); }
         }
 
         //다시 검색된 유저 DB 업데이트 하기
-        UpdateUserDB(searchedName, userDB);
+        UpdateUserDB(searchedId, userDB);
     }
     #endregion
 
@@ -398,7 +403,8 @@ public class FriendsManager : MonoBehaviour
         //현재 유저의 DB에 친구 리스트 추가
         int thisObjIndex = thisObj.transform.GetSiblingIndex();
         UserDefaultInformation newFriendInfo = thisUserDB.friendsRequestList[thisObjIndex].userInformation;
-        thisUserDB.friendsDictionary.Add(newFriendInfo.userName,newFriendInfo);
+        string newFriendId = await GetUserId(newFriendInfo.userName);
+        thisUserDB.friendsDictionary.Add(newFriendId,newFriendInfo);
 
         //기존 request list에서 해당 유저 정보 삭제
         thisUserDB.friendsRequestList.RemoveAt(thisObjIndex);
@@ -407,9 +413,9 @@ public class FriendsManager : MonoBehaviour
         UpdateUserDB(thisUserId, thisUserDB);
 
         //요청한 유저의 DB에 현재 유저 정보 추가
-        UserDB friendDB = await GetUserDB(newFriendInfo.userName);
+        UserDB friendDB = await GetUserDB(newFriendId);
         friendDB.friendsDictionary.Add(thisUserId, thisUserDB.userInformation);
-        UpdateUserDB(newFriendInfo.userName, friendDB);
+        UpdateUserDB(newFriendId, friendDB);
 
         Destroy(thisObj); //알람 삭제
         CheckNotiEmpty();
@@ -493,16 +499,19 @@ public class FriendsManager : MonoBehaviour
     public async void DialogDeleteFriend()
     {
         //현재 유저 친구 리스트에서 삭제
-        thisUserDB.friendsDictionary.Remove(selectedUserName);
+        string selectedUserId = await GetUserId(selectedUserName);
+        thisUserDB.friendsDictionary.Remove(selectedUserId);
+
         Destroy(selectedUserProfileObj);
         dialog_edit_friend_dialog.transform.parent.gameObject.SetActive(false);
+
         UpdateUserDB(thisUserId, thisUserDB);
         print("this user friend dictionary remove done");
 
         //상대 유저 친구 리스트에서 삭제
-        UserDB friendDB = await GetUserDB(selectedUserName);
+        UserDB friendDB = await GetUserDB(selectedUserId);
         friendDB.friendsDictionary.Remove(thisUserId);
-        UpdateUserDB(selectedUserName, friendDB);
+        UpdateUserDB(selectedUserId, friendDB);
         print("friend user friend dictionary remove done");
     }
     #endregion
@@ -518,7 +527,8 @@ public class FriendsManager : MonoBehaviour
 
         //친구 데이터 가져오기
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
-        UserDB friendDB = await GetUserDB(friendName);
+        string friendId = await GetUserId(friendName);
+        UserDB friendDB = await GetUserDB(friendId);
         SetIdcardFront(friendDB);
         SetIdcardBack(friendDB);
     }
@@ -558,14 +568,14 @@ public class FriendsManager : MonoBehaviour
     //앞면 클릭 시 뒷면으로 돌아가기
     public void TurnIdCardFrontToBack()
     {
-        idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = false;
+        idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = false; //중복 터치 방지
         friendIdcardAni.SetTrigger("frontToBack");
         idcard_back.transform.GetChild(10).GetComponent<Button>().interactable = true;
     }
     //뒷면 클릭 시 앞면으로 돌아가기
     public void TurnIdCardBackToFront()
     {
-        idcard_back.transform.GetChild(10).GetComponent<Button>().interactable = false;
+        idcard_back.transform.GetChild(10).GetComponent<Button>().interactable = false; //중복 터치 방지
         friendIdcardAni.SetTrigger("backToFront");
         idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = true;
     }

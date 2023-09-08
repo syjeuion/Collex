@@ -101,7 +101,7 @@ class UserDB
 
     //요청온 친구 리스트
     public List<RequestFriendInfo> friendsRequestList = new List<RequestFriendInfo>();
-    //친구 리스트
+    //친구 리스트 - {id:info}
     //public List<UserDefaultInformation> friendsList = new List<UserDefaultInformation>();
     public Dictionary<string, UserDefaultInformation> friendsDictionary = new Dictionary<string, UserDefaultInformation>();
 }
