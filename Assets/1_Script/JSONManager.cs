@@ -99,8 +99,11 @@ class UserDB
     public string[] topThreeExperiences = new string[3];
     public string[] topThreeCapabilities = new string[3];
 
-    //요청온 친구 리스트
-    public List<RequestFriendInfo> friendsRequestList = new List<RequestFriendInfo>();
+    //Notification - 받은 응원
+    public List<NotiInfo> notiCheerUpList = new List<NotiInfo>();
+    //Notification - 입사동기 신청
+    public List<NotiInfo> notiApplyFriendList = new List<NotiInfo>();
+
     //친구 리스트 - {id:info}
     //public List<UserDefaultInformation> friendsList = new List<UserDefaultInformation>();
     public Dictionary<string, UserDefaultInformation> friendsDictionary = new Dictionary<string, UserDefaultInformation>();
@@ -116,17 +119,19 @@ class UserDefaultInformation
     public string userJob;
 }
 //친구 요청 데이터 구조
-class RequestFriendInfo
+class NotiInfo
 {
-    public string requestDate;
-    public UserDefaultInformation userInformation = new UserDefaultInformation();
-}
-//응원하기 알림 리스트
-class CheerUpNotiInfo
-{
+    public bool isFirstCheck = true;
     public DateTime date;
     public UserDefaultInformation userInformation = new UserDefaultInformation();
 }
+////응원하기 알림 리스트
+//class CheerUpNotiInfo
+//{
+//    public bool isFirstCheck = true;
+//    public DateTime date;
+//    public UserDefaultInformation userInformation = new UserDefaultInformation();
+//}
 
 ////유저 이름 중복 체크 UserNameList 데이터 구조
 //class UserNameList

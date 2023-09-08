@@ -95,10 +95,6 @@ public class Onboarding : MonoBehaviour
     {
         yield return new WaitForSeconds(0.1f);
         yield return checkOnboarding();
-        print("check Onboarding done");
-        //yield return new WaitForSeconds(0.5f);
-        //print("homeCheck out: " + homeCheck);
-        //if (homeCheck) { goHome(); }
     }
 
     bool homeCheck =false;
@@ -106,8 +102,8 @@ public class Onboarding : MonoBehaviour
     {
         //로그인 체크
         userId = UserManager.Instance.newUserInformation.userId;
-        //string userName = "";
         print("userId: " + userId);
+        //string userName = "";
         //Id가 있으면 
         if (!string.IsNullOrEmpty(userId))
         {
@@ -419,7 +415,6 @@ public class Onboarding : MonoBehaviour
     private void getUserNameList()
     {
         DatabaseReference userIdList = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
-        print("getUserList");
         userIdList.GetValueAsync().ContinueWith(task =>
         {
             if (task.IsFaulted)
@@ -656,7 +651,6 @@ public class Onboarding : MonoBehaviour
         bool isThereUserId = false;
 
         DatabaseReference userList = FirebaseDatabase.DefaultInstance.GetReference("userList");
-        print("getUserList");
         try
         {
             var taskResult = await userList.GetValueAsync();
@@ -670,7 +664,6 @@ public class Onboarding : MonoBehaviour
             Debug.LogError("Error: " + e.Message);
             DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
         }
-        print("isThereUserId : " + isThereUserId);
         return isThereUserId;
     }
     #endregion
