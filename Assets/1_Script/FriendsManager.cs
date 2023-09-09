@@ -709,6 +709,8 @@ public class FriendsManager : MonoBehaviour
         friendDB.notiCheerUpList.Add(notiInfo);
         friendDB.isNewNotiCheerUp = true;
 
+        friendDB.rankingData.countCheerUp++; //랭킹 - 응원수
+
         UpdateUserDB(friendId, friendDB);
         UpdateUserDB(thisUserId, thisUserDB);
     }

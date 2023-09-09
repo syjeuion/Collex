@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Linq;
 using System;
 using UnityEngine;
@@ -601,6 +600,8 @@ public class WritingManager : MonoBehaviour
         userDB.topThreeExperiences = SortDictionary(UserManager.Instance.AllExperiences);
         //역량
         userDB.topThreeCapabilities = SortDictionary(UserManager.Instance.Allcapabilites);
+        //랭킹 - 기록수
+        userDB.rankingData.countRecord++;
 
         UpdateUserDB(userId, userDB);
 

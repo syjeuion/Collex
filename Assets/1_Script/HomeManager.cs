@@ -72,6 +72,7 @@ public class HomeManager : MonoBehaviour
 
         //UserDB 가져오기
         thisUserId = UserManager.Instance.newUserInformation.userId;
+        print("home thisUserId: " + thisUserId);
         GetThisUserDB();
 
         //홈 스크롤 시 앱바 색상 변경용도
@@ -124,6 +125,7 @@ public class HomeManager : MonoBehaviour
     //UserDB 가져오기
     private async void GetThisUserDB()
     {
+        print("GetThisUserDB func");
         thisUserDB = await GetUserDB(thisUserId);
         userName = thisUserDB.userInformation.userName;
         userProfiles.transform.GetChild(0).GetComponent<Image>().sprite = myProfileImgs[thisUserDB.userInformation.userProfileImg];
@@ -481,10 +483,19 @@ public class HomeManager : MonoBehaviour
     //DB에서 유저 data 가져오기
     private async Task<UserDB> GetUserDB(string userId)
     {
-        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
-        var taskResult = await dataReference.GetValueAsync();
-        UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
-        return userDB;
+        try
+        {
+            DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
+            var taskResult = await dataReference.GetValueAsync();
+            UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+            return userDB;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("GetUserDB catch error: " + e.Message);
+            UserDB userDB = new UserDB();
+            return userDB;
+        }
     }
     //DB에 유저 data 저장하기
     private async void UpdateUserDB(string userId, UserDB userDB)

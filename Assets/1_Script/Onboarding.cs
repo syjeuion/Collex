@@ -56,6 +56,9 @@ public class Onboarding : MonoBehaviour
     //유저 이름 중복 방지 리스트 UserNameList
     List<string> userNameList = new List<string>();
 
+    //
+    bool isOnboarding;
+
     //사용 컬러
     Color primary1;
     Color primary3;
@@ -89,12 +92,19 @@ public class Onboarding : MonoBehaviour
     private void Start()
     {
         StartCoroutine(waitSplash());
+        
+        //checkOnboarding();
     }
+    
     //스플래시 애니메이션이 끝나기 전 홈으로 넘어가는 것 방지
     IEnumerator waitSplash()
     {
         yield return new WaitForSeconds(0.1f);
         yield return checkOnboarding();
+        
+        //yield return new WaitForSeconds(0.1f);
+        ////yield return CheckResetDate(); //이달 첫 실행 유저인지 체크
+        //yield return new WaitForSeconds(0.1f);
     }
 
     //bool homeCheck =false;
@@ -111,20 +121,29 @@ public class Onboarding : MonoBehaviour
             SignInPage.SetActive(false);
 
             //Id가 DB에도 저장 되어있는지 확인 == 온보딩 했다는 뜻
-            bool isUserIdInDB = await GetUserIdlList(userId);
-            print("isUserIdInDB: " + isUserIdInDB);
+            //bool isUserIdInDB = await GetUserIdlList(userId);
+            List<string> userIdList = await getIdOrNameList("id");
 
-            if (isUserIdInDB)
+            print("userIdList[0]: "+userIdList[0]);
+            //print("isUserIdInDB: " + isUserIdInDB);
+
+            if (userIdList.Contains(userId))
             {
                 goHome();
+                //isOnboarding = true;
             }
-            else { getUserNameList(); } //온보딩 시작 시 userDB 불러오기
+            else {
+                //온보딩 시작 시 userDB 불러오기
+                userNameList = await getIdOrNameList("name");
+            }
         }
         else { SignInPage.SetActive(true); }
 
         //약관동의 체크
         if (UserManager.Instance.newUserInformation.agreementForApp) { AgreementsPage.SetActive(false); }
         else { AgreementsPage.SetActive(true); }
+
+        CheckResetDate(); //이달 첫 실행 유저인지 체크
     }
 
     //PlayerPrefs 불러오는 함수
@@ -413,27 +432,7 @@ public class Onboarding : MonoBehaviour
         countStep = 4;
     }
 
-    //이름 중복 체크 - 리스트 받아오기
-    private void getUserNameList()
-    {
-        DatabaseReference userIdList = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
-        userIdList.GetValueAsync().ContinueWith(task =>
-        {
-            if (task.IsFaulted)
-            {
-                Debug.LogError("checkNameOverlap Error");
-            }
-            else if (task.IsCompleted)
-            {
-                DataSnapshot snapshot = task.Result;
-                foreach (var user in snapshot.Children)
-                {
-                    print("userNameList: "+user.Key);
-                    userNameList.Add(user.Key);
-                }
-            }
-        });
-    }
+    
     //이름 중복 체크 후 이름 저장
     public void checkNameOverlap()
     {
@@ -667,6 +666,75 @@ public class Onboarding : MonoBehaviour
             DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
         }
         return isThereUserId;
+    }
+    //유저 이름 리스트 가져오기
+    private async Task<List<string>> getIdOrNameList(string type)
+    {
+        print("getIdOrNameList type: " + type);
+        List<string> list = new List<string>();
+        DatabaseReference userIdReference = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
+        Dictionary<string, string> userIdList = new Dictionary<string, string>();
+        
+        var taskResult = await userIdReference.GetValueAsync();
+        try
+        {
+            userIdList = JsonConvert.DeserializeObject<Dictionary<string, string>>(taskResult.GetRawJsonValue());
+            foreach (string key in userIdList.Keys)
+            {
+                if (type == "id")
+                { list.Add(userIdList[key]); }
+                else if (type == "name")
+                { list.Add(key); }
+            }
+        }
+        catch(Exception e) { Debug.LogError("Error deserializing JSON: " + e.Message); }
+        return list;
+    }
+
+    //이번달 첫 유저면 랭킹 리셋 시키는 함수 실행시키기
+    private async void CheckResetDate()
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("resetDate");
+        var taskResult = await dataReference.GetValueAsync();
+        string resetDate = JsonConvert.DeserializeObject<string>(taskResult.GetRawJsonValue());
+        print("taskResult.Value.ToString(): " + resetDate);
+        print("DateTime.Now.ToString(yyyy.MM): " + DateTime.Now.ToString("yyyy.MM"));
+        if (resetDate != DateTime.Now.ToString("yyyy.MM"))
+        {
+            //리셋 함수 실행
+            print("ResetRanking(idList);");
+            List<string> idList = await getIdOrNameList("id");
+            print("idList[0]: "+idList[0]);
+            ResetRanking(idList);
+
+            //resetDate 업데이트
+            resetDate = DateTime.Now.ToString("yyyy.MM");
+            await dataReference.SetValueAsync(resetDate);
+        }
+        //else {
+        //    print("isOnboarding: " + isOnboarding);
+        //    if (isOnboarding) { goHome(); } }
+    }
+    private async void ResetRanking(List<string> idList)
+    {
+        foreach(string userId in idList)
+        {
+            try
+            {
+                //print("try userId: " + userId);
+                DatabaseReference userReference =
+                    FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId).Child("rankingData");
+                RankingData rankingData = new RankingData();
+                string rankingDataStr = JsonConvert.SerializeObject(rankingData);
+                await userReference.SetRawJsonValueAsync(rankingDataStr);
+            }
+            catch
+            {
+                //print("catch userId: " + userId);
+                continue;
+            }
+        }
+        //if (isOnboarding) { goHome(); }
     }
     #endregion
 
