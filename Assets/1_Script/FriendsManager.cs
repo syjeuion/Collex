@@ -154,7 +154,7 @@ public class FriendsManager : MonoBehaviour
                 DataSnapshot snapshot = task.Result;
                 foreach (var userName in snapshot.Children)
                 {
-                    print(userName.Key);
+                    //print(userName.Key);
                     userNameList.Add(userName.Key);
                 }
             }
@@ -272,8 +272,12 @@ public class FriendsManager : MonoBehaviour
 
         //이미 요청 보낸 유저면 취소 버튼 뜨게
         bool alreadyRequest = false;
-        if (userDB.notiApplyFriendDict.ContainsKey(thisUserId))
-        { alreadyRequest = true; }
+
+        for(int i=0; i<userDB.notiApplyFriendList.Count; i++)
+        {
+            if (userDB.notiApplyFriendList[i].userId == thisUserId)
+            { alreadyRequest = true; }
+        }
 
         if (alreadyRequest)
         {
@@ -329,9 +333,11 @@ public class FriendsManager : MonoBehaviour
 
         //현재 유저 정보 넣기
         NotiInfo newRequestFriendInfo = new NotiInfo();
+        newRequestFriendInfo.userId = thisUserId;
         newRequestFriendInfo.date = DateTime.Now;
         //newRequestFriendInfo.userInformation = thisUserDB.userInformation;
-        userDB.notiApplyFriendDict.Add(thisUserId,newRequestFriendInfo);
+
+        userDB.notiApplyFriendList.Add(newRequestFriendInfo);
         userDB.isNewNotiApplyFriend = true;
 
         //다시 검색된 유저 DB 업데이트 하기
@@ -353,8 +359,11 @@ public class FriendsManager : MonoBehaviour
         UserDB userDB = await GetUserDB(searchedId);
 
         //현재 유저 정보 빼기
-        if (userDB.notiApplyFriendDict.ContainsKey(thisUserId))
-        { userDB.notiApplyFriendDict.Remove(thisUserId); }
+        for(int i=0; i<userDB.notiApplyFriendList.Count; i++)
+        {
+            if (userDB.notiApplyFriendList[i].userId == thisUserId)
+            { userDB.notiApplyFriendList.RemoveAt(i); }
+        }
         userDB.isNewNotiApplyFriend = false;
 
         //다시 검색된 유저 DB 업데이트 하기
@@ -373,8 +382,9 @@ public class FriendsManager : MonoBehaviour
         thisUserDB.isNewNotiApplyFriend = false;
         thisUserDB.isNewNotiCheerUp = false;
 
-        CheckNoti("받은응원", thisUserDB.notiCheerUpDict, content_noti_cheerUp, prefabs_noti_cheerUp, newNotiCheerUp);
-        CheckNoti("입사동기신청", thisUserDB.notiApplyFriendDict, content_noti_applyFriend, prefabs_noti_applyFriend, newNotiApplyFriend);
+        CheckNoti("받은응원", thisUserDB.notiCheerUpList, content_noti_cheerUp, prefabs_noti_cheerUp, newNotiCheerUp);
+        CheckNoti("입사동기신청", thisUserDB.notiApplyFriendList, content_noti_applyFriend, prefabs_noti_applyFriend, newNotiApplyFriend);
+        UpdateUserDB(thisUserId, thisUserDB);
     }
     //알림 페이지 닫기
     public void CloseNotificationPage()
@@ -383,21 +393,19 @@ public class FriendsManager : MonoBehaviour
         home_icon_notification.sprite = selector_icon_notification[0];
     }
     //알림 체크
-    private async void CheckNoti(string whichNoti, Dictionary<string,NotiInfo> notiDic, GameObject content, GameObject prefab, GameObject newObj)
+    private async void CheckNoti(string whichNoti, List<NotiInfo> notiList, GameObject content, GameObject prefab, GameObject newObj)
     {
         //기존 리스트 초기화
         for (int i = 2; i < content.transform.childCount; i++)
         { Destroy(content.transform.GetChild(i).gameObject); }
         //알림 있는지 체크
-        if(notiDic.Count > 0)
+        if(notiList.Count > 0)
         {
             content.transform.GetChild(0).gameObject.SetActive(false); //empty area 비활성화
             content.transform.GetChild(1).gameObject.SetActive(true); //description 활성화
 
-            foreach(string key in notiDic.Keys)
+            foreach(NotiInfo newNotiInfo in notiList)
             {
-                NotiInfo newNotiInfo = notiDic[key];
-
                 //날짜 체크
                 TimeSpan howManyDays = DateTime.Now - newNotiInfo.date;
                 int howManyDaysInt = howManyDays.Days;
@@ -407,7 +415,7 @@ public class FriendsManager : MonoBehaviour
                 else if (howManyDaysInt <= 60) { requestDate = newNotiInfo.date.ToString("MM월 dd일"); }
                 else
                 {   //60일 지나면 리스트에서 삭제하고 다음으로 넘기기
-                    notiDic.Remove(key); continue;
+                    notiList.Remove(newNotiInfo); continue;
                 }
 
                 //instance 생성
@@ -433,7 +441,7 @@ public class FriendsManager : MonoBehaviour
                     newObj.GetComponent<Button>().onClick.AddListener(MoveToIdCardBack);
                 }
                 //기본 정보 입력
-                UserDefaultInformation newNotiUserInfo = await GetUserInformationAsync(key);
+                UserDefaultInformation newNotiUserInfo = await GetUserInformationAsync(newNotiInfo.userId);
                 userInfoObj.transform.GetChild(0).GetComponent<Image>().sprite = array_profileImg[newNotiUserInfo.userProfileImg];
                 userInfoObj.transform.GetChild(1).GetComponent<TMP_Text>().text = newNotiUserInfo.userTitle + " · " + newNotiUserInfo.userJob;
                 userInfoObj.transform.GetChild(2).GetComponent<TMP_Text>().text = newNotiUserInfo.userName;
@@ -456,8 +464,10 @@ public class FriendsManager : MonoBehaviour
         string userName = thisObj.transform.GetChild(0).GetChild(2).GetComponent<TMP_Text>().text;
 
         //현재 유저의 DB에 친구 리스트 추가
-        //int thisObjIndex = thisObj.transform.GetSiblingIndex()-2;
+        int thisObjIndex = thisObj.transform.GetSiblingIndex()-2;
         string friendId = await GetUserId(userName);
+        print("userName: " + userName);
+        print("friendId: " + friendId);
 
         //FriendInfo newFriend = new FriendInfo();
         //newFriend.userInformation = thisUserDB.notiApplyFriendList[thisObjIndex].userInformation;
@@ -467,7 +477,7 @@ public class FriendsManager : MonoBehaviour
         thisUserDB.friendsDictionary.Add(friendId, dateTime);
 
         //기존 request list에서 해당 유저 정보 삭제
-        thisUserDB.notiApplyFriendDict.Remove(friendId);
+        thisUserDB.notiApplyFriendList.RemoveAt(thisObjIndex);
 
         //현재 유저 DB 업데이트
         UpdateUserDB(thisUserId, thisUserDB);
@@ -481,7 +491,7 @@ public class FriendsManager : MonoBehaviour
         UpdateUserDB(friendId, friendDB);
 
         Destroy(thisObj); //알람 삭제
-        CheckNotiEmpty(thisUserDB.notiApplyFriendDict, content_noti_applyFriend);
+        CheckNotiEmpty(thisUserDB.notiApplyFriendList, content_noti_applyFriend);
     }
     //알림 - 입사동기 신청 - 거절 시 친구 요청 리스트에서 삭제
     private async void DeleteRequestFriend()
@@ -490,19 +500,19 @@ public class FriendsManager : MonoBehaviour
         string userName = thisObj.transform.GetChild(0).GetChild(2).GetComponent<TMP_Text>().text;
 
         //기존 request list에서 해당 유저 정보 삭제
-        //int thisObjIndex = thisObj.transform.GetSiblingIndex()-2;
+        int thisObjIndex = thisObj.transform.GetSiblingIndex()-2;
         string friendId = await GetUserId(userName);
-        thisUserDB.notiApplyFriendDict.Remove(friendId);
+        thisUserDB.notiApplyFriendList.RemoveAt(thisObjIndex);
 
         //현재 유저 DB 업데이트
         UpdateUserDB(thisUserId, thisUserDB);
 
         Destroy(thisObj); //알람 삭제
-        CheckNotiEmpty(thisUserDB.notiApplyFriendDict, content_noti_applyFriend);
+        CheckNotiEmpty(thisUserDB.notiApplyFriendList, content_noti_applyFriend);
     }
     #endregion
     //알림 비워져 있으면 empty area 띄우기
-    private void CheckNotiEmpty(Dictionary<string,NotiInfo> notiList,GameObject content)
+    private void CheckNotiEmpty(List<NotiInfo> notiList,GameObject content)
     {
         if (notiList.Count == 0)
         {
@@ -692,10 +702,11 @@ public class FriendsManager : MonoBehaviour
         idcard_cheerUp.interactable = false; //응원하기 버튼 비활성화
 
         NotiInfo notiInfo = new NotiInfo();
+        notiInfo.userId = thisUserId;
         notiInfo.date = DateTime.Now;
         //notiInfo.userInformation = thisUserDB.userInformation;
 
-        friendDB.notiCheerUpDict.Add(thisUserId,notiInfo);
+        friendDB.notiCheerUpList.Add(notiInfo);
         friendDB.isNewNotiCheerUp = true;
 
         UpdateUserDB(friendId, friendDB);

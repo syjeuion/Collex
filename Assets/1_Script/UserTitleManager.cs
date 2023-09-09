@@ -619,7 +619,9 @@ public class UserTitleManager : MonoBehaviour
         UserDB userDB = await GetUserDB(userId);
 
         string userTitle = modi;
+        print("userTitle: "+userTitle);
         if (!string.IsNullOrEmpty(noun)) { userTitle += " " + noun; }
+        print("userTitle: " + userTitle);
         userDB.userInformation.userTitle = userTitle;
 
         UpdateUserDB(userId, userDB);

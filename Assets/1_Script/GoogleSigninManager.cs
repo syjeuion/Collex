@@ -129,14 +129,16 @@ public class GoogleSigninManager : MonoBehaviour
     private async void checkOnboarding(string userId)
     {
         //해당 유저 이메일이 userList에 있는지 확인
-        bool isThereUserEmail = await GetUserEmailList(userId);
-        if (isThereUserEmail)
+        bool isThereUserId = await GetUserEmailList(userId);
+        if (isThereUserId)
         {
             UserDB userDB = await GetUserDB(userId);
             //이미 해당 유저 데이터가 존재하고 이름도 존재한다면
             if (!string.IsNullOrEmpty(userDB.userInformation.userName))
             {
                 SceneManager.LoadScene("1_Home");
+                UserManager.Instance.newUserInformation.titleCheck[0]++;
+
             }
             else { return; }
         }

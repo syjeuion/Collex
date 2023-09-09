@@ -103,10 +103,12 @@ class UserDB
     public bool isNewNotiCheerUp;
     public bool isNewNotiApplyFriend;
 
-    //Notification - 받은 응원 - {id:NotiInfo}
-    public Dictionary<string, NotiInfo> notiCheerUpDict = new Dictionary<string, NotiInfo>();
-    //Notification - 입사동기 신청 - {id:NotiInfo}
-    public Dictionary<string, NotiInfo> notiApplyFriendDict = new Dictionary<string, NotiInfo>();
+    //Notification - 받은 응원
+    //public Dictionary<string, NotiInfo> notiCheerUpDict = new Dictionary<string, NotiInfo>();
+    public List<NotiInfo> notiCheerUpList = new List<NotiInfo>();
+    //Notification - 입사동기 신청
+    //public Dictionary<string, NotiInfo> notiApplyFriendDict = new Dictionary<string, NotiInfo>();
+    public List<NotiInfo> notiApplyFriendList = new List<NotiInfo>();
 
     //친구 리스트 - {id:DateTime}
     public Dictionary<string, dateTimeClass> friendsDictionary = new Dictionary<string, dateTimeClass>();
@@ -130,6 +132,7 @@ class dateTimeClass
 //친구 요청 데이터 구조
 class NotiInfo
 {
+    public string userId;
     public bool isFirstCheck = true;
     public DateTime date;
     //public UserDefaultInformation userInformation = new UserDefaultInformation();

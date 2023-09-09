@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 public class UserInformation
 {
     //public string userEmail; //유저 Email
-    public string userId="1234"; //유저 Id
+    public string userId="12345"; //유저 Id
 
     public bool agreementForApp; //약관동의 체크
 
