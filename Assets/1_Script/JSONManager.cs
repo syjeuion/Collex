@@ -99,14 +99,17 @@ class UserDB
     public string[] topThreeExperiences = new string[3];
     public string[] topThreeCapabilities = new string[3];
 
-    //Notification - 받은 응원
-    public List<NotiInfo> notiCheerUpList = new List<NotiInfo>();
-    //Notification - 입사동기 신청
-    public List<NotiInfo> notiApplyFriendList = new List<NotiInfo>();
+    //새로운 알림 있는지 체크
+    public bool isNewNotiCheerUp;
+    public bool isNewNotiApplyFriend;
 
-    //친구 리스트 - {id:info}
-    //public List<UserDefaultInformation> friendsList = new List<UserDefaultInformation>();
-    public Dictionary<string, FriendInfo> friendsDictionary = new Dictionary<string, FriendInfo>();
+    //Notification - 받은 응원 - {id:NotiInfo}
+    public Dictionary<string, NotiInfo> notiCheerUpDict = new Dictionary<string, NotiInfo>();
+    //Notification - 입사동기 신청 - {id:NotiInfo}
+    public Dictionary<string, NotiInfo> notiApplyFriendDict = new Dictionary<string, NotiInfo>();
+
+    //친구 리스트 - {id:DateTime}
+    public Dictionary<string, dateTimeClass> friendsDictionary = new Dictionary<string, dateTimeClass>();
 }
 
 //유저 기본 정보 데이터 구조
@@ -119,10 +122,9 @@ class UserDefaultInformation
     public string userJob;
 }
 //친구 리스트 데이터 구조
-class FriendInfo
+class dateTimeClass
 {
     public DateTime sendCheerUpDate;
-    public UserDefaultInformation userInformation = new UserDefaultInformation();
 }
 
 //친구 요청 데이터 구조
@@ -130,18 +132,5 @@ class NotiInfo
 {
     public bool isFirstCheck = true;
     public DateTime date;
-    public UserDefaultInformation userInformation = new UserDefaultInformation();
+    //public UserDefaultInformation userInformation = new UserDefaultInformation();
 }
-////응원하기 알림 리스트
-//class CheerUpNotiInfo
-//{
-//    public bool isFirstCheck = true;
-//    public DateTime date;
-//    public UserDefaultInformation userInformation = new UserDefaultInformation();
-//}
-
-////유저 이름 중복 체크 UserNameList 데이터 구조
-//class UserNameList
-//{
-//    public Dictionary<string, string> userNameList = new Dictionary<string, string>(); 
-//}

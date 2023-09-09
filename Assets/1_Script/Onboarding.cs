@@ -103,6 +103,7 @@ public class Onboarding : MonoBehaviour
         //로그인 체크
         userId = UserManager.Instance.newUserInformation.userId;
         print("userId: " + userId);
+        
         //string userName = "";
         //Id가 있으면 
         if (!string.IsNullOrEmpty(userId))
@@ -111,7 +112,8 @@ public class Onboarding : MonoBehaviour
 
             //Id가 DB에도 저장 되어있는지 확인 == 온보딩 했다는 뜻
             bool isUserIdInDB = await GetUserIdlList(userId);
-            print("isUserIdInDB: "+isUserIdInDB);
+            print("isUserIdInDB: " + isUserIdInDB);
+
             if (isUserIdInDB)
             {
                 goHome();
