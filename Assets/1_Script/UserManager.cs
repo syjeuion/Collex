@@ -13,7 +13,8 @@ using Newtonsoft.Json;
 
 public class UserInformation
 {
-    public string userEmail; //유저 Email
+    //public string userEmail; //유저 Email
+    public string userId="12345"; //유저 Id
 
     public bool agreementForApp; //약관동의 체크
 
@@ -32,7 +33,7 @@ public class UserInformation
     public DateTime userSignUpDate; //가입 날짜
 
     public int userProfileImgNumber; //설정된 프로필 사진 뭔지
-    public string companyName; //목표 회사
+    //public string companyName; //목표 회사
     public int idCardColorNumber;
 
     public string userTitleModi; //대표칭호 수식
@@ -240,13 +241,6 @@ public class UserManager : Singleton<UserManager>
         //북마크
         string bookmarkData = JsonConvert.SerializeObject(bookmarks);
         PlayerPrefs.SetString("BookmarkData", bookmarkData);
-    }
-
-    //PlayerPrefs 리셋-초기화 
-    private void Reset()
-    {
-        PlayerPrefs.DeleteAll();
-        print("Reset");
     }
     #endregion
 }

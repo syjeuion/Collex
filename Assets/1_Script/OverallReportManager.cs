@@ -21,6 +21,7 @@ public class OverallReportManager : MonoBehaviour
 
     //전체 활동 리포트 UI
     public GameObject page_overallReport;
+    public GameObject content_overall;
 
     //내부 변수
     string[] home_descriptions;
@@ -138,7 +139,7 @@ public class OverallReportManager : MonoBehaviour
     public void openOverallReport()
     {
         page_overallReport.SetActive(true);
-        page_overallReport.transform.GetChild(1).GetChild(0).GetChild(0).GetComponent<RectTransform>().anchoredPosition = new Vector2(0,0);
+        content_overall.GetComponent<RectTransform>().anchoredPosition = new Vector2(0,0);
 
         //전체 폴더 개수 - Summary - folderCount
         int project = UserManager.Instance.newUserInformation.projectType["프로젝트"];
@@ -152,12 +153,12 @@ public class OverallReportManager : MonoBehaviour
         //전체 기록 개수 - Total Records Count
         totalRecordsTmp[0].text = totalRecordCount.ToString()+"개";
         if (totalRecordCount < 10){
-            totalRecordsTmp[1].text = "총         의 기록을 작성했어요!";
+            totalRecordsTmp[1].text = "총          의 기록을 작성했어요!";
         }
         else if (totalRecordCount < 100){
-            totalRecordsTmp[1].text = "총            의 기록을 작성했어요!";
+            totalRecordsTmp[1].text = "총             의 기록을 작성했어요!";
         } else{
-            totalRecordsTmp[1].text = "총                의 기록을 작성했어요!";
+            totalRecordsTmp[1].text = "총                 의 기록을 작성했어요!";
         }
 
         //가장 많이 작성한 요일 - The most day of the week
@@ -168,14 +169,14 @@ public class OverallReportManager : MonoBehaviour
         int recordCountThisMonth = UserManager.Instance.newUserInformation.recordCountThisMonth;
         recordCountThisMonthTmp[1].text = $"{recordCountThisMonth}개";
         if (recordCountThisMonth < 10) {
-            recordCountThisMonthTmp[2].text = "이번 달에는\n        의 기록을 작성했어요!";
+            recordCountThisMonthTmp[2].text = "이번 달에는          의 기록을 작성했어요!";
         }else if (recordCountThisMonth < 100)
         {
-            recordCountThisMonthTmp[2].text = "이번 달에는\n           의 기록을 작성했어요!";
+            recordCountThisMonthTmp[2].text = "이번 달에는             의 기록을 작성했어요!";
         }
         else
         {
-            recordCountThisMonthTmp[2].text = "이번 달에는\n              의 기록을 작성했어요!";
+            recordCountThisMonthTmp[2].text = "이번 달에는                의 기록을 작성했어요!";
         }
         recordCountThisMonthTmp[3].text = $"그리고 이번 주에는 {UserManager.Instance.newUserInformation.recordCountThisWeek}개의 기록을 작성했네요.";
 
@@ -184,7 +185,7 @@ public class OverallReportManager : MonoBehaviour
         capabilitiesTmp[1].text = "                    이 뛰어나요!";
 
         //획득 경험 - Experiences
-        setExperiences();
+        StartCoroutine(setExperiences());
     }
 
     //그래프 그리기 - 내림차순으로 정렬하기
@@ -231,8 +232,9 @@ public class OverallReportManager : MonoBehaviour
     {
         for (int i = 0; i < sortedKeys.Count; i++)
         {
-            if (sortedValues[i] == 0) { sortedValues[i] = 10; }
-            else { sortedValues[i] *= 10; }
+            //if (sortedValues[i] == 0) { sortedValues[i] = 10; }
+            //else { sortedValues[i] *= 10; }
+            sortedValues[i] *= 10;
 
             if (sortedKeys[i] == "월")
             {
@@ -314,14 +316,20 @@ public class OverallReportManager : MonoBehaviour
     #endregion
 
     //획득 경험
-    private void setExperiences()
+    IEnumerator setExperiences()
     {
+        //리셋
+        for(int i=0; i< containerExRanking.transform.childCount; i++)
+        {
+            Destroy(containerExRanking.transform.GetChild(i).gameObject);
+        }
+
         //Dictionray 내림차순으로 정렬
         Dictionary<string, int> sortedExList = UserManager.Instance.AllExperiences.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
         //키 리스트
         List<string> sortedKeys = new List<string>();
-        foreach (string key in sortedExList.Keys) { sortedKeys.Add(key); print(key); }
+        foreach (string key in sortedExList.Keys) { sortedKeys.Add(key);}
 
         int range;
         if (sortedKeys.Count <= 5) { range = sortedKeys.Count; }
@@ -341,6 +349,10 @@ public class OverallReportManager : MonoBehaviour
             newPrefabExRanking.transform.GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = sortedKeys[i];
             newPrefabExRanking.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = $"{sortedExList[sortedKeys[i]]}회";
         }
+
+        yield return new WaitForEndOfFrame();
+        content_overall.GetComponent<VerticalLayoutGroup>().spacing = 15.9f;
+        content_overall.GetComponent<VerticalLayoutGroup>().spacing = 16f;
     }
     #endregion
 }

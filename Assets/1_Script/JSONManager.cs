@@ -87,37 +87,53 @@ class Episode
 class UserDB
 {
     //기본 정보
-    public string userEmail;
-    public string userName;
-    public string userTitle;
-    public string userJob;
+    public UserDefaultInformation userInformation = new UserDefaultInformation();
     //사원증 정보
     public string userWishCompany;
-    public int userProfileImg;
+    public int idcardColor = 3;
     //기록 정보
     public int totalFolderCount;
     public int projectFolderCount;
     public int contestFolderCount;
     public int internshipFolderCount;
-    public List<string> topThreeExperiences = new List<string>();
-    public List<string> topThreeCapabilities = new List<string>();
+    public string[] topThreeExperiences = new string[3];
+    public string[] topThreeCapabilities = new string[3];
 
-    //친구 리스트
-    public List<FriendDB> friendsList = new List<FriendDB>();
+    //새로운 알림 있는지 체크
+    public bool isNewNotiCheerUp;
+    public bool isNewNotiApplyFriend;
+
+    //Notification - 받은 응원
+    //public Dictionary<string, NotiInfo> notiCheerUpDict = new Dictionary<string, NotiInfo>();
+    public List<NotiInfo> notiCheerUpList = new List<NotiInfo>();
+    //Notification - 입사동기 신청
+    //public Dictionary<string, NotiInfo> notiApplyFriendDict = new Dictionary<string, NotiInfo>();
+    public List<NotiInfo> notiApplyFriendList = new List<NotiInfo>();
+
+    //친구 리스트 - {id:DateTime}
+    public Dictionary<string, dateTimeClass> friendsDictionary = new Dictionary<string, dateTimeClass>();
 }
 
-//친구 리스트 데이터 구조
-class FriendDB
+//유저 기본 정보 데이터 구조
+class UserDefaultInformation
 {
     //기본 정보
-    public string userEmail;
+    public int userProfileImg;
     public string userName;
     public string userTitle;
     public string userJob;
 }
+//친구 리스트 데이터 구조
+class dateTimeClass
+{
+    public DateTime sendCheerUpDate;
+}
 
-////유저 이름 중복 체크 UserNameList 데이터 구조
-//class UserNameList
-//{
-//    public Dictionary<string, string> userNameList = new Dictionary<string, string>(); 
-//}
+//친구 요청 데이터 구조
+class NotiInfo
+{
+    public string userId;
+    public bool isFirstCheck = true;
+    public DateTime date;
+    //public UserDefaultInformation userInformation = new UserDefaultInformation();
+}

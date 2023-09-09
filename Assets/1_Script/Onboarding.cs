@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -11,7 +12,10 @@ using Firebase.Database;
 
 public class Onboarding : MonoBehaviour
 {
+    //UserId
+    string userId;
     //페이지
+    public GameObject SignInPage;
     public GameObject QuitAlertPage;
     public GameObject onboardingUserPage;
     public GameObject onboardingGuidePage;
@@ -81,21 +85,48 @@ public class Onboarding : MonoBehaviour
 
         if (UserManager.Instance.firstOpen) {  GetPlayerPrefs(); }
 
-        StartCoroutine(WaitSplash());
-
-        
     }
-    
-    
-    IEnumerator WaitSplash()
+    private void Start()
     {
-        yield return new WaitForSeconds(1.5f);
+        StartCoroutine(waitSplash());
+    }
+    //스플래시 애니메이션이 끝나기 전 홈으로 넘어가는 것 방지
+    IEnumerator waitSplash()
+    {
+        yield return new WaitForSeconds(0.1f);
+        yield return checkOnboarding();
+    }
+
+    //bool homeCheck =false;
+    private async Task checkOnboarding()
+    {
+        //로그인 체크
+        userId = UserManager.Instance.newUserInformation.userId;
+        print("userId: " + userId);
+        
+        //string userName = "";
+        //Id가 있으면 
+        if (!string.IsNullOrEmpty(userId))
+        {
+            SignInPage.SetActive(false);
+
+            //Id가 DB에도 저장 되어있는지 확인 == 온보딩 했다는 뜻
+            bool isUserIdInDB = await GetUserIdlList(userId);
+            print("isUserIdInDB: " + isUserIdInDB);
+
+            if (isUserIdInDB)
+            {
+                goHome();
+            }
+            else { getUserNameList(); } //온보딩 시작 시 userDB 불러오기
+        }
+        else { SignInPage.SetActive(true); }
+
         //약관동의 체크
         if (UserManager.Instance.newUserInformation.agreementForApp) { AgreementsPage.SetActive(false); }
         else { AgreementsPage.SetActive(true); }
-        //온보딩 했으면 홈으로 바로넘어가기
-        if (!string.IsNullOrWhiteSpace(UserManager.Instance.newUserInformation.userName)) { goHome(); }
     }
+
     //PlayerPrefs 불러오는 함수
     public void GetPlayerPrefs()
     {
@@ -154,7 +185,6 @@ public class Onboarding : MonoBehaviour
     {
         UserManager.Instance.newUserInformation.agreementForApp = true;
         AgreementsPage.SetActive(false);
-        getUserNameList();
     }
     //개인정보처리약관 웹페이지 이동
     public void AgreeGoWeb()
@@ -189,14 +219,16 @@ public class Onboarding : MonoBehaviour
             daJeongImg.sprite = DaJeongFaces[0];
             guideMessage.text = "저희 <color=#408BFD>Collex</color>에서는 직무 관련 경험을 하면서 \n무엇을 했고, 배웠고, 느꼈는지를\n템플릿으로 기록할 수 있어요.";
             backButtonIcon.color = gray_800;
-            StartCoroutine(ChangeProgressBar(true, 40, 40*2));
-            countStep=1;
+            //StartCoroutine(ChangeProgressBar(true, 40, 40*2));
+            ChangeProgressBar(true, 40, 40 * 2);
+            countStep =1;
         }
         else if (countStep == 1) //앱설명>이름묻기
         {
             guideMessage.text = "아! 혹시 우리 회사에서 \n사용하고 싶은 닉네임이 있나요?";
-            StartCoroutine(ChangeProgressBar(true, 40*2, 40*3));
-            countStep=2;
+            //StartCoroutine(ChangeProgressBar(true, 40*2, 40*3));
+            ChangeProgressBar(true, 40 * 2, 40 * 3);
+            countStep =2;
         }
         else if (countStep == 2) //이름묻기>이름입력
         {
@@ -205,8 +237,9 @@ public class Onboarding : MonoBehaviour
             getUserName.SetActive(true);
             getUserJob.SetActive(false);
             getUserJobDetails.SetActive(false);
-            StartCoroutine(ChangeProgressBar(true, 40*3, 40*4));
-            countStep=3;
+            //StartCoroutine(ChangeProgressBar(true, 40*3, 40*4));ChangeProgressBar(true, 40*3, 40*4)
+            ChangeProgressBar(true, 40 * 3, 40 * 4);
+            countStep = 3;
         }
         else if(countStep==4) //직군묻기>직군입력
         {
@@ -215,14 +248,16 @@ public class Onboarding : MonoBehaviour
             getUserName.SetActive(false);
             getUserJob.SetActive(true);
             getUserJobDetails.SetActive(false);
-            StartCoroutine(ChangeProgressBar(true, 40 * 5, 40 * 6));
+            //StartCoroutine(ChangeProgressBar(true, 40 * 5, 40 * 6));
+            ChangeProgressBar(true, 40 * 5, 40 * 6);
             countStep = 5;
         }
         else if(countStep==7|| countStep == 8) //직무선택후반응>마무리
         {
             daJeongImg.sprite = DaJeongFaces[2];
             guideMessage.text = "앗, 갑자기 팀장님이 부르셔서...\n일단 활동 폴더 추가하고,\n기록을 작성해 보시겠어요?";
-            StartCoroutine(ChangeProgressBar(true, 40*8, 360));
+            //StartCoroutine(ChangeProgressBar(true, 40*8, 360));
+            ChangeProgressBar(true, 40 * 8, 360);
             countStep = 9;
         }
         else //countStep==9 //마무리>홈
@@ -241,13 +276,15 @@ public class Onboarding : MonoBehaviour
             daJeongImg.sprite = DaJeongFaces[1];
             guideMessage.text = "<color=#408BFD>Collex</color>에 입사한 걸 환영해요!\n저는 사수 한다정이라고 해요.\n잘 부탁해요.…";
             backButtonIcon.color = gray_400;
-            StartCoroutine(ChangeProgressBar(false, 40 * 2, 40));
+            //StartCoroutine(ChangeProgressBar(false, 40 * 2, 40));
+            ChangeProgressBar(false, 40 * 2, 40);
             countStep = 0;
         }
         else if (countStep == 2) //이름묻기>앱설명
         {
             guideMessage.text = "저희 <color=#408BFD>Collex</color>에서는 직무 관련 경험을 하면서 \n무엇을 했고, 배웠고, 느꼈는지를\n템플릿으로 기록할 수 있어요.";
-            StartCoroutine(ChangeProgressBar(false, 40 * 3, 40 * 2));
+            //StartCoroutine(ChangeProgressBar(false, 40 * 3, 40 * 2));
+            ChangeProgressBar(false, 40 * 3, 40 * 2);
             countStep = 1;
         }
         else if (countStep == 3) //이름입력>이름묻기
@@ -255,7 +292,8 @@ public class Onboarding : MonoBehaviour
             onboardingGuidePage.SetActive(true);
             onboardingUserPage.SetActive(false);
             guideMessage.text = "아! 혹시 우리 회사에서 \n사용하고 싶은 닉네임이 있나요?";
-            StartCoroutine(ChangeProgressBar(false, 40 * 4, 40 * 3));
+            //StartCoroutine(ChangeProgressBar(false, 40 * 4, 40 * 3));
+            ChangeProgressBar(false, 40 * 4, 40 * 3);
             countStep = 2;
         }
         else if (countStep == 4) //직군묻기>이름입력
@@ -265,7 +303,8 @@ public class Onboarding : MonoBehaviour
             getUserName.SetActive(true);
             getUserJob.SetActive(false);
             getUserJobDetails.SetActive(false);
-            StartCoroutine(ChangeProgressBar(false, 40 * 5, 40 * 4));
+            //StartCoroutine(ChangeProgressBar(false, 40 * 5, 40 * 4));
+            ChangeProgressBar(false, 40 * 5, 40 * 4);
             countStep = 3;
         }
         else if (countStep == 5) //직군입력>직군묻기
@@ -273,7 +312,8 @@ public class Onboarding : MonoBehaviour
             onboardingGuidePage.SetActive(true);
             onboardingUserPage.SetActive(false);
             guideMessage.text = "좋아요, " + UserName+ "님!\n저희 팀에서 어떤 업무를 담당할지 아시죠?";
-            StartCoroutine(ChangeProgressBar(false, 40 * 6, 40 * 5));
+            //StartCoroutine(ChangeProgressBar(false, 40 * 6, 40 * 5));
+            ChangeProgressBar(false, 40 * 6, 40 * 5);
             daJeongImg.sprite = DaJeongFaces[0];
             countStep = 4;
         }
@@ -281,7 +321,8 @@ public class Onboarding : MonoBehaviour
         {
             getUserJobDetails.SetActive(false);
             getUserJob.SetActive(true);
-            StartCoroutine(ChangeProgressBar(false, 40 * 7, 40 * 6));
+            //StartCoroutine(ChangeProgressBar(false, 40 * 7, 40 * 6));
+            ChangeProgressBar(false, 40 * 7, 40 * 6);
             countStep = 5;
         }
         else if (countStep == 7 || countStep==8) //직무선택후반응>직무입력||직군입력
@@ -291,9 +332,13 @@ public class Onboarding : MonoBehaviour
             
             if (UserManager.Instance.newUserInformation.kindOfJob==5)
             {   countStep = 5;
-                StartCoroutine(ChangeProgressBar(false, 40 * 8, 40 * 6));
+                //StartCoroutine(ChangeProgressBar(false, 40 * 8, 40 * 6));
+                ChangeProgressBar(false, 40 * 8, 40 * 6);
             }
-            else { countStep = 6; StartCoroutine(ChangeProgressBar(false, 40 * 8, 40 * 7)); }
+            else {
+                //countStep = 6; StartCoroutine(ChangeProgressBar(false, 40 * 8, 40 * 7));
+                ChangeProgressBar(false, 40 * 8, 40 * 7);
+            }
         }
         else //countStep ==9 //마무리>직무선택후반응
         {
@@ -307,7 +352,8 @@ public class Onboarding : MonoBehaviour
                 countStep = 8;
                 daJeongImg.sprite = DaJeongFaces[0];
             }
-            StartCoroutine(ChangeProgressBar(false, 360, 40 * 8));
+            //StartCoroutine(ChangeProgressBar(false, 360, 40 * 8));
+            ChangeProgressBar(false, 360, 40 * 8);
         }
     }
     #endregion
@@ -362,15 +408,16 @@ public class Onboarding : MonoBehaviour
         onboardingGuidePage.SetActive(true);
         onboardingUserPage.SetActive(false);
         guideMessage.text = "좋아요, "+UserName+"님!\n저희 팀에서 어떤 업무를 담당할지 아시죠?";
-        StartCoroutine(ChangeProgressBar(true, 40*4, 40*5));
+        //StartCoroutine(ChangeProgressBar(true, 40*4, 40*5));
+        ChangeProgressBar(true, 40 * 4, 40 * 5);
         countStep = 4;
     }
 
     //이름 중복 체크 - 리스트 받아오기
-    public void getUserNameList()
+    private void getUserNameList()
     {
-        DatabaseReference userNameDB = FirebaseDatabase.DefaultInstance.GetReference("userNameList");
-        userNameDB.GetValueAsync().ContinueWith(task =>
+        DatabaseReference userIdList = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
+        userIdList.GetValueAsync().ContinueWith(task =>
         {
             if (task.IsFaulted)
             {
@@ -381,7 +428,7 @@ public class Onboarding : MonoBehaviour
                 DataSnapshot snapshot = task.Result;
                 foreach (var user in snapshot.Children)
                 {
-                    Debug.Log(user.Key);
+                    print("userNameList: "+user.Key);
                     userNameList.Add(user.Key);
                 }
             }
@@ -401,17 +448,7 @@ public class Onboarding : MonoBehaviour
         else
         {
             SaveUserName(); //이름 저장
-            //userNameList.Add(userName);
-            DatabaseReference userNameDB = FirebaseDatabase.DefaultInstance.GetReference("userNameList");
-            Dictionary<string, object> newUserName = new Dictionary<string, object>();
-            newUserName.Add(UserName, UserName);
-            userNameDB.UpdateChildrenAsync(newUserName).ContinueWith(task =>
-            {
-                if (task.IsCompleted)
-                {
-                    Debug.Log("update user name completed");
-                }
-            });
+            
         }
     }
     #endregion
@@ -437,7 +474,8 @@ public class Onboarding : MonoBehaviour
             onboardingUserPage.SetActive(false);
             guideMessage.text = "아, 그랬나요?";
             daJeongImg.sprite = DaJeongFaces[0];
-            StartCoroutine(ChangeProgressBar(true, 40 * 6, 40 * 8));
+            //StartCoroutine(ChangeProgressBar(true, 40 * 6, 40 * 8));
+            ChangeProgressBar(true, 40 * 6, 40 * 8);
             countStep = 8;
         }
         else
@@ -445,7 +483,8 @@ public class Onboarding : MonoBehaviour
             getUserJob.SetActive(false);
             getUserJobDetails.SetActive(true);
             SetJobDetails();
-            StartCoroutine(ChangeProgressBar(true, 40 * 6, 40 * 7));
+            //StartCoroutine(ChangeProgressBar(true, 40 * 6, 40 * 7));
+            ChangeProgressBar(true, 40 * 6, 40 * 7);
             countStep = 6;
         }
         
@@ -498,7 +537,8 @@ public class Onboarding : MonoBehaviour
         onboardingUserPage.SetActive(false);
         onboardingGuidePage.SetActive(true);
 
-        StartCoroutine(ChangeProgressBar(true, 40*7, 40*8));
+        //StartCoroutine(ChangeProgressBar(true, 40*7, 40*8));
+        ChangeProgressBar(true, 40 * 7, 40 * 8);
     }
     #endregion
 
@@ -525,18 +565,31 @@ public class Onboarding : MonoBehaviour
             UserManager.Instance.newUserInformation.userTitleNoun = "개발자";
         }
 
+        //온보딩 정보 파이어베이스에 저장
+        UserDB newUserData = new UserDB();
+        newUserData.userInformation.userName = UserName;
+        newUserData.userInformation.userJob = JobList[UserManager.Instance.newUserInformation.kindOfJob, UserManager.Instance.newUserInformation.detailJob];
+        newUserData.userInformation.userTitle = UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
+
+        //UserDB 저장
+        UpdateUserDB(userId, newUserData);
+        //유저 UserIdList 저장
+        UpdateUserIdList();
+
+        //칭호 획득창 띄우기
         UserManager.Instance.getTitle = 2;
     }
 
     //ProgressBar 움직이게
-    IEnumerator ChangeProgressBar(bool next, int startWidth, int finishWidth)
+    //IEnumerator ChangeProgressBar(bool next, int startWidth, int finishWidth)
+    void ChangeProgressBar(bool next, int startWidth, int finishWidth)
     {
         if (next)
         {
             for (int i = startWidth; i < finishWidth + 1; i++)
             {
                 progressBar.GetComponent<RectTransform>().sizeDelta = new Vector2(i, 4);
-                yield return new WaitForEndOfFrame();
+                //yield return new WaitForEndOfFrame();
             }
         }
         else
@@ -544,10 +597,78 @@ public class Onboarding : MonoBehaviour
             for (int i = startWidth; i > finishWidth + 1; i--)
             {
                 progressBar.GetComponent<RectTransform>().sizeDelta = new Vector2(i, 4);
-                yield return new WaitForEndOfFrame();
+                //yield return new WaitForEndOfFrame();
             }
         }
     }
+
+    #region 파이어베이스
+    //DB에서 유저 data 가져오기
+    private async Task<string> GetUserDB(string userId)
+    {
+        UserDB userDB = new UserDB();
+        string userName;
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
+        try
+        {
+            var taskResult = await dataReference.GetValueAsync();
+            userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+            userName = userDB.userInformation.userName;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error: " + e.Message);
+            DontDestroyCanvas.openQuitAlert(); //강제 종료 알랏
+            userName = "";
+            //DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+        }
+        print("userName: " + userName);
+        return userName;
+    }
+
+    //DB에 유저 data 저장하기
+    private async void UpdateUserDB(string userId, UserDB userDB)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
+        string userDBstr = JsonConvert.SerializeObject(userDB);
+        await dataReference.SetRawJsonValueAsync(userDBstr);
+    }
+    //UserIdList 저장하기
+    private async void UpdateUserIdList()
+    {
+        //UserEmail List 저장
+        Dictionary<string, string> userIdDic;
+
+        DatabaseReference userIdList = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
+        var taskResult = await userIdList.GetValueAsync();
+        userIdDic = JsonConvert.DeserializeObject<Dictionary<string, string>>(taskResult.GetRawJsonValue());
+        userIdDic.Add(UserName, userId);
+        
+        string userIdListStr = JsonConvert.SerializeObject(userIdDic);
+        await userIdList.SetRawJsonValueAsync(userIdListStr);
+    }
+    //유저 Id 리스트 가져오기
+    private async Task<bool> GetUserIdlList(string userId)
+    {
+        bool isThereUserId = false;
+
+        DatabaseReference userList = FirebaseDatabase.DefaultInstance.GetReference("userList");
+        try
+        {
+            var taskResult = await userList.GetValueAsync();
+            foreach (var user in taskResult.Children)
+            {
+                if (user.Key == userId) { isThereUserId = true; }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error: " + e.Message);
+            DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+        }
+        return isThereUserId;
+    }
+    #endregion
 
     public void goHome() { SceneManager.LoadScene("1_Home"); }
     public void quitApplication() { Application.Quit(); }
