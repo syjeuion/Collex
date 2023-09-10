@@ -148,6 +148,6 @@ class RankingData
     public int countRecord; //기록 수
     public int countCheerUp; //응원 수
 
-    public Dictionary<string, int> RankingRecord = new Dictionary<string, int>();
-    public Dictionary<string, int> RankingCheerUp = new Dictionary<string, int>();
+    public Dictionary<string, int> RankingRecord = new Dictionary<string, int>(); //key: id
+    public Dictionary<string, int> RankingCheerUp = new Dictionary<string, int>();//key: id
 }

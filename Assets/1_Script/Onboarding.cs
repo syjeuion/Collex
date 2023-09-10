@@ -91,9 +91,8 @@ public class Onboarding : MonoBehaviour
     }
     private void Start()
     {
+        DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
         StartCoroutine(waitSplash());
-        
-        //checkOnboarding();
     }
     
     //스플래시 애니메이션이 끝나기 전 홈으로 넘어가는 것 방지
@@ -101,10 +100,6 @@ public class Onboarding : MonoBehaviour
     {
         yield return new WaitForSeconds(0.1f);
         yield return checkOnboarding();
-        
-        //yield return new WaitForSeconds(0.1f);
-        ////yield return CheckResetDate(); //이달 첫 실행 유저인지 체크
-        //yield return new WaitForSeconds(0.1f);
     }
 
     //bool homeCheck =false;
@@ -126,14 +121,16 @@ public class Onboarding : MonoBehaviour
 
             print("userIdList[0]: "+userIdList[0]);
             //print("isUserIdInDB: " + isUserIdInDB);
-
+            
             if (userIdList.Contains(userId))
             {
                 goHome();
+                DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
                 //isOnboarding = true;
             }
             else {
                 //온보딩 시작 시 userDB 불러오기
+                DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
                 userNameList = await getIdOrNameList("name");
             }
         }
