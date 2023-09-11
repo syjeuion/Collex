@@ -97,8 +97,8 @@ class UserDB
     public int projectFolderCount;
     public int contestFolderCount;
     public int internshipFolderCount;
-    public string[] topThreeExperiences = new string[3] {"","",""};
-    public string[] topThreeCapabilities = new string[3] { "", "", "" };
+    public string[] topThreeExperiences = new string[3] {"-","-","-"};
+    public string[] topThreeCapabilities = new string[3] { "-", "-", "-" };
 
     //새로운 알림 있는지 체크
     public bool isNewNotiCheerUp;
@@ -150,4 +150,13 @@ class RankingData
 
     public Dictionary<string, int> RankingRecord = new Dictionary<string, int>(); //key: id
     public Dictionary<string, int> RankingCheerUp = new Dictionary<string, int>();//key: id
+
+    public Dictionary<string, RankingGap> gapDic_record = new Dictionary<string, RankingGap>(); //이전 갭 저장
+    public Dictionary<string, RankingGap> gapDic_cheerUp = new Dictionary<string, RankingGap>(); //이전 갭 저장
+}
+//Gap class
+class RankingGap
+{
+    public string rankingStr;
+    public string rankingColor = "#575F6B";
 }

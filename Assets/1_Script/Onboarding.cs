@@ -667,7 +667,6 @@ public class Onboarding : MonoBehaviour
     //유저 이름 리스트 가져오기
     private async Task<List<string>> getIdOrNameList(string type)
     {
-        print("getIdOrNameList type: " + type);
         List<string> list = new List<string>();
         DatabaseReference userIdReference = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
         Dictionary<string, string> userIdList = new Dictionary<string, string>();
@@ -694,14 +693,11 @@ public class Onboarding : MonoBehaviour
         DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("resetDate");
         var taskResult = await dataReference.GetValueAsync();
         string resetDate = JsonConvert.DeserializeObject<string>(taskResult.GetRawJsonValue());
-        print("taskResult.Value.ToString(): " + resetDate);
-        print("DateTime.Now.ToString(yyyy.MM): " + DateTime.Now.ToString("yyyy.MM"));
+
         if (resetDate != DateTime.Now.ToString("yyyy.MM"))
         {
             //리셋 함수 실행
-            print("ResetRanking(idList);");
             List<string> idList = await getIdOrNameList("id");
-            print("idList[0]: "+idList[0]);
             ResetRanking(idList);
 
             //resetDate 업데이트

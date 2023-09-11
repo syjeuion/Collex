@@ -92,13 +92,13 @@ public class RankingManager : MonoBehaviour
         await celculateRanking("record", friendIdList);
         DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
         await celculateRanking("cheerUp", friendIdList);
-        print("출력 완료");
         
         //파이어베이스 업데이트
         UpdateUserDB(thisUserId, thisUserDB);
     }
     //친구 랭킹 - 순위 계산
     int index = 2; //직전 랭킹과 같을 때 해당 인덱스
+    bool isRankingSame;
     private async Task celculateRanking(string whichRanking, List<string> friendIdList)
     {
         index = 2;
@@ -134,16 +134,44 @@ public class RankingManager : MonoBehaviour
 
             //동순위 처리
             if (i == 0) { beforeCount = newCount; }
-            if ( newCount == beforeCount) { newRanking = beforeRanking; }
+            if (newCount == beforeCount) { newRanking = beforeRanking; }
             else { index = i + 2; }
             beforeRanking = newRanking;
             beforeCount = newCount;
-            
-            newSortedRanking.Add(id, newRanking);
-            print(whichRanking + " - " + id+" : " + i +", index: "+index);
 
+            newSortedRanking.Add(id, newRanking);
+        }
+        //기존 순위와 동일한지 체크
+        if (whichRanking == "record")
+        {
+            isRankingSame = true;
+            for (int i=0; i<newSortedRanking.Count; i++)
+            {
+                string id = sortedIds[i];
+                if(thisUserDB.rankingData.RankingRecord.ContainsKey(id)
+                    && thisUserDB.rankingData.RankingRecord[id] != newSortedRanking[id])
+                { isRankingSame = false; break; }
+            }
+        }
+        else {
+            isRankingSame = true;
+            for (int i = 0; i < newSortedRanking.Count; i++)
+            {
+                string id = sortedIds[i];
+                if (thisUserDB.rankingData.RankingCheerUp.ContainsKey(id)
+                    && thisUserDB.rankingData.RankingCheerUp[id] != newSortedRanking[id])
+                { isRankingSame = false; break; }
+            }
+        }
+        print(whichRanking+" - isRankingSame: " + isRankingSame);
+
+        for (int i = 0; i < sortedIds.Count; i++)
+        {
             //해당 유저 정보 가져오기
-            UserDefaultInformation friendInfo = await GetUserInformation(id);
+            string userId = sortedIds[i];
+            UserDefaultInformation friendInfo = await GetUserInformation(userId);
+
+            
 
             //기록/응원 content 세팅
             GameObject myRanking;
@@ -168,34 +196,73 @@ public class RankingManager : MonoBehaviour
             Color changeStrColor;
             //기존 순위와 비교
             string gapStr;
-            if (originalRanking.ContainsKey(id))
-            {
-                int gap = newRanking - originalRanking[id];
 
-                if (gap < 0) //현재 순위가 더 낮음
+            if (isRankingSame)
+            {
+                RankingGap rankingGapBefore = new RankingGap() ;
+                if (whichRanking == "record"&& thisUserDB.rankingData.gapDic_record.ContainsKey(userId))
                 {
-                    gapStr = (gap * -1).ToString() + "↑";
-                    changeStrColor = red;
+                    rankingGapBefore = thisUserDB.rankingData.gapDic_record[userId];
                 }
-                else if (gap > 0) //현재 순위가 더 높음
+                else if(whichRanking == "cheerUp" && thisUserDB.rankingData.gapDic_cheerUp.ContainsKey(userId))
                 {
-                    gapStr = (gap).ToString() + "↓";
-                    changeStrColor = primary3;
+                    rankingGapBefore = thisUserDB.rankingData.gapDic_cheerUp[userId];
                 }
-                else //동일
+                else { rankingGapBefore.rankingStr = "-";
+                    rankingGapBefore.rankingColor = "#"+ColorUtility.ToHtmlStringRGB(gray700);
+                }
+                gapStr = rankingGapBefore.rankingStr;
+                ColorUtility.TryParseHtmlString(rankingGapBefore.rankingColor, out changeStrColor);
+                //changeStrColor = rankingGapBefore.rankingColor;
+            }
+            else
+            {
+                if (originalRanking.ContainsKey(userId))
+                {
+                    int gap = newSortedRanking[userId] - originalRanking[userId];
+
+                    if (gap < 0) //현재 순위가 더 낮음
+                    {
+                        gapStr = (gap * -1).ToString() + "↑";
+                        changeStrColor = red;
+                    }
+                    else if (gap > 0) //현재 순위가 더 높음
+                    {
+                        gapStr = (gap).ToString() + "↓";
+                        changeStrColor = primary3;
+                    }
+                    else //동일
+                    {
+                        gapStr = "-";
+                        changeStrColor = gray700;
+                    }
+                }
+                else
                 {
                     gapStr = "-";
                     changeStrColor = gray700;
                 }
             }
+
+            SetFriendRankingUI(content, myRanking, userId,
+                newSortedRanking[userId].ToString(), gapStr, changeStrColor, friendInfo, icon, sortedRankingDic[userId].ToString());
+
+            //기존 갭 저장
+            RankingGap rankingGap = new RankingGap();
+            rankingGap.rankingStr = gapStr;
+            rankingGap.rankingColor = "#" + ColorUtility.ToHtmlStringRGB(changeStrColor);
+            if (whichRanking == "record")
+            {
+                if (thisUserDB.rankingData.gapDic_record.ContainsKey(userId))
+                    { thisUserDB.rankingData.gapDic_record[userId] = rankingGap; }
+                else { thisUserDB.rankingData.gapDic_record.Add(userId, rankingGap); }
+            }
             else
             {
-                gapStr = "-";
-                changeStrColor = gray700;
+                if (thisUserDB.rankingData.gapDic_cheerUp.ContainsKey(userId))
+                    { thisUserDB.rankingData.gapDic_cheerUp[userId] = rankingGap; }
+                else { thisUserDB.rankingData.gapDic_cheerUp.Add(userId, rankingGap); }
             }
-
-            SetFriendRankingUI(content, myRanking, id,
-                newRanking.ToString(), gapStr, changeStrColor, friendInfo, icon, newCount.ToString());
         }
         
         if (whichRanking == "record")
@@ -203,7 +270,7 @@ public class RankingManager : MonoBehaviour
             thisUserDB.rankingData.RankingRecord = newSortedRanking;
         }
         else { thisUserDB.rankingData.RankingCheerUp = newSortedRanking; }
-        print(whichRanking + " - 실행 완료");
+
     }
     //친구 랭킹 - UI 출력
     private void SetFriendRankingUI(GameObject content,GameObject myRanking,string id,
@@ -211,7 +278,6 @@ public class RankingManager : MonoBehaviour
     {
         //좌측
         newFriendRanking = Instantiate(prefab_friendRanking, content.transform);
-        print("UI출력 - " + id +" : "+ ranking);
         newFriendRanking.transform.GetChild(0).GetComponent<TMP_Text>().text = ranking;
         newFriendRanking.transform.GetChild(1).GetComponent<TMP_Text>().text = gapStr;
         newFriendRanking.transform.GetChild(1).GetComponent<TMP_Text>().color = color;
@@ -233,7 +299,6 @@ public class RankingManager : MonoBehaviour
 
             //내 순위가 동순위일때 젤 위에 뜨게
             newFriendRanking.transform.SetSiblingIndex(index);
-            print("my index: " + index);
         }
     }
 
