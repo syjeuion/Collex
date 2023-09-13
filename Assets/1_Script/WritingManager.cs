@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Linq;
 using System;
 using UnityEngine;
@@ -601,6 +600,8 @@ public class WritingManager : MonoBehaviour
         userDB.topThreeExperiences = SortDictionary(UserManager.Instance.AllExperiences);
         //역량
         userDB.topThreeCapabilities = SortDictionary(UserManager.Instance.Allcapabilites);
+        //랭킹 - 기록수
+        userDB.rankingData.countRecord++;
 
         UpdateUserDB(userId, userDB);
 
@@ -619,21 +620,16 @@ public class WritingManager : MonoBehaviour
 
         string[] sortedArr = new string[3];
 
-        if (sortedKeys.Count < 3)
+        int arrayCount = sortedKeys.Count;
+        for (int i = 0; i < 3; i++)
         {
-            for(int i = 0; i < sortedKeys.Count; i++)
+            if (i > arrayCount-1)
             {
-                sortedArr[i] = sortedKeys[i];
+                sortedArr[i] = "-";
             }
+            else { sortedArr[i] = sortedKeys[i]; }
         }
-        else
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                sortedArr[i] = sortedKeys[i];
-            }
-        }
-        
+
         return sortedArr;
     }
 

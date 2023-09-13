@@ -8932,7 +8932,7 @@ MonoBehaviour:
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ReverseArrangement: 1
 --- !u!114 &448734525
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26967,7 +26967,7 @@ MonoBehaviour:
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ReverseArrangement: 1
 --- !u!114 &1493245741
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28920,7 +28920,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\n000\uB2D8!"
+  m_text: "\n\uB2D8!"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c5000a81c3c36422ca5f27e184c26663, type: 2}
   m_sharedMaterial: {fileID: -2841795286955348457, guid: c5000a81c3c36422ca5f27e184c26663, type: 2}
@@ -30047,7 +30047,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "00\uAC1C"
+  m_text: "\uAC1C"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 224540759b2b140eca5f65e30c222bd4, type: 2}
   m_sharedMaterial: {fileID: -4007919980066630107, guid: 224540759b2b140eca5f65e30c222bd4, type: 2}

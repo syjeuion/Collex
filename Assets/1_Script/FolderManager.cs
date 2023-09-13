@@ -980,6 +980,7 @@ public class FolderManager : MonoBehaviour
         Dictionary<string, int> sortedEx = thisProject.experiences.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
         List<string> sortedKeys = new List<string>();
         foreach (string key in sortedEx.Keys) sortedKeys.Add(key);
+
         if (sortedKeys.Count <= 3)
         {
             Experiences.transform.GetChild(1).gameObject.SetActive(false);
