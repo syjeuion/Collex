@@ -620,21 +620,16 @@ public class WritingManager : MonoBehaviour
 
         string[] sortedArr = new string[3];
 
-        if (sortedKeys.Count < 3)
+        int arrayCount = sortedKeys.Count;
+        for (int i = 0; i < 3; i++)
         {
-            for(int i = 0; i < sortedKeys.Count; i++)
+            if (i > arrayCount-1)
             {
-                sortedArr[i] = sortedKeys[i];
+                sortedArr[i] = "-";
             }
+            else { sortedArr[i] = sortedKeys[i]; }
         }
-        else
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                sortedArr[i] = sortedKeys[i];
-            }
-        }
-        
+
         return sortedArr;
     }
 
