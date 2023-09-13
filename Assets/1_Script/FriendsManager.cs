@@ -620,6 +620,12 @@ public class FriendsManager : MonoBehaviour
         string friendName = EventSystem.current.currentSelectedGameObject.transform.parent.GetChild(2).GetComponent<TMP_Text>().text;
         idcard_front.transform.parent.gameObject.SetActive(true);
 
+        //온보딩
+        if (!UserManager.Instance.newUserInformation.idcard_onboarding)
+        { idcard_front.transform.parent.GetChild(2).gameObject.SetActive(true);
+            UserManager.Instance.newUserInformation.idcard_onboarding = true;
+        }
+
         //친구 데이터 가져오기
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
         friendId = await GetUserId(friendName);
@@ -675,6 +681,7 @@ public class FriendsManager : MonoBehaviour
     //앞면 클릭 시 뒷면으로 돌아가기
     public void TurnIdCardFrontToBack()
     {
+        idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
         idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = false; //중복 터치 방지
         friendIdcardAni.SetTrigger("frontToBack");
         idcard_back.transform.GetChild(10).GetComponent<Button>().interactable = true;
@@ -692,6 +699,7 @@ public class FriendsManager : MonoBehaviour
         idcard_front.transform.parent.gameObject.SetActive(false);
         idcard_back.SetActive(true);
         idcard_front.SetActive(true);
+        idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
     }
     #endregion
 

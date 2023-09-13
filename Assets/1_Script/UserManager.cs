@@ -24,6 +24,7 @@ public class UserInformation
     public int isItFirstTitleCollection; //칭호컬렉션 처음인지
     public int isItFirstUserTitle; //대표칭호 처음인지
     public int folderPageCount; //폴더페이지 몇번 들어갔는지-툴팁
+    public bool idcard_onboarding; //사원증 처음 들어가면 온보딩 띄우기
 
     public bool homeBanner; //홈 이용팁 배너 클릭 유무
 
