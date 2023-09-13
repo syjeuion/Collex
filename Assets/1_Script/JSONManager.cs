@@ -89,15 +89,16 @@ class UserDB
     //기본 정보
     public UserDefaultInformation userInformation = new UserDefaultInformation();
     //사원증 정보
-    public string userWishCompany;
+    public string userWishCompany ="";
     public int idcardColor = 3;
+
     //기록 정보
     public int totalFolderCount;
     public int projectFolderCount;
     public int contestFolderCount;
     public int internshipFolderCount;
-    public string[] topThreeExperiences = new string[3];
-    public string[] topThreeCapabilities = new string[3];
+    public string[] topThreeExperiences = new string[3] {"-","-","-"};
+    public string[] topThreeCapabilities = new string[3] { "-", "-", "-" };
 
     //새로운 알림 있는지 체크
     public bool isNewNotiCheerUp;
@@ -112,6 +113,9 @@ class UserDB
 
     //친구 리스트 - {id:DateTime}
     public Dictionary<string, dateTimeClass> friendsDictionary = new Dictionary<string, dateTimeClass>();
+
+    //랭킹 데이터
+    public RankingData rankingData = new RankingData();
 }
 
 //유저 기본 정보 데이터 구조
@@ -136,4 +140,23 @@ class NotiInfo
     public bool isFirstCheck = true;
     public DateTime date;
     //public UserDefaultInformation userInformation = new UserDefaultInformation();
+}
+
+//랭킹 관련 데이터 구조
+class RankingData
+{
+    public int countRecord; //기록 수
+    public int countCheerUp; //응원 수
+
+    public Dictionary<string, int> RankingRecord = new Dictionary<string, int>(); //key: id
+    public Dictionary<string, int> RankingCheerUp = new Dictionary<string, int>();//key: id
+
+    public Dictionary<string, RankingGap> gapDic_record = new Dictionary<string, RankingGap>(); //이전 갭 저장
+    public Dictionary<string, RankingGap> gapDic_cheerUp = new Dictionary<string, RankingGap>(); //이전 갭 저장
+}
+//Gap class
+class RankingGap
+{
+    public string rankingStr;
+    public string rankingColor = "#575F6B";
 }

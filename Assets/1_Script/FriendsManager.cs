@@ -648,19 +648,18 @@ public class FriendsManager : MonoBehaviour
     //뒷면 데이터 세팅
     private void SetIdcardBack(UserDB friendDB)
     {
+        //이름
+        idcard_back.transform.GetChild(0).GetComponent<TMP_Text>().text = friendDB.userInformation.userName+ "님의 활동 내역";
         //기록 개수
         idcard_back.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = friendDB.totalFolderCount.ToString();
         idcard_back.transform.GetChild(3).GetChild(1).GetComponent<TMP_Text>().text = friendDB.contestFolderCount.ToString();
         idcard_back.transform.GetChild(4).GetChild(1).GetComponent<TMP_Text>().text = friendDB.projectFolderCount.ToString();
         idcard_back.transform.GetChild(5).GetChild(1).GetComponent<TMP_Text>().text = friendDB.internshipFolderCount.ToString();
+
         //top3 경험
-        idcard_back.transform.GetChild(7).GetChild(0).GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = friendDB.topThreeExperiences[0];
-        idcard_back.transform.GetChild(7).GetChild(0).GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = friendDB.topThreeExperiences[1];
-        idcard_back.transform.GetChild(7).GetChild(0).GetChild(2).GetChild(1).GetComponent<TMP_Text>().text = friendDB.topThreeExperiences[2];
+        SetTopThree(friendDB.topThreeExperiences, idcard_back.transform.GetChild(7).GetChild(0).gameObject);
         //top3 역량
-        idcard_back.transform.GetChild(7).GetChild(2).GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = friendDB.topThreeCapabilities[0];
-        idcard_back.transform.GetChild(7).GetChild(2).GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = friendDB.topThreeCapabilities[1];
-        idcard_back.transform.GetChild(7).GetChild(2).GetChild(2).GetChild(1).GetComponent<TMP_Text>().text = friendDB.topThreeCapabilities[2];
+        SetTopThree(friendDB.topThreeCapabilities, idcard_back.transform.GetChild(7).GetChild(2).gameObject);
 
         //응원하기 버튼 활성화 여부
         TimeSpan howManyDays = DateTime.Now - thisUserDB.friendsDictionary[friendId].sendCheerUpDate;
@@ -671,6 +670,26 @@ public class FriendsManager : MonoBehaviour
             idcard_cheerUp.interactable = false;
         }
         else { idcard_cheerUp.interactable = true; print("cheerUp yet"); }
+    }
+    //Top3 비었는지 체크 후 UI 세팅
+    private void SetTopThree(string[] topThreeArray, GameObject topThreeContainer)
+    {
+        int isEmptyExCount = 0;
+        foreach (string value in topThreeArray)
+        {
+            if (string.IsNullOrEmpty(value) || value == "-") { isEmptyExCount++; }
+        }
+        if (isEmptyExCount >= 3)
+        {
+            topThreeContainer.transform.GetChild(3).gameObject.SetActive(true);
+        }
+        else
+        {
+            topThreeContainer.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = topThreeArray[0];
+            topThreeContainer.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = topThreeArray[1];
+            topThreeContainer.transform.GetChild(2).GetChild(1).GetComponent<TMP_Text>().text = topThreeArray[2];
+            topThreeContainer.transform.GetChild(3).gameObject.SetActive(false);
+        }
     }
     //앞면 클릭 시 뒷면으로 돌아가기
     public void TurnIdCardFrontToBack()
@@ -692,6 +711,13 @@ public class FriendsManager : MonoBehaviour
         idcard_front.transform.parent.gameObject.SetActive(false);
         idcard_back.SetActive(true);
         idcard_front.SetActive(true);
+
+        //사원증 앞면 리셋
+        idcard_front.transform.GetChild(0).GetComponent<Image>().color = Color.white;
+        idcard_front.transform.GetChild(1).GetComponent<Image>().sprite = array_profileImg[0];
+        idcard_front.transform.GetChild(2).GetComponent<TMP_Text>().text = "";
+        idcard_front.transform.GetChild(3).GetComponent<TMP_Text>().text = "";
+        idcard_front.transform.GetChild(4).GetComponent<TMP_Text>().text = "";
     }
     #endregion
 
@@ -708,6 +734,8 @@ public class FriendsManager : MonoBehaviour
 
         friendDB.notiCheerUpList.Add(notiInfo);
         friendDB.isNewNotiCheerUp = true;
+
+        friendDB.rankingData.countCheerUp++; //랭킹 - 응원수
 
         UpdateUserDB(friendId, friendDB);
         UpdateUserDB(thisUserId, thisUserDB);

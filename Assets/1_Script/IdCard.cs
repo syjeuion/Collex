@@ -35,6 +35,11 @@ public class IdCard : MonoBehaviour
     public Sprite[] ProfileImgs;
     int profileNumber;
 
+    //사원증
+    public GameObject idcard_front;
+    public GameObject idcard_back;
+    public Animator friendIdcardAni;
+
     //사원증 컬러
     string[,] colorList = new string[5, 3] {
         { "#FFDC00", "#FEFAE0", "#D79044" }, //노랑:0
@@ -485,6 +490,98 @@ public class IdCard : MonoBehaviour
 
         if (bookmarkContent.transform.childCount != 1)
             bookmarkContent.transform.GetChild(0).gameObject.SetActive(false);
+    }
+    #endregion
+
+    #region 사원증 상세보기
+    //사원증 오픈
+    public void OpenIdCard()
+    {
+        idcard_front.transform.parent.gameObject.SetActive(true);
+
+        SetIdcardFront(thisUserDB);
+        SetIdcardBack(thisUserDB);
+    }
+    //앞면 데이터 세팅
+    private void SetIdcardFront(UserDB friendDB)
+    {
+        UserDefaultInformation friendDefaultInfo = friendDB.userInformation;
+        ColorUtility.TryParseHtmlString(colorList[friendDB.idcardColor, 0], out Color cardColor);
+        ColorUtility.TryParseHtmlString(colorList[friendDB.idcardColor, 1], out Color companyColor);
+
+        idcard_front.transform.GetChild(0).GetComponent<Image>().color = cardColor;
+        idcard_front.transform.GetChild(1).GetComponent<Image>().sprite = ProfileImgs[friendDefaultInfo.userProfileImg];
+        idcard_front.transform.GetChild(2).GetComponent<TMP_Text>().text = friendDefaultInfo.userTitle;
+        idcard_front.transform.GetChild(3).GetComponent<TMP_Text>().text = friendDefaultInfo.userName;
+        idcard_front.transform.GetChild(4).GetComponent<TMP_Text>().text = friendDB.userWishCompany;
+        idcard_front.transform.GetChild(4).GetComponent<TMP_Text>().color = companyColor;
+
+        idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = true;
+        DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+    }
+    //뒷면 데이터 세팅
+    private void SetIdcardBack(UserDB friendDB)
+    {
+        //이름
+        idcard_back.transform.GetChild(0).GetComponent<TMP_Text>().text = friendDB.userInformation.userName + "님의 활동 내역";
+        //기록 개수
+        idcard_back.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = friendDB.totalFolderCount.ToString();
+        idcard_back.transform.GetChild(3).GetChild(1).GetComponent<TMP_Text>().text = friendDB.contestFolderCount.ToString();
+        idcard_back.transform.GetChild(4).GetChild(1).GetComponent<TMP_Text>().text = friendDB.projectFolderCount.ToString();
+        idcard_back.transform.GetChild(5).GetChild(1).GetComponent<TMP_Text>().text = friendDB.internshipFolderCount.ToString();
+
+        //top3 경험
+        SetTopThree(friendDB.topThreeExperiences, idcard_back.transform.GetChild(7).GetChild(0).gameObject);
+        //top3 역량
+        SetTopThree(friendDB.topThreeCapabilities, idcard_back.transform.GetChild(7).GetChild(2).gameObject);
+    }
+    //Top3 비었는지 체크 후 UI 세팅
+    private void SetTopThree(string[] topThreeArray, GameObject topThreeContainer)
+    {
+        int isEmptyExCount = 0;
+        foreach (string value in topThreeArray)
+        {
+            if (string.IsNullOrEmpty(value) || value == "-") { isEmptyExCount++; }
+        }
+        if (isEmptyExCount >= 3)
+        {
+            topThreeContainer.transform.GetChild(3).gameObject.SetActive(true);
+        }
+        else
+        {
+            topThreeContainer.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = topThreeArray[0];
+            topThreeContainer.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = topThreeArray[1];
+            topThreeContainer.transform.GetChild(2).GetChild(1).GetComponent<TMP_Text>().text = topThreeArray[2];
+            topThreeContainer.transform.GetChild(3).gameObject.SetActive(false);
+        }
+    }
+    //앞면 클릭 시 뒷면으로 돌아가기
+    public void TurnIdCardFrontToBack()
+    {
+        idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = false; //중복 터치 방지
+        friendIdcardAni.SetTrigger("frontToBack");
+        idcard_back.transform.GetChild(10).GetComponent<Button>().interactable = true;
+    }
+    //뒷면 클릭 시 앞면으로 돌아가기
+    public void TurnIdCardBackToFront()
+    {
+        idcard_back.transform.GetChild(10).GetComponent<Button>().interactable = false; //중복 터치 방지
+        friendIdcardAni.SetTrigger("backToFront");
+        idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = true;
+    }
+    //사원증 닫기버튼
+    public void CloseIdCard()
+    {
+        idcard_front.transform.parent.gameObject.SetActive(false);
+        idcard_back.SetActive(true);
+        idcard_front.SetActive(true);
+
+        //사원증 앞면 리셋
+        idcard_front.transform.GetChild(0).GetComponent<Image>().color = Color.white;
+        idcard_front.transform.GetChild(1).GetComponent<Image>().sprite = ProfileImgs[0];
+        idcard_front.transform.GetChild(2).GetComponent<TMP_Text>().text = "";
+        idcard_front.transform.GetChild(3).GetComponent<TMP_Text>().text = "";
+        idcard_front.transform.GetChild(4).GetComponent<TMP_Text>().text = "";
     }
     #endregion
 
