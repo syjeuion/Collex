@@ -138,7 +138,6 @@ public class GoogleSigninManager : MonoBehaviour
             {
                 SceneManager.LoadScene("1_Home");
                 UserManager.Instance.newUserInformation.titleCheck[0]++;
-
             }
             else { return; }
         }

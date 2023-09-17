@@ -191,7 +191,7 @@ public class OverallReportManager : MonoBehaviour
         recordCountThisMonthTmp[3].text = $"그리고 이번 주에는 {UserManager.Instance.newUserInformation.recordCountThisWeek}개의 기록을 작성했네요.";
 
         //전체 역량 - Capabilities
-        if (UserManager.Instance.Allcapabilites.Count <= 0)
+        if (UserManager.Instance.Allcapabilites.Count <= 0 || totalRecordCount<5)
         {
             blur_capability.SetActive(true);
             AllFolderGraph.gameObject.SetActive(false);
@@ -213,15 +213,15 @@ public class OverallReportManager : MonoBehaviour
         }
 
         //획득 경험 - Experiences
-        if (UserManager.Instance.AllExperiences.Count <= 0)
+        if (UserManager.Instance.AllExperiences.Count <= 0 || totalRecordCount < 5)
         {
             blur_experiences.SetActive(true);
-            Experiences.transform.GetChild(1).gameObject.SetActive(false);
+            Experiences.SetActive(false);
         }
         else
         {
             blur_experiences.SetActive(false);
-            Experiences.transform.GetChild(1).gameObject.SetActive(true);
+            Experiences.SetActive(true);
             StartCoroutine(setExperiences());
         }
     }
