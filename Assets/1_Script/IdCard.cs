@@ -25,6 +25,8 @@ public class IdCard : MonoBehaviour
     public GameObject editProfileImg;
     public GameObject editIdCardAlert;
 
+    public GameObject editIdCard_userName;
+
     //버튼
     public Sprite Button_Disabled;
     public Sprite Button_Enabled;
@@ -74,7 +76,9 @@ public class IdCard : MonoBehaviour
     int profileImgNum;
     UserDB thisUserDB;
 
-    private void Start()
+    //이름 리스트
+    List<string> userNameList;
+    private async void Start()
     {
         ColorUtility.TryParseHtmlString("#EFF5FF", out primary1);
         ColorUtility.TryParseHtmlString("#408BFD", out primary3);
@@ -101,6 +105,9 @@ public class IdCard : MonoBehaviour
         GetThisUserDB();
 
         if (UserManager.Instance.editProfileInHome) { setEditIdCard(); }
+
+        //이름 리스트 가져오기
+        userNameList = await GetNameList();
     }
     //UserDB 가져오기
     private async void GetThisUserDB()
@@ -214,6 +221,8 @@ public class IdCard : MonoBehaviour
         EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text = userName;
         EditIdCardPage.transform.GetChild(1).GetChild(2).GetComponent<TMP_Text>().text =
             EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text.Length.ToString() + "/10";
+        editIdCard_userName.transform.GetChild(3).gameObject.SetActive(false);
+
         //목표기업명
         if (!string.IsNullOrWhiteSpace(userWishCompany))
         {
@@ -331,6 +340,7 @@ public class IdCard : MonoBehaviour
         if (currentInputObj.GetComponent<TMP_InputField>() == null) return;
         currentInputObj.GetComponent<Image>().color = primary3;
         currentInputObj.transform.parent.GetChild(2).GetComponent<TMP_Text>().color = primary3;
+        editIdCard_userName.transform.GetChild(3).gameObject.SetActive(false);
     }
     public void checkInput()
     {
@@ -375,17 +385,27 @@ public class IdCard : MonoBehaviour
         else { EditIdCardPage.SetActive(false); }
 
     }
+
     //사원증 수정 내역 저장
     public void SaveIdCard()
     {
-        if (string.IsNullOrWhiteSpace(EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text))
+        string newName = EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text;
+
+        if (string.IsNullOrWhiteSpace(newName))
         {
             return;
         }
+        else if (userNameList.Contains(newName)&& newName != userName)
+        {
+            editIdCard_userName.transform.GetChild(1).GetComponent<Image>().color = errorColor;
+            editIdCard_userName.transform.GetChild(3).gameObject.SetActive(true);
+            return;
+        }
+
         profileImgNum = profileNumber;
         UserManager.Instance.newUserInformation.userProfileImgNumber = profileImgNum;
 
-        UserManager.Instance.newUserInformation.userName = EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text;
+        UserManager.Instance.newUserInformation.userName = newName;
         //UserManager.Instance.newUserInformation.userName = userName;
 
         userWishCompany = EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text;
@@ -634,6 +654,25 @@ public class IdCard : MonoBehaviour
 
         string userIdDicStr = JsonConvert.SerializeObject(userIdDic);
         await dataReference.SetRawJsonValueAsync(userIdDicStr);
+    }
+    //유저 이름 리스트 가져오기
+    private async Task<List<string>> GetNameList()
+    {
+        List<string> list = new List<string>();
+        DatabaseReference userIdReference = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
+        Dictionary<string, string> userIdList = new Dictionary<string, string>();
+
+        var taskResult = await userIdReference.GetValueAsync();
+        try
+        {
+            userIdList = JsonConvert.DeserializeObject<Dictionary<string, string>>(taskResult.GetRawJsonValue());
+            foreach (string key in userIdList.Keys)
+            {
+                list.Add(key);
+            }
+        }
+        catch (Exception e) { Debug.LogError("Error deserializing JSON: " + e.Message); }
+        return list;
     }
     #endregion
 

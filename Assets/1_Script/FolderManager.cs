@@ -10,6 +10,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using TMPro;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
+using Firebase.Database;
 
 public class FolderManager : MonoBehaviour
 {
@@ -101,6 +103,10 @@ public class FolderManager : MonoBehaviour
     public GameObject ExEmpty;
     public GameObject ReportScript;
 
+    //파이어베이스
+    UserDB thisUserDB;
+    string thisUserId;
+
     //색상
     Color primary1;
     Color primary3;
@@ -121,9 +127,11 @@ public class FolderManager : MonoBehaviour
         ColorUtility.TryParseHtmlString("#575F6B", out gray700);
         ColorUtility.TryParseHtmlString("#1E2024", out gray900);
         ColorUtility.TryParseHtmlString("#FF3E49", out errorColor);
+
+        
     }
 
-    void Start()
+    private async void Start()
     {
         FolderPage.SetActive(true);
         //RecordInPage.SetActive(false);
@@ -164,6 +172,10 @@ public class FolderManager : MonoBehaviour
         { StartCoroutine(ActiveTooltip()); UserManager.Instance.newUserInformation.folderPageCount++; }
 
         if (!string.IsNullOrWhiteSpace(UserManager.Instance.pushedRecord)) clickRecord();
+
+        //파이어베이스
+        thisUserId = UserManager.Instance.newUserInformation.userId;
+        thisUserDB = await GetUserDB(thisUserId);
     }
     private void Update()
     {
@@ -1079,6 +1091,7 @@ public class FolderManager : MonoBehaviour
         modifyContainer.transform.GetChild(4).GetComponent<TMP_Text>().color = colorGray;
     }
     //폴더 수정사항 저장하기
+    
     public void saveModifyFolder()
     {
         //예외처리
@@ -1099,6 +1112,7 @@ public class FolderManager : MonoBehaviour
         }
 
         //기존 데이터 삭제
+        UserManager.Instance.newUserInformation.projectType[thisProject.projectType]--;
         UserManager.Instance.folders.Remove(thisProject.projectTitle);
 
         thisProject.projectTitle = inputFolderTitle.text;
@@ -1110,6 +1124,7 @@ public class FolderManager : MonoBehaviour
             }
         }
 
+        UserManager.Instance.newUserInformation.projectType[thisProject.projectType]++;
         //JSON으로 저장
         string newFolderData = JsonConvert.SerializeObject(thisProject);
         UserManager.Instance.folders.Add(thisProject.projectTitle, newFolderData);
@@ -1119,6 +1134,9 @@ public class FolderManager : MonoBehaviour
         titleArea.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.projectTitle;
         modifyContainer.transform.parent.gameObject.SetActive(false);
         FolderPage.SetActive(true);
+
+        //파이어베이스
+        UpdateFolderCount();
     }
     #endregion
 
@@ -1126,11 +1144,57 @@ public class FolderManager : MonoBehaviour
     public GameObject folderRemovePage;
     public void removeFolder()
     {
+        UserManager.Instance.newUserInformation.projectType[thisProject.projectType]--;
+
         UserManager.Instance.folders.Remove(thisProject.projectTitle);
         folderRemovePage.SetActive(false);
         UserManager.Instance.checkFolderDelete = true;
+
+        //파이어베이스
+        UpdateFolderCount();
+
         goHome();
     }
+    private void UpdateFolderCount()
+    {
+        int contestCount = UserManager.Instance.newUserInformation.projectType["공모전"];
+        int projectCount = UserManager.Instance.newUserInformation.projectType["프로젝트"];
+        int internshipCount = UserManager.Instance.newUserInformation.projectType["인턴십"];
+
+        thisUserDB.totalFolderCount = contestCount + projectCount + internshipCount;
+        thisUserDB.contestFolderCount = contestCount;
+        thisUserDB.projectFolderCount = projectCount;
+        thisUserDB.internshipFolderCount = internshipCount;
+
+        UpdateUserDB(thisUserId, thisUserDB);
+    }
+
+    #region 파이어베이스 realTimeDB
+    //DB에서 유저 data 가져오기
+    private async Task<UserDB> GetUserDB(string userId)
+    {
+        try
+        {
+            DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
+            var taskResult = await dataReference.GetValueAsync();
+            UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+            return userDB;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("GetUserDB catch error: " + e.Message);
+            UserDB userDB = new UserDB();
+            return userDB;
+        }
+    }
+    //DB에 유저 data 저장하기
+    private async void UpdateUserDB(string userId, UserDB userDB)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
+        string userDBstr = JsonConvert.SerializeObject(userDB);
+        await dataReference.SetRawJsonValueAsync(userDBstr);
+    }
+    #endregion
 
     //씬 전환
     public void goHome() { SceneManager.LoadScene("1_Home"); UserManager.Instance.pushedButton = ""; }
