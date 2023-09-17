@@ -31,10 +31,12 @@ public class OverallReportManager : MonoBehaviour
 
     //색상
     Color primary3;
+    Color gray900;
 
     private void Awake()
     {
         ColorUtility.TryParseHtmlString("#408BFD", out primary3);
+        ColorUtility.TryParseHtmlString("#1E2024", out gray900);
 
         home_descriptions = new string[] {
         "아직 기록하지 않았어요!",
@@ -127,14 +129,22 @@ public class OverallReportManager : MonoBehaviour
     #region 전체 리포트
     public TMP_Text[] folderCounts; //전체 폴더 개수
     public TMP_Text[] totalRecordsTmp; //전체 기록 개수
-    public TMP_Text countDayOfWeek; //요일 그래프
+    //요일 그래프
+    public TMP_Text countDayOfWeek; 
     public GameObject[] graphDayOfWeek;
     public TMP_Text[] recordCountThisMonthTmp; //이번달 기록 개수
-    public TMP_Text[] capabilitiesTmp; //역량 분석
+    //역량
+    public TMP_Text[] capabilitiesTmp; 
+    public TMP_Text[] capabilityGraphTexts; 
     public LineRenderer AllFolderGraph;
-    public GameObject containerExRanking;
+    public GameObject blur_capability;
+    //경험
+    public GameObject Experiences;
+    //public GameObject containerExRanking;
     public GameObject prefabExRanknig;
     GameObject newPrefabExRanking;
+    public GameObject blur_experiences;
+    GameObject btn_showAllEx;
 
     public void openOverallReport()
     {
@@ -181,11 +191,39 @@ public class OverallReportManager : MonoBehaviour
         recordCountThisMonthTmp[3].text = $"그리고 이번 주에는 {UserManager.Instance.newUserInformation.recordCountThisWeek}개의 기록을 작성했네요.";
 
         //전체 역량 - Capabilities
-        capabilitiesTmp[0].text = drawGraphDayOfWeek(UserManager.Instance.Allcapabilites, "역량");
-        capabilitiesTmp[1].text = "                    이 뛰어나요!";
+        if (UserManager.Instance.Allcapabilites.Count <= 0)
+        {
+            blur_capability.SetActive(true);
+            AllFolderGraph.gameObject.SetActive(false);
+        }
+        else
+        {
+            blur_capability.SetActive(false);
+            AllFolderGraph.gameObject.SetActive(true);
+
+            string mostCapability = drawGraphDayOfWeek(UserManager.Instance.Allcapabilites, "역량");
+            capabilitiesTmp[0].text = mostCapability;
+
+            if (mostCapability == "커뮤니케이션능력")
+            { capabilitiesTmp[1].text = "                                        이 뛰어나요!"; }
+            else if (mostCapability == "문제해결능력")
+            { capabilitiesTmp[1].text = "                              이 뛰어나요!"; }
+            else
+            { capabilitiesTmp[1].text = "               이 뛰어나요!"; }
+        }
 
         //획득 경험 - Experiences
-        StartCoroutine(setExperiences());
+        if (UserManager.Instance.AllExperiences.Count <= 0)
+        {
+            blur_experiences.SetActive(true);
+            Experiences.transform.GetChild(1).gameObject.SetActive(false);
+        }
+        else
+        {
+            blur_experiences.SetActive(false);
+            Experiences.transform.GetChild(1).gameObject.SetActive(true);
+            StartCoroutine(setExperiences());
+        }
     }
 
     //그래프 그리기 - 내림차순으로 정렬하기
@@ -300,59 +338,145 @@ public class OverallReportManager : MonoBehaviour
         {
             if (sortedKeys[i] == "커뮤니케이션능력")
             {
+                if (i == 0) { capabilityGraphTexts[0].color = gray900; }
                 AllFolderGraph.SetPosition(0, new Vector3(0, topPairs[sortedValues[i]], 0));
                 AllFolderGraph.SetPosition(5, new Vector3(0, topPairs[sortedValues[i]], 0));
             }
             else if (sortedKeys[i] == "리더십")
+            {
+                if (i == 0) { capabilityGraphTexts[1].color = gray900; }
                 AllFolderGraph.SetPosition(1, new Vector3(rightPairs[sortedValues[i]].x, rightPairs[sortedValues[i]].y, 0));
+            }
             else if (sortedKeys[i] == "문제해결능력")
+            {
+                if (i == 0) { capabilityGraphTexts[2].color = gray900; }
                 AllFolderGraph.SetPosition(2, new Vector3(downPairs[sortedValues[i]].x, downPairs[sortedValues[i]].y, 0));
+            }
             else if (sortedKeys[i] == "통찰력")
+            {
+                if (i == 0) { capabilityGraphTexts[3].color = gray900; }
                 AllFolderGraph.SetPosition(3, new Vector3(-downPairs[sortedValues[i]].x, downPairs[sortedValues[i]].y, 0));
+            }
             else
+            {
+                if (i == 0) { capabilityGraphTexts[4].color = gray900; }
                 AllFolderGraph.SetPosition(4, new Vector3(-rightPairs[sortedValues[i]].x, rightPairs[sortedValues[i]].y, 0));
+            }
         }
     }
     #endregion
 
     //획득 경험
+    bool firstOpen = true;
+    int exTotalRange;
+    Dictionary<string, int> sortedExList;
+    List<string> sortedKeys;
     IEnumerator setExperiences()
     {
         //리셋
-        for(int i=0; i< containerExRanking.transform.childCount; i++)
+        for (int i=0; i< Experiences.transform.GetChild(1).childCount; i++)
         {
-            Destroy(containerExRanking.transform.GetChild(i).gameObject);
+            Destroy(Experiences.transform.GetChild(1).GetChild(i).gameObject);
         }
 
         //Dictionray 내림차순으로 정렬
-        Dictionary<string, int> sortedExList = UserManager.Instance.AllExperiences.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+        sortedExList = UserManager.Instance.AllExperiences.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
         //키 리스트
-        List<string> sortedKeys = new List<string>();
+        sortedKeys = new List<string>();
         foreach (string key in sortedExList.Keys) { sortedKeys.Add(key);}
 
-        int range;
-        if (sortedKeys.Count <= 5) { range = sortedKeys.Count; }
-        else { range = 5; }
+        btn_showAllEx = Experiences.transform.GetChild(3).gameObject;
+        if (sortedKeys.Count <= 5) {
+            exTotalRange = sortedKeys.Count;
+            btn_showAllEx.SetActive(false);
+        }
+        else { exTotalRange = 5;
+            btn_showAllEx.SetActive(true);
+        }
 
-        for (int i = 0; i < range; i++)
+        for (int i = 0; i < exTotalRange; i++)
         {
-            newPrefabExRanking = Instantiate(prefabExRanknig, containerExRanking.transform);
-            if (i == 0)
-            {
-                newPrefabExRanking.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
-                newPrefabExRanking.transform.GetChild(1).GetComponent<Image>().color = primary3;
-                newPrefabExRanking.transform.GetChild(1).GetChild(0).GetComponent<TMP_Text>().color = primary3;
-                newPrefabExRanking.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().color = primary3;
-            }
-            newPrefabExRanking.transform.GetChild(0).GetComponent<TMP_Text>().text = (i+1).ToString();
-            newPrefabExRanking.transform.GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = sortedKeys[i];
-            newPrefabExRanking.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = $"{sortedExList[sortedKeys[i]]}회";
+            SetExRanking(i, Experiences.transform.GetChild(1).gameObject);
         }
 
         yield return new WaitForEndOfFrame();
         content_overall.GetComponent<VerticalLayoutGroup>().spacing = 15.9f;
         content_overall.GetComponent<VerticalLayoutGroup>().spacing = 16f;
+    }
+
+    //획득 경험 전체 보기 버튼
+    bool isBtnOpen = false;
+    public void BtnShowAllEx()
+    {
+        if (isBtnOpen) { StartCoroutine(CloseBtnShowAllEx()); }
+        else { StartCoroutine(OpenBtnShowAllEx()); }
+    }
+    private IEnumerator OpenBtnShowAllEx()
+    {
+        isBtnOpen = true;
+        btn_showAllEx.transform.GetChild(0).GetComponent<TMP_Text>().text = "직무 경험치 줄여서 보기";
+        btn_showAllEx.transform.GetChild(1).GetComponent<RectTransform>().rotation = Quaternion.Euler(0, 0, 180);
+
+        Experiences.transform.GetChild(2).gameObject.SetActive(true);
+        if (firstOpen)
+        {
+            for (int i = 5; i < sortedExList.Count; i++)
+            {
+                SetExRanking(i, Experiences.transform.GetChild(2).gameObject);
+            }
+            firstOpen = false;
+        }
+        yield return new WaitForEndOfFrame();
+        content_overall.GetComponent<VerticalLayoutGroup>().spacing = 15.9f;
+        content_overall.GetComponent<VerticalLayoutGroup>().spacing = 16f;
+    }
+    //획득 경험 전체 보기 닫기
+    private IEnumerator CloseBtnShowAllEx()
+    {
+        isBtnOpen = false;
+        btn_showAllEx.transform.GetChild(0).GetComponent<TMP_Text>().text = "모든 직무 경험치 보기";
+        btn_showAllEx.transform.GetChild(1).GetComponent<RectTransform>().rotation = Quaternion.Euler(0, 0, 0);
+        Experiences.transform.GetChild(2).gameObject.SetActive(false);
+
+        yield return new WaitForEndOfFrame();
+        content_overall.GetComponent<VerticalLayoutGroup>().spacing = 15.9f;
+        content_overall.GetComponent<VerticalLayoutGroup>().spacing = 16f;
+    }
+
+    //경험 리스트 출력
+    int lastRank;
+    int lastCount;
+    private void SetExRanking(int order, GameObject content)
+    {
+        bool isTop =false;
+        if (order == 0) { 
+            lastRank = order;
+            lastCount = sortedExList[sortedKeys[order]];
+        }
+
+        if(lastCount == sortedExList[sortedKeys[order]])
+        {
+            order = lastRank;
+            if (order == 0) { isTop = true; }
+        }
+        else
+        {
+            lastRank = order;
+            lastCount = sortedExList[sortedKeys[order]];
+        }
+
+        newPrefabExRanking = Instantiate(prefabExRanknig, content.transform);
+        if (isTop)
+        {
+            newPrefabExRanking.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
+            newPrefabExRanking.transform.GetChild(1).GetComponent<Image>().color = primary3;
+            newPrefabExRanking.transform.GetChild(1).GetChild(0).GetComponent<TMP_Text>().color = primary3;
+            newPrefabExRanking.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().color = primary3;
+        }
+        newPrefabExRanking.transform.GetChild(0).GetComponent<TMP_Text>().text = (order + 1).ToString();
+        newPrefabExRanking.transform.GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = sortedKeys[order];
+        newPrefabExRanking.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = $"{sortedExList[sortedKeys[order]]}회";
     }
     #endregion
 }
