@@ -620,7 +620,7 @@ public class FriendsManager : MonoBehaviour
         string friendName = EventSystem.current.currentSelectedGameObject.transform.parent.GetChild(2).GetComponent<TMP_Text>().text;
         idcard_front.transform.parent.gameObject.SetActive(true);
 
-        //온보딩
+        //온보딩 체크
         if (!UserManager.Instance.newUserInformation.idcard_onboarding)
         { idcard_front.transform.parent.GetChild(2).gameObject.SetActive(true);
             UserManager.Instance.newUserInformation.idcard_onboarding = true;

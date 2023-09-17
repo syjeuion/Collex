@@ -499,6 +499,13 @@ public class IdCard : MonoBehaviour
     {
         idcard_front.transform.parent.gameObject.SetActive(true);
 
+        //온보딩 체크
+        if (!UserManager.Instance.newUserInformation.idcard_onboarding)
+        {
+            idcard_front.transform.parent.GetChild(2).gameObject.SetActive(true);
+            UserManager.Instance.newUserInformation.idcard_onboarding = true;
+        }
+
         SetIdcardFront(thisUserDB);
         SetIdcardBack(thisUserDB);
     }
@@ -558,6 +565,7 @@ public class IdCard : MonoBehaviour
     //앞면 클릭 시 뒷면으로 돌아가기
     public void TurnIdCardFrontToBack()
     {
+        idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
         idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = false; //중복 터치 방지
         friendIdcardAni.SetTrigger("frontToBack");
         idcard_back.transform.GetChild(10).GetComponent<Button>().interactable = true;
@@ -582,6 +590,8 @@ public class IdCard : MonoBehaviour
         idcard_front.transform.GetChild(2).GetComponent<TMP_Text>().text = "";
         idcard_front.transform.GetChild(3).GetComponent<TMP_Text>().text = "";
         idcard_front.transform.GetChild(4).GetComponent<TMP_Text>().text = "";
+
+        idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
     }
     #endregion
 

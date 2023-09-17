@@ -334,8 +334,15 @@ public class RankingManager : MonoBehaviour
         //친구 데이터 가져오기
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
 
+        //온보딩 체크
+        if (!UserManager.Instance.newUserInformation.idcard_onboarding)
+        {
+            idcard_front.transform.parent.GetChild(2).gameObject.SetActive(true);
+            UserManager.Instance.newUserInformation.idcard_onboarding = true;
+        }
+
         //현재 유저 랭킹 클릭
-        if(friendName == thisUserName)
+        if (friendName == thisUserName)
         {
             friendDB = thisUserDB;
             idcard_cheerUp.gameObject.SetActive(false);
@@ -418,6 +425,7 @@ public class RankingManager : MonoBehaviour
     //앞면 클릭 시 뒷면으로 돌아가기
     public void TurnIdCardFrontToBack()
     {
+        idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
         idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = false; //중복 터치 방지
         friendIdcardAni.SetTrigger("frontToBack");
         idcard_back.transform.GetChild(10).GetComponent<Button>().interactable = true;
@@ -442,6 +450,8 @@ public class RankingManager : MonoBehaviour
         idcard_front.transform.GetChild(2).GetComponent<TMP_Text>().text = "";
         idcard_front.transform.GetChild(3).GetComponent<TMP_Text>().text = "";
         idcard_front.transform.GetChild(4).GetComponent<TMP_Text>().text = "";
+
+        idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
     }
     #endregion
 
