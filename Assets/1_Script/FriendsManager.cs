@@ -166,6 +166,7 @@ public class FriendsManager : MonoBehaviour
     //입사동기 페이지 오픈
     public void OpenFriendsPage()
     {
+        UIController.instance.curOpenPageNum = 4;
         friendsPage.SetActive(true);
 
         //기존 리스트 초기화
@@ -198,6 +199,11 @@ public class FriendsManager : MonoBehaviour
         else {
             friendsPage.transform.GetChild(2).gameObject.SetActive(true); }
         DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+    }
+    public void CloseFriendsPage()
+    {
+        UIController.instance.curOpenPageNum = -1;
+        friendsPage.SetActive(false);
     }
     #endregion
 
@@ -375,6 +381,7 @@ public class FriendsManager : MonoBehaviour
     //알림 페이지 오픈
     public async void OpenNotificationPage()
     {
+        UIController.instance.curOpenPageNum = 3;
         notificationPage.SetActive(true);
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
 
@@ -391,6 +398,7 @@ public class FriendsManager : MonoBehaviour
     {
         notificationPage.SetActive(false);
         home_icon_notification.sprite = selector_icon_notification[0];
+        UIController.instance.curOpenPageNum = -1;
     }
     //알림 체크
     private async void CheckNoti(string whichNoti, List<NotiInfo> notiList, GameObject content, GameObject prefab, GameObject newObj)

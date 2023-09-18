@@ -133,11 +133,14 @@ public class FolderManager : MonoBehaviour
 
     private async void Start()
     {
+        UIController.instance.curOpenPageNum = -1;
         FolderPage.SetActive(true);
         //RecordInPage.SetActive(false);
 
         string thisFolderDatas = UserManager.Instance.folders[UserManager.Instance.pushedButton];
         thisProject = JsonConvert.DeserializeObject<MakeNewProject>(thisFolderDatas);
+
+        DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
 
         if (!thisProject.isItOngoing)
         {
@@ -167,6 +170,8 @@ public class FolderManager : MonoBehaviour
             countAndSorting.transform.GetChild(0).GetComponent<TMP_Text>().text = "기록 " + thisProject.records.Count.ToString() + "개";
             StartCoroutine(outputRecords(defaultTitles));
         }
+        else { DontDestroyCanvas.controlProgressIndicator(false); } //인디케이터 종료
+
 
         if (UserManager.Instance.newUserInformation.folderPageCount <= 5)
         { StartCoroutine(ActiveTooltip()); UserManager.Instance.newUserInformation.folderPageCount++; }
@@ -177,6 +182,8 @@ public class FolderManager : MonoBehaviour
         thisUserId = UserManager.Instance.newUserInformation.userId;
         thisUserDB = await GetUserDB(thisUserId);
     }
+
+    bool EscCheck = true;
     private void Update()
     {
         if (ReportPage.activeSelf)
@@ -184,9 +191,39 @@ public class FolderManager : MonoBehaviour
             ReportContent.GetComponent<VerticalLayoutGroup>().spacing = 15.5f;
             ReportContent.GetComponent<VerticalLayoutGroup>().spacing = 16f;
         }
-        //if (Input.GetKey(KeyCode.Escape))
-        //{ goHome(); }
+
+        //안드로이드 디바이스 뒤로가기 클릭 시
+        if (Input.GetKey(KeyCode.Escape) && EscCheck)
+        {
+            EscCheck = false;
+            StartCoroutine(OnClickEsc());
+        }
     }
+    //뒤로가기
+    IEnumerator OnClickEsc()
+    {
+        int openPageNum = UIController.instance.curOpenPageNum;
+        if(openPageNum == -1)
+        {
+            goHome();
+        }
+        else if(openPageNum == 4)
+        {
+            returnFolder();
+        }
+        else if(openPageNum == -3)
+        {
+            DontDestroyCanvas.setRecord(false);
+        }
+        else //openPageNum == 0 || 1 || 2 || 3
+        {
+            UIController.instance.PageObjArr[openPageNum].SetActive(false);
+            UIController.instance.curOpenPageNum--;
+        }
+        yield return new WaitForSeconds(0.1f);
+        EscCheck = true;
+    }
+
     //tooltip
     IEnumerator ActiveTooltip()
     {
@@ -208,6 +245,7 @@ public class FolderManager : MonoBehaviour
     //오픈 필터 페이지
     public void openFilter()
     {
+        UIController.instance.curOpenPageNum = -2;
         FilterPage.transform.SetSiblingIndex(1);
         FilterPage.SetActive(true);
         ClickFilterTab();
@@ -328,6 +366,7 @@ public class FolderManager : MonoBehaviour
             explanation.GetComponent<TMP_Text>().text = "조건에 해당하는 기록이 없어요.\n다른 조건으로 다시 설정해 보세요!";
         }
         FilterPage.transform.SetSiblingIndex(0);
+        UIController.instance.curOpenPageNum = -1;
     }
     //폴더 페이지에서 필터 상태 변경
     [SerializeField] GameObject[] filterChips;
@@ -410,6 +449,8 @@ public class FolderManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
         filterChips[0].transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 7.9f;
         filterChips[0].transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 8;
+
+        DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
     }
     #endregion
 
@@ -420,7 +461,7 @@ public class FolderManager : MonoBehaviour
         if (clickButton != null)
         {
             UserManager.Instance.pushedRecord = clickButton.transform.GetChild(0).GetComponent<TMP_Text>().text;
-            DontDestroyCanvas.setRecord();
+            DontDestroyCanvas.setRecord(true);
         }
         
     }
@@ -431,6 +472,7 @@ public class FolderManager : MonoBehaviour
     {
         FinishUp_1.SetActive(false);
         FinishUp_2.SetActive(true);
+        UIController.instance.curOpenPageNum = 0;
         if (thisProject.projectType == "공모전") { Contest.SetActive(true); }
         else { Contest.SetActive(false); }
     }
@@ -465,6 +507,7 @@ public class FolderManager : MonoBehaviour
         else episodePositive = true;
 
         FinishUp_3.SetActive(true);
+        UIController.instance.curOpenPageNum = 1;
     }
     //Role & 한줄요약 안썼을때
     GameObject selectedField;
@@ -551,6 +594,7 @@ public class FolderManager : MonoBehaviour
     {
         selectedQuestion = new List<string>();
         SelectedRecordPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 2;
         selectedStep = EventSystem.current.currentSelectedGameObject.transform.parent.name;
 
         if (selectedStep == "Situation")
@@ -737,6 +781,7 @@ public class FolderManager : MonoBehaviour
         EpisodeTypeGroup.GetComponent<VerticalLayoutGroup>().spacing = 12;
         
         SelectedRecordPage.SetActive(false);
+        UIController.instance.curOpenPageNum = 1;
     }
     void openSelectRecord()
     {
@@ -748,6 +793,7 @@ public class FolderManager : MonoBehaviour
     public void setSelfWriting()
     {
         selfWritingPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 3;
         inputSelfWriting.text = "";
     }
     public void saveSelfWriting()
@@ -757,6 +803,7 @@ public class FolderManager : MonoBehaviour
             StartCoroutine(PrintWrittenRecord());
         }
         selfWritingPage.SetActive(false);
+        UIController.instance.curOpenPageNum = 1;
     }
     IEnumerator PrintWrittenRecord()
     {
@@ -814,7 +861,8 @@ public class FolderManager : MonoBehaviour
 
         setReport();
     }
-    
+    #endregion
+
     public void returnFolder()
     {
         FolderPage.SetActive(true);
@@ -832,9 +880,9 @@ public class FolderManager : MonoBehaviour
         //FinishUp_4.SetActive(false);
         SelectedRecordPage.SetActive(false);
         ReportPage.SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
     }
-    #endregion
-
+    
     #region 리포트
     //메인에피소드
     public GameObject mainEpisodeFolding;
@@ -851,6 +899,7 @@ public class FolderManager : MonoBehaviour
     public void setReport()
     {
         ReportPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 4;
 
         FolderInfo.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = thisProject.projectType;
         FolderInfo.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = thisProject.projectTitle;
@@ -1199,4 +1248,36 @@ public class FolderManager : MonoBehaviour
     //씬 전환
     public void goHome() { SceneManager.LoadScene("1_Home"); UserManager.Instance.pushedButton = ""; }
     public void goWriting() { SceneManager.LoadScene("2_Writing"); UserManager.Instance.pushedRecord = ""; }
+
+    //뒤로가기
+    public void BackFromFinishUp2()
+    {
+        UIController.instance.curOpenPageNum = -1;
+        FinishUp_2.SetActive(false);
+    }
+    public void BackFromFinishUp3()
+    {
+        UIController.instance.curOpenPageNum = 0;
+        FinishUp_3.SetActive(false);
+    }
+    public void BackFromSelectRecord()
+    {
+        UIController.instance.curOpenPageNum = 1;
+        SelectedRecordPage.SetActive(false);
+    }
+    public void BackFromSelfWriting()
+    {
+        UIController.instance.curOpenPageNum = 1;
+        selfWritingPage.SetActive(false);
+    }
+    public void SetFinishUp1()
+    {
+        FinishUp_1.SetActive(true);
+        UIController.instance.curOpenPageNum = -2;
+    }
+    public void CancelFinishUp1()
+    {
+        FinishUp_1.SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
+    }
 }

@@ -63,7 +63,13 @@ public class SearchManager : MonoBehaviour
         JobExperiences.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 32;
 
         //안드로이드 디바이스 뒤로가기 클릭 시
-        if (Input.GetKey(KeyCode.Escape)) goHome();
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            if(UIController.instance.curOpenPageNum == -2)
+            { DontDestroyCanvas.setRecord(false); }
+            else
+            { goHome(); }
+        }
     }
     #region 검색 전 칩 로드
     int listCount;
@@ -255,7 +261,9 @@ public class SearchManager : MonoBehaviour
         string pushedRecordTitle = clickButton.transform.GetChild(1).GetComponent<TMP_Text>().text;
         string pattern = "<.*?>";
         UserManager.Instance.pushedRecord = Regex.Replace(pushedRecordTitle, pattern, "");
-        DontDestroyCanvas.setRecord();
+
+        DontDestroyCanvas.setRecord(true);
+        UIController.instance.curOpenPageNum = -2;
     }
 
     public void goHome() { SceneManager.LoadScene("1_Home"); }

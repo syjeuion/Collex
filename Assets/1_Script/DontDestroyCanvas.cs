@@ -22,7 +22,7 @@ public class DontDestroyCanvas : MonoBehaviour
     public GameObject prefab;
     GameObject newWriting;
 
-    public static Action setRecord; //페이지 세팅 함수
+    public static Action<bool> setRecord; //페이지 세팅 함수
     public static Action<bool> controlProgressIndicator; //프로그래스 제어
     public static Action openQuitAlert;
     public static DontDestroyCanvas Instance;
@@ -55,7 +55,7 @@ public class DontDestroyCanvas : MonoBehaviour
             DontDestroyOnLoad(this.gameObject);
         }
 
-        setRecord = () => { setRecordPage(); };
+        setRecord = (bool isRecordOpen) => { setRecordPage(isRecordOpen); };
         controlProgressIndicator = (bool check) => { ControlProgressIndicator(check); };
         openQuitAlert = () => { OpenQuitAlert(); };
     }
@@ -84,14 +84,20 @@ public class DontDestroyCanvas : MonoBehaviour
     //GameObject bookmarkPage;
     //GameObject toastPopUp;
 
-    private void setRecordPage()
+    private void setRecordPage(bool isRecordOpen)
     {
         if (SceneManager.GetActiveScene().name == "3_Folder")
         {
             folderPage = GameObject.Find("FolderPage");
         }
 
+        if (isRecordOpen) { OpenRecordPage(); }
+        else { CloseRecordPage(); }
+    }
+    private void OpenRecordPage()
+    {
         transform.GetChild(0).gameObject.SetActive(true);
+        UIController.instance.curOpenPageNum = -3;
         clickedRecordTitle = UserManager.Instance.pushedRecord;
 
         string thisFolderDatas = UserManager.Instance.folders[UserManager.Instance.pushedButton];
@@ -100,6 +106,11 @@ public class DontDestroyCanvas : MonoBehaviour
         newRecord = JsonConvert.DeserializeObject<DailyRecord>(thisRecordData);
 
         StartCoroutine(SetPage());
+    }
+    public void CloseRecordPage()
+    {
+        transform.GetChild(0).gameObject.SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
     }
 
     string capas;

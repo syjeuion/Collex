@@ -130,7 +130,13 @@ public class IdCard : MonoBehaviour
     private void Update()
     {
         //안드로이드 디바이스 뒤로가기 클릭 시
-        if (Input.GetKey(KeyCode.Escape)) goHome();
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            if (UIController.instance.curOpenPageNum == -2)
+            { DontDestroyCanvas.setRecord(false); }
+            else
+            { goHome(); }
+        }
     }
 
     //사원증 세팅
@@ -682,7 +688,8 @@ public class IdCard : MonoBehaviour
         GameObject clickButton = EventSystem.current.currentSelectedGameObject;
         UserManager.Instance.pushedButton = clickButton.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text;
         UserManager.Instance.pushedRecord = clickButton.transform.GetChild(1).GetComponent<TMP_Text>().text;
-        DontDestroyCanvas.setRecord();
+        DontDestroyCanvas.setRecord(true);
+        UIController.instance.curOpenPageNum = -2;
     }
 
     public void goHome() { SceneManager.LoadScene("1_Home"); }

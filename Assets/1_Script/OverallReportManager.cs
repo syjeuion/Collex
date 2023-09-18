@@ -148,6 +148,7 @@ public class OverallReportManager : MonoBehaviour
 
     public void openOverallReport()
     {
+        UIController.instance.curOpenPageNum = 5;
         page_overallReport.SetActive(true);
         content_overall.GetComponent<RectTransform>().anchoredPosition = new Vector2(0,0);
 
@@ -479,4 +480,10 @@ public class OverallReportManager : MonoBehaviour
         newPrefabExRanking.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = $"{sortedExList[sortedKeys[order]]}회";
     }
     #endregion
+
+    public void CloseOverallPage()
+    {
+        UIController.instance.curOpenPageNum = -1;
+        page_overallReport.SetActive(false);
+    }
 }

@@ -17741,10 +17741,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 885407674}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 1673222978}
+        m_TargetAssemblyTypeName: DontDestroyCanvas, Assembly-CSharp
+        m_MethodName: bookmarkBackButton
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -17755,7 +17755,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 1673222978}
         m_TargetAssemblyTypeName: DontDestroyCanvas, Assembly-CSharp
-        m_MethodName: bookmarkBackButton
+        m_MethodName: CloseRecordPage
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
