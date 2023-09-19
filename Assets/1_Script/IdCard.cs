@@ -127,16 +127,41 @@ public class IdCard : MonoBehaviour
         DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
     }
 
+    bool EscCheck = true;
     private void Update()
     {
         //안드로이드 디바이스 뒤로가기 클릭 시
         if (Input.GetKey(KeyCode.Escape))
         {
-            if (UIController.instance.curOpenPageNum == -2)
-            { DontDestroyCanvas.setRecord(false); }
-            else
-            { goHome(); }
+            EscCheck = false;
+            StartCoroutine(OnClickEsc());
         }
+    }
+    IEnumerator OnClickEsc()
+    {
+        int num = UIController.instance.curOpenPageNum;
+        if (num == -2)
+        {   DontDestroyCanvas.setRecord(false);
+            UIController.instance.curOpenPageNum = 3;
+        }
+        else if(num == 1)
+        {
+            CheckBackEditIDcard();
+        }
+        else if(num == 2)
+        {
+            BackFunc(1);
+        }
+        else if(num == -1)
+        {
+            goHome();
+        }
+        else if(num!=-3)
+        {
+            BackFunc(-1);
+        }
+        yield return new WaitForSeconds(0.1f);
+        EscCheck = true;
     }
 
     //사원증 세팅
@@ -220,8 +245,9 @@ public class IdCard : MonoBehaviour
     {
         EditIdCardPage.SetActive(true);
         editIdCardAlert.SetActive(false);
+        UIController.instance.curOpenPageNum = 1;
         //사원증 프로필 사진 수정
-        EditIdCardPage.transform.GetChild(0).GetComponent<Image>().sprite = ProfileImgs[profileNumber];
+        EditIdCardPage.transform.GetChild(0).GetComponent<Image>().sprite = ProfileImgs[profileImgNum];
 
         //이름
         EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text = userName;
@@ -264,10 +290,15 @@ public class IdCard : MonoBehaviour
     public void setEditProfileImg()
     {
         editProfileImg.SetActive(true);
-        if (profileNumber == 0) { return; }
+        if (profileImgNum == 0) { return; }
         else
         {
-            editProfileImg.transform.GetChild(profileNumber-1).GetChild(0).gameObject.SetActive(true);
+            for(int i=0; i<8; i++)
+            {
+                if (i == (profileImgNum - 1))
+                { editProfileImg.transform.GetChild(i).GetChild(0).gameObject.SetActive(true); }
+                else { editProfileImg.transform.GetChild(i).GetChild(0).gameObject.SetActive(false); }
+            }
         }
     }
     public void ChangeProfileImg()
@@ -294,8 +325,9 @@ public class IdCard : MonoBehaviour
     public void setJobPage()
     {
         SetUserJobPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 2;
         //if(jobContent.transform.FindChild(userJob)) //find로 찾는 방법 - 한글을 써야함
-        
+
         if (userJob == 5) return;
         if (userDetailJob >= 4) return;
         
@@ -335,6 +367,7 @@ public class IdCard : MonoBehaviour
         SetJobTextUI(userJob, userDetailJob);
         //EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = Jobs[userJob] + " · " + JobList[userJob,userDetailJob];
         SetUserJobPage.SetActive(false);
+        UIController.instance.curOpenPageNum = 1;
     }
     #endregion
 
@@ -389,7 +422,7 @@ public class IdCard : MonoBehaviour
         else if (UserManager.Instance.editProfileInHome)
             { goHome(); UserManager.Instance.editProfileInHome = false; }
         else { EditIdCardPage.SetActive(false); }
-
+        UIController.instance.curOpenPageNum = -1;
     }
 
     //사원증 수정 내역 저장
@@ -432,7 +465,9 @@ public class IdCard : MonoBehaviour
         }
 
         if (UserManager.Instance.editProfileInHome) { goHome(); UserManager.Instance.editProfileInHome = false; }
-        else { EditIdCardPage.SetActive(false); setIdCard(profileNumber, userWishCompany, UserManager.Instance.newUserInformation.userName); }
+        else { EditIdCardPage.SetActive(false);
+            UIController.instance.curOpenPageNum = -1;
+            setIdCard(profileNumber, userWishCompany, UserManager.Instance.newUserInformation.userName); }
 
         //파이어베이스 업데이트
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
@@ -468,6 +503,7 @@ public class IdCard : MonoBehaviour
     public void setBookmarkPage()
     {
         BookmarkPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 3;
         StartCoroutine(setBookMarkList());
     }
     IEnumerator setBookMarkList()
@@ -524,6 +560,7 @@ public class IdCard : MonoBehaviour
     public void OpenIdCard()
     {
         idcard_front.transform.parent.gameObject.SetActive(true);
+        UIController.instance.curOpenPageNum = -3;
 
         //온보딩 체크
         if (!UserManager.Instance.newUserInformation.idcard_onboarding)
@@ -618,6 +655,7 @@ public class IdCard : MonoBehaviour
         idcard_front.transform.GetChild(4).GetComponent<TMP_Text>().text = "";
 
         idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
     }
     #endregion
 
@@ -695,4 +733,42 @@ public class IdCard : MonoBehaviour
     public void goHome() { SceneManager.LoadScene("1_Home"); }
     public void goSearch() { SceneManager.LoadScene("4_Search"); }
     public void goRanking() { SceneManager.LoadScene("5_Ranking"); }
+
+
+    //페이지 열기
+    public void OpenPage(int num)
+    {
+        UIController.instance.PageObjArr[num].SetActive(true);
+        UIController.instance.curOpenPageNum = num;
+    }
+    //세팅 페이지
+    //public void OpenSettingPage()
+    //{
+    //    OpenPage(0);
+    //}
+    ////유저 가이드
+    //public void OpenGuidePage()
+    //{
+    //    OpenPage(5);
+    //}
+
+    //뒤로가기
+    public void BackFunc(int num)
+    {
+        UIController.instance.PageObjArr[UIController.instance.curOpenPageNum].SetActive(false);
+        UIController.instance.curOpenPageNum = num;
+    }
+    //close setting user job page
+    //public void CloseSetUserJobPage()
+    //{
+    //    BackFunc(1);
+    //}
+    //public void BackDefaultPage()
+    //{
+    //    BackFunc(-1);
+    //}
+    public void CloseTitlePopUp()
+    {
+        UIController.instance.curOpenPageNum = 4;
+    }
 }

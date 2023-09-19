@@ -140,6 +140,8 @@ public class UserTitleManager : MonoBehaviour
             StartCoroutine(toolTipCoroutine(toolTip1));
             //UserManager.Instance.newUserInformation.isItFirstTitleCollection = 1;
         }
+
+        UIController.instance.curOpenPageNum = 4;
     }
     //대표칭호=3
     public void setUserTitle()
@@ -567,6 +569,7 @@ public class UserTitleManager : MonoBehaviour
         }
         else { UserTitlePage.SetActive(false); return; }
         popUp.SetActive(true);
+        UIController.instance.curOpenPageNum = -3;
     }
     public void popUpConfirmButton()
     {
@@ -593,6 +596,7 @@ public class UserTitleManager : MonoBehaviour
 
         popUp.SetActive(false);
         UserTitlePage.SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
     }
     #endregion
 

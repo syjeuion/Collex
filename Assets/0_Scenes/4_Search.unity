@@ -2412,7 +2412,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   myCanves: {fileID: 1593638383}
-  PageObjArr: []
+  PageObjArr:
+  - {fileID: 192604092}
   curOpenPageNum: 0
 --- !u!4 &1146254219
 Transform:

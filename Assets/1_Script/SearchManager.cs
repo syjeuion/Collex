@@ -57,20 +57,36 @@ public class SearchManager : MonoBehaviour
         StartCoroutine(setSearchChips(sortedExperiences, JobExperiences, sortedEx));
     }
 
+    bool EscCheck = true;
     private void Update()
     {
         JobExperiences.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 31.9f;
         JobExperiences.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 32;
 
         //안드로이드 디바이스 뒤로가기 클릭 시
-        if (Input.GetKey(KeyCode.Escape))
+        if (Input.GetKey(KeyCode.Escape) && EscCheck)
         {
-            if(UIController.instance.curOpenPageNum == -2)
-            { DontDestroyCanvas.setRecord(false); }
-            else
-            { goHome(); }
+            EscCheck = false;
+            StartCoroutine(OnClickEsc());
         }
     }
+    IEnumerator OnClickEsc()
+    {
+        int num = UIController.instance.curOpenPageNum;
+        if (num == -2)
+        { DontDestroyCanvas.setRecord(false);
+            UIController.instance.curOpenPageNum = 0;
+        }
+        else if (num == 0)
+        {
+            backToSearchDefault();
+        }
+        else
+        { goHome(); }
+        yield return new WaitForSeconds(0.1f);
+        EscCheck = true;
+    }
+
     #region 검색 전 칩 로드
     int listCount;
     IEnumerator setSearchChips(Dictionary<string,int> thisDictionary,GameObject parent, List<string> sortedKey)
@@ -118,6 +134,7 @@ public class SearchManager : MonoBehaviour
 
         JobExperiences.transform.parent.gameObject.SetActive(true);
         ScrollView.SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
     }
 
     public void checkInputNull()
@@ -174,6 +191,7 @@ public class SearchManager : MonoBehaviour
 
         JobExperiences.transform.parent.gameObject.SetActive(false);
         ScrollView.SetActive(true);
+        UIController.instance.curOpenPageNum = 0;
 
         SearchResultContent.transform.GetChild(0).gameObject.SetActive(true);
 
