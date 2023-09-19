@@ -49,6 +49,7 @@ public class FriendsManager : MonoBehaviour
     public TMP_InputField searchText;
     public GameObject searchedFriendProfile;
     public GameObject snackBar;
+    GameObject btnSendApplyFriend;
 
     //프로필이미지
     public Sprite[] array_profileImg;
@@ -75,6 +76,8 @@ public class FriendsManager : MonoBehaviour
 
     //컬러코드
     Color primary1;
+    Color primary3;
+    Color gray400;
     #endregion
 
     #region 시작 시 실행
@@ -83,6 +86,10 @@ public class FriendsManager : MonoBehaviour
     {
         //컬러
         ColorUtility.TryParseHtmlString("#EFF5FF", out primary1);
+        ColorUtility.TryParseHtmlString("#408BFD", out primary3);
+        ColorUtility.TryParseHtmlString("#B6BBC3", out gray400);
+
+        btnSendApplyFriend = searchedFriendProfile.transform.GetChild(3).gameObject;
 
         // Firebase 초기화
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
@@ -168,6 +175,7 @@ public class FriendsManager : MonoBehaviour
     {
         UIController.instance.curOpenPageNum = 4;
         friendsPage.SetActive(true);
+        friendSearchPage.SetActive(false);
 
         //기존 리스트 초기화
         for (int i = 0; i < content_friendsList.transform.childCount; i++)
@@ -211,6 +219,7 @@ public class FriendsManager : MonoBehaviour
     //검색 페이지 오픈
     public void OpenSearchPage()
     {
+        UIController.instance.curOpenPageNum = 6;
         friendSearchPage.SetActive(true);
         //검색바 리셋
         searchText.text = "";
@@ -275,6 +284,9 @@ public class FriendsManager : MonoBehaviour
     private void SetSearchedUserUI(UserDB userDB)
     {
         searchedFriendProfile.SetActive(true);
+        btnSendApplyFriend.GetComponent<Button>().interactable = true;
+        btnSendApplyFriend.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
+        btnSendApplyFriend.transform.GetChild(1).gameObject.SetActive(false);
 
         //이미 요청 보낸 유저면 취소 버튼 뜨게
         bool alreadyRequest = false;
@@ -310,15 +322,14 @@ public class FriendsManager : MonoBehaviour
 
     #region 친구 요청 보내기
     //친구 요청 보내기
-    public void FriendAddOrCancel()
+    public async void FriendAddOrCancel()
     {
-        GameObject button = EventSystem.current.currentSelectedGameObject;
-        TMP_Text btnText = button.transform.GetChild(0).GetComponent<TMP_Text>();
+        TMP_Text btnText = btnSendApplyFriend.transform.GetChild(0).GetComponent<TMP_Text>();
         print(btnText.text);
         if(btnText.text == "추가")
         {
-            SendRequestFriend();
-            btnText.text = "취소";
+            string searchedId = await GetUserId(searchedName);
+            CheckAlreadyFriend(searchedId, btnText);
         }
         else
         {
@@ -326,15 +337,51 @@ public class FriendsManager : MonoBehaviour
             btnText.text = "추가";
         }
     }
+    //이미 나한테 신청 보낸 친구일 경우 바로 추가
+    bool isFromNoti = true;
+    bool isAlreadyFriend = false;
+    private void CheckAlreadyFriend(string searchedId, TMP_Text btnText)
+    {
+        isAlreadyFriend = false;
+        if (thisUserDB.notiApplyFriendList.Count > 0)
+        {
+            for(int i=0; i< thisUserDB.notiApplyFriendList.Count; i++)
+            {
+                NotiInfo info = thisUserDB.notiApplyFriendList[i];
+                if(info.userId == searchedId)
+                {
+                    isAlreadyFriend = true;
+                    thisUserDB.notiApplyFriendList.RemoveAt(i);
+
+                    isFromNoti = false;
+                    friendId = info.userId;
+                    UpdateFriendsList();
+                }
+            }
+        }
+
+        if (isAlreadyFriend)
+        {
+            btnSendApplyFriend.GetComponent<Button>().interactable = false;
+            btnText.color = gray400;
+            btnSendApplyFriend.transform.GetChild(1).gameObject.SetActive(true);
+
+            StartCoroutine(SetSnackBar("님과 입사동기가 되었어요!", 70));
+        }
+        else
+        {
+            SendRequestFriend(searchedId);
+            btnText.text = "취소";
+        }
+    }
     //추가 버튼
-    private async void SendRequestFriend()
+    private async void SendRequestFriend(string searchedId)
     {
         //snackBar 띄우기
-        StartCoroutine(SetSnackBar());
+        StartCoroutine(SetSnackBar("님에게 입사동기를 신청했어요!\n상대가 수락하면 랭킹에서 볼 수 있어요.", 98));
 
         //검색된 유저의 DB 받아오기
-        print("next");
-        string searchedId = await GetUserId(searchedName);
+        
         UserDB userDB = await GetUserDB(searchedId);
 
         //현재 유저 정보 넣기
@@ -349,11 +396,13 @@ public class FriendsManager : MonoBehaviour
         //다시 검색된 유저 DB 업데이트 하기
         UpdateUserDB(searchedId, userDB);
     }
-    IEnumerator SetSnackBar()
+    IEnumerator SetSnackBar(string text, int height)
     {
-        snackBar.SetActive(true);
+        snackBar.GetComponent<RectTransform>().sizeDelta = new Vector2(350, height);
         snackBar.transform.GetChild(0).GetComponent<TMP_Text>().text =
-            searchedName + "님에게 입사동기를 신청했어요!\n상대가 수락하면 랭킹에서 볼 수 있어요.";
+            searchedName + text;
+
+        snackBar.SetActive(true);
         yield return new WaitForSeconds(3f);
         snackBar.SetActive(false);
     }
@@ -374,6 +423,16 @@ public class FriendsManager : MonoBehaviour
 
         //다시 검색된 유저 DB 업데이트 하기
         UpdateUserDB(searchedId, userDB);
+    }
+    //검색에서 백버튼
+    public void BackFromApplyFriend()
+    {
+        UIController.instance.curOpenPageNum = 4;
+        if (isAlreadyFriend)
+        {
+            OpenFriendsPage();
+        }
+        else { friendSearchPage.SetActive(false); }
     }
     #endregion
 
@@ -468,24 +527,28 @@ public class FriendsManager : MonoBehaviour
     //알림 - 입사동기 신청 - 수락 시 친구 리스트 업데이트
     private async void UpdateFriendsList()
     {
-        GameObject thisObj = EventSystem.current.currentSelectedGameObject.transform.parent.gameObject;
-        string userName = thisObj.transform.GetChild(0).GetChild(2).GetComponent<TMP_Text>().text;
+        if (isFromNoti)
+        {
+            GameObject thisObj = EventSystem.current.currentSelectedGameObject.transform.parent.gameObject;
+            string userName = thisObj.transform.GetChild(0).GetChild(2).GetComponent<TMP_Text>().text;
 
-        //현재 유저의 DB에 친구 리스트 추가
-        int thisObjIndex = thisObj.transform.GetSiblingIndex()-2;
-        string friendId = await GetUserId(userName);
-        print("userName: " + userName);
-        print("friendId: " + friendId);
+            //현재 유저의 DB에 친구 리스트 추가
+            int thisObjIndex = thisObj.transform.GetSiblingIndex() - 2;
+            friendId = await GetUserId(userName);
+            print("userName: " + userName);
+            print("friendId: " + friendId);
 
-        //FriendInfo newFriend = new FriendInfo();
-        //newFriend.userInformation = thisUserDB.notiApplyFriendList[thisObjIndex].userInformation;
+            //기존 request list에서 해당 유저 정보 삭제
+            thisUserDB.notiApplyFriendList.RemoveAt(thisObjIndex);
 
-        //string newFriendId = await GetUserId(newFriend.userInformation.userName);
+            Destroy(thisObj); //알람 삭제
+
+            CheckNotiEmpty(thisUserDB.notiApplyFriendList, content_noti_applyFriend);
+        }
+        isFromNoti = true;
+
         dateTimeClass dateTime = new dateTimeClass();
         thisUserDB.friendsDictionary.Add(friendId, dateTime);
-
-        //기존 request list에서 해당 유저 정보 삭제
-        thisUserDB.notiApplyFriendList.RemoveAt(thisObjIndex);
 
         //현재 유저 DB 업데이트
         UpdateUserDB(thisUserId, thisUserDB);
@@ -493,13 +556,9 @@ public class FriendsManager : MonoBehaviour
         //요청한 유저의 DB에 현재 유저 정보 추가
         UserDB friendDB = await GetUserDB(friendId);
         dateTimeClass dateTimefriend = new dateTimeClass();
-        //FriendInfo friendInfo = new FriendInfo();
-        //friendInfo.userInformation = thisUserDB.userInformation;
+        
         friendDB.friendsDictionary.Add(thisUserId, dateTimefriend);
         UpdateUserDB(friendId, friendDB);
-
-        Destroy(thisObj); //알람 삭제
-        CheckNotiEmpty(thisUserDB.notiApplyFriendList, content_noti_applyFriend);
     }
     //알림 - 입사동기 신청 - 거절 시 친구 요청 리스트에서 삭제
     private async void DeleteRequestFriend()

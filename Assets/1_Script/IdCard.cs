@@ -134,7 +134,7 @@ public class IdCard : MonoBehaviour
     private void Update()
     {
         //안드로이드 디바이스 뒤로가기 클릭 시
-        if (Input.GetKey(KeyCode.Escape))
+        if (Input.GetKey(KeyCode.Escape) && EscCheck)
         {
             EscCheck = false;
             StartCoroutine(OnClickEsc());
