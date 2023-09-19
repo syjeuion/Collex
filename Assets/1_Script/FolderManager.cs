@@ -413,7 +413,7 @@ public class FolderManager : MonoBehaviour
             DailyRecord newDailyRecord = JsonConvert.DeserializeObject<DailyRecord>(getRecordData);
 
             newRecord = Instantiate(recordList, recordListContainer.transform);
-            newRecord.transform.SetAsFirstSibling();
+            //newRecord.transform.SetAsFirstSibling();
             newRecord.transform.GetChild(0).GetComponent<TMP_Text>().text = newDailyRecord.title;
             newRecord.transform.GetChild(1).GetComponent<TMP_Text>().text = newDailyRecord.writings["활동내용"];
 

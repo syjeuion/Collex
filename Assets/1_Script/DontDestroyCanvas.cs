@@ -98,6 +98,7 @@ public class DontDestroyCanvas : MonoBehaviour
     {
         transform.GetChild(0).gameObject.SetActive(true);
         UIController.instance.curOpenPageNum = -3;
+        
         clickedRecordTitle = UserManager.Instance.pushedRecord;
 
         string thisFolderDatas = UserManager.Instance.folders[UserManager.Instance.pushedButton];
@@ -116,6 +117,8 @@ public class DontDestroyCanvas : MonoBehaviour
     string capas;
     IEnumerator SetPage()
     {
+        controlProgressIndicator(true); //인디케이터 시작
+
         if (UserManager.Instance.bookmarks.Contains(thisProject.projectTitle + "\t" + newRecord.title))
             transform.GetChild(0).GetChild(1).GetChild(2).GetComponent<Toggle>().isOn = true;
         else
@@ -124,12 +127,14 @@ public class DontDestroyCanvas : MonoBehaviour
         recordTitleContainer.transform.GetChild(0).GetComponent<TMP_Text>().text = newRecord.title;
         recordTitleContainer.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = newRecord.date;
 
+        //역량
         if (string.IsNullOrWhiteSpace(newRecord.capabilities[0]))
         {
             recordTitleContainer.transform.GetChild(3).GetChild(0).gameObject.SetActive(false);
         }
         else
         {
+            recordTitleContainer.transform.GetChild(3).GetChild(0).gameObject.SetActive(true);
             for (int i = 0; i < newRecord.capabilities.Length; i++)
             {
                 if (newRecord.capabilities[i] == null) { break; }
@@ -140,12 +145,14 @@ public class DontDestroyCanvas : MonoBehaviour
             capas = "";
         }
 
+        //직무 경험
         if (newRecord.experiences.Count == 0)
         {
             recordTitleContainer.transform.GetChild(3).GetChild(1).gameObject.SetActive(false);
         }
         else
         {
+            recordTitleContainer.transform.GetChild(3).GetChild(1).gameObject.SetActive(true);
             for (int i = 0; i < newRecord.experiences.Count; i++)
             {
                 if (newRecord.experiences[i] == null) { break; }
@@ -156,12 +163,14 @@ public class DontDestroyCanvas : MonoBehaviour
             capas = "";
         }
 
+        //해시태그
         if (string.IsNullOrWhiteSpace(newRecord.hashtags[0]))
         {
             recordTitleContainer.transform.GetChild(3).GetChild(2).gameObject.SetActive(false);
         }
         else
         {
+            recordTitleContainer.transform.GetChild(3).GetChild(2).gameObject.SetActive(true);
             for (int i = 0; i < newRecord.hashtags.Length; i++)
             {
                 if (newRecord.hashtags[i] == null) { break; }
@@ -172,6 +181,7 @@ public class DontDestroyCanvas : MonoBehaviour
             capas = "";
         }
         yield return new WaitForEndOfFrame();
+
         if (!recordTitleContainer.transform.GetChild(3).GetChild(0).gameObject.activeSelf &&
             !recordTitleContainer.transform.GetChild(3).GetChild(1).gameObject.activeSelf &&
             !recordTitleContainer.transform.GetChild(3).GetChild(2).gameObject.activeSelf)
@@ -179,6 +189,9 @@ public class DontDestroyCanvas : MonoBehaviour
             recordTitleContainer.transform.GetChild(3).GetChild(3).gameObject.SetActive(true);
             recordTitleContainer.transform.GetChild(3).GetComponent<VerticalLayoutGroup>().childAlignment = TextAnchor.UpperCenter;
             //recordTitleContainer.transform.GetChild(3).GetChild(3).GetComponent<LayoutElement>().ignoreLayout = false;
+        }
+        else { recordTitleContainer.transform.GetChild(3).GetChild(3).gameObject.SetActive(false);
+            recordTitleContainer.transform.GetChild(3).GetComponent<VerticalLayoutGroup>().childAlignment = TextAnchor.UpperLeft;
         }
 
         for (int i = 0; i < recordsContainer.transform.childCount; i++)
@@ -204,6 +217,8 @@ public class DontDestroyCanvas : MonoBehaviour
         yield return new WaitForEndOfFrame();
         recordsContainer.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 23.9f;
         recordsContainer.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 24f;
+
+        controlProgressIndicator(false); //인디케이터 종료
     }
     #endregion
 
