@@ -135,7 +135,8 @@ public class GoogleSigninManager : MonoBehaviour
         {
             UserDB userDB = await GetUserDB(userId);
             //유저 정보 업데이트 (내장 데이터 있는지 확인)
-            if (UserManager.Instance.folders.Count == 0)
+            print("UserManager.Instance.folders.Count: " + UserManager.Instance.folders.Count);
+            if (UserManager.Instance.folders.Count <= 0)
             {
                 userDB.totalFolderCount = 0;
                 userDB.projectFolderCount = 0;

@@ -82,8 +82,14 @@ public class RankingManager : MonoBehaviour
     {
         myRankingArea.transform.GetChild(2).GetComponent<Image>().sprite = myProfileImgs[UserManager.Instance.newUserInformation.userProfileImgNumber];
         myRankingArea.transform.GetChild(3).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
-        myRankingArea.transform.GetChild(4).GetComponent<TMP_Text>().text = thisUserName;
+        myRankingArea.transform.GetChild(4).GetComponent<TMP_Text>().text = thisUserName;   
     }
+    private void MyRankingWithoutFriend(GameObject myRankingArea, int count)
+    {
+        myRankingArea.transform.GetChild(0).GetComponent<TMP_Text>().text = "1";
+        myRankingArea.transform.GetChild(6).GetComponent<TMP_Text>().text = count.ToString();
+    }
+
     #region 친구 랭킹 UI 세팅
     //친구 랭킹 UI 세팅
     private async void setFriendRanking()
@@ -92,9 +98,21 @@ public class RankingManager : MonoBehaviour
         thisUserDB = await GetUserDB(thisUserId);
 
         List<string> friendIdList = new List<string>();
-        if (thisUserDB.friendsDictionary.Count <= 0) {
+
+        //친구 없으면 종료
+        if (thisUserDB.friendsDictionary.Count <= 0)
+        {
+            //empty area 활성화
+            content_record.transform.GetChild(1).gameObject.SetActive(true);
+            content_cheerUp.transform.GetChild(1).gameObject.SetActive(true);
+
+            MyRankingWithoutFriend(recordMyRanking, thisUserDB.rankingData.countRecord);
+            MyRankingWithoutFriend(cheerupMyRanking, thisUserDB.rankingData.countCheerUp);
+
             DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
-            return;  } //친구 없으면 종료
+            return;
+        }
+        
         //empty area 제거
         content_record.transform.GetChild(1).gameObject.SetActive(false);
         content_cheerUp.transform.GetChild(1).gameObject.SetActive(false);
