@@ -21,6 +21,7 @@ public class DontDestroyCanvas : MonoBehaviour
     public GameObject recordsContainer;
     public GameObject prefab;
     GameObject newWriting;
+    public Toggle toggleInfo;
 
     public static Action<bool> setRecord; //페이지 세팅 함수
     public static Action<bool> controlProgressIndicator; //프로그래스 제어
@@ -127,6 +128,11 @@ public class DontDestroyCanvas : MonoBehaviour
         recordTitleContainer.transform.GetChild(0).GetComponent<TMP_Text>().text = newRecord.title;
         recordTitleContainer.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = newRecord.date;
 
+        //recordTitleContainer.transform.GetChild(3).gameObject.SetActive(true);
+        toggleInfo.isOn = true;
+
+        transform.GetChild(0).GetChild(2).gameObject.SetActive(false);
+
         //역량
         if (string.IsNullOrWhiteSpace(newRecord.capabilities[0]))
         {
@@ -224,12 +230,11 @@ public class DontDestroyCanvas : MonoBehaviour
 
     public void RecordInfoToggle()
     {
-        StartCoroutine(ToggleCT());
+        StartCoroutine(ToggleCT(toggleInfo.isOn));
     }
-    IEnumerator ToggleCT()
+    IEnumerator ToggleCT(bool toggleIson)
     {
-        Toggle toggle = EventSystem.current.currentSelectedGameObject.GetComponent<Toggle>();
-        if (toggle.isOn)
+        if (toggleIson)
             recordTitleContainer.transform.GetChild(3).gameObject.SetActive(true);
         else
             recordTitleContainer.transform.GetChild(3).gameObject.SetActive(false);

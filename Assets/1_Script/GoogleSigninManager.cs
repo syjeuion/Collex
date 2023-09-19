@@ -20,10 +20,14 @@ public class GoogleSigninManager : MonoBehaviour
     private FirebaseAuth auth;
     private GoogleSignInConfiguration configuration;
 
+    public static Action SignOut;
+
     private void Awake()
     {
         configuration = new GoogleSignInConfiguration { WebClientId = webClientId, RequestEmail = true, RequestIdToken = true };
         CheckFirebaseDependencies();
+
+        SignOut = () => { OnSignOut(); };
     }
 
     private void CheckFirebaseDependencies()
@@ -60,7 +64,10 @@ public class GoogleSigninManager : MonoBehaviour
     private void OnSignOut()
     {
         AddToInformation("Calling SignOut");
+        UserManager.Instance.newUserInformation.userId = "";
+
         GoogleSignIn.DefaultInstance.SignOut();
+        SceneManager.LoadScene("0_SignIn");
     }
 
     public void OnDisconnect()
@@ -92,12 +99,6 @@ public class GoogleSigninManager : MonoBehaviour
         }
         else
         {
-            AddToInformation("Welcome: " + task.Result.DisplayName + "!");
-            AddToInformation("Email = " + task.Result.Email);
-            AddToInformation("Google ID Token = " + task.Result.IdToken);
-            //AddToInformation("Email = " + task.Result.Email); 
-            //print("UserAuthCode: " + task.Result.AuthCode);
-            //print("UserGetHashCode: " + task.Result.GetHashCode());
             print("UserId: " + task.Result.UserId);
             SignInWithGoogleOnFirebase(task.Result.IdToken, task.Result.UserId);
         }
@@ -133,6 +134,19 @@ public class GoogleSigninManager : MonoBehaviour
         if (isThereUserId)
         {
             UserDB userDB = await GetUserDB(userId);
+            //유저 정보 업데이트 (내장 데이터 있는지 확인)
+            if (UserManager.Instance.folders.Count == 0)
+            {
+                userDB.totalFolderCount = 0;
+                userDB.projectFolderCount = 0;
+                userDB.contestFolderCount = 0;
+                userDB.internshipFolderCount = 0;
+                userDB.topThreeExperiences = new string[3] { "-", "-", "-" };
+                userDB.topThreeCapabilities = new string[3] { "-", "-", "-" };
+                userDB.rankingData.countRecord = 0;
+                UpdateUserDB(userId, userDB);
+            }
+
             //이미 해당 유저 데이터가 존재하고 이름도 존재한다면
             if (!string.IsNullOrEmpty(userDB.userInformation.userName))
             {
@@ -205,6 +219,13 @@ public class GoogleSigninManager : MonoBehaviour
             //DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
         }
         return userDB;
+    }
+    //DB에 유저 data 저장하기
+    private async void UpdateUserDB(string userId, UserDB userDB)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
+        string userDBstr = JsonConvert.SerializeObject(userDB);
+        await dataReference.SetRawJsonValueAsync(userDBstr);
     }
 
     private void AddToInformation(string str) { print(str); }

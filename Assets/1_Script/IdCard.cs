@@ -25,6 +25,9 @@ public class IdCard : MonoBehaviour
     public GameObject editProfileImg;
     public GameObject editIdCardAlert;
 
+    //로그아웃
+    public GameObject Dialog_Logout;
+
     public GameObject editIdCard_userName;
 
     //버튼
@@ -741,16 +744,6 @@ public class IdCard : MonoBehaviour
         UIController.instance.PageObjArr[num].SetActive(true);
         UIController.instance.curOpenPageNum = num;
     }
-    //세팅 페이지
-    //public void OpenSettingPage()
-    //{
-    //    OpenPage(0);
-    //}
-    ////유저 가이드
-    //public void OpenGuidePage()
-    //{
-    //    OpenPage(5);
-    //}
 
     //뒤로가기
     public void BackFunc(int num)
@@ -758,17 +751,24 @@ public class IdCard : MonoBehaviour
         UIController.instance.PageObjArr[UIController.instance.curOpenPageNum].SetActive(false);
         UIController.instance.curOpenPageNum = num;
     }
-    //close setting user job page
-    //public void CloseSetUserJobPage()
-    //{
-    //    BackFunc(1);
-    //}
-    //public void BackDefaultPage()
-    //{
-    //    BackFunc(-1);
-    //}
     public void CloseTitlePopUp()
     {
         UIController.instance.curOpenPageNum = 4;
+    }
+
+    //로그아웃
+    public void OpenDialogLogout()
+    {
+        Dialog_Logout.SetActive(true);
+        UIController.instance.curOpenPageNum = -3;
+    }
+    public void CloseDialogLogout()
+    {
+        Dialog_Logout.SetActive(false);
+        UIController.instance.curOpenPageNum = 0;
+    }
+    public void LetSignOut()
+    {
+        GoogleSigninManager.SignOut();
     }
 }
