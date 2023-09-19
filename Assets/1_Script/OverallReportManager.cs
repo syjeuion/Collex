@@ -388,6 +388,8 @@ public class OverallReportManager : MonoBehaviour
         foreach (string key in sortedExList.Keys) { sortedKeys.Add(key);}
 
         btn_showAllEx = Experiences.transform.GetChild(3).gameObject;
+        StartCoroutine(CloseBtnShowAllEx());
+
         if (sortedKeys.Count <= 5) {
             exTotalRange = sortedKeys.Count;
             btn_showAllEx.SetActive(false);
@@ -450,6 +452,7 @@ public class OverallReportManager : MonoBehaviour
     int lastCount;
     private void SetExRanking(int order, GameObject content)
     {
+        int originalIndex = order;
         bool isTop =false;
         if (order == 0) { 
             lastRank = order;
@@ -476,7 +479,7 @@ public class OverallReportManager : MonoBehaviour
             newPrefabExRanking.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().color = primary3;
         }
         newPrefabExRanking.transform.GetChild(0).GetComponent<TMP_Text>().text = (order + 1).ToString();
-        newPrefabExRanking.transform.GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = sortedKeys[order];
+        newPrefabExRanking.transform.GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = sortedKeys[originalIndex];
         newPrefabExRanking.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = $"{sortedExList[sortedKeys[order]]}회";
     }
     #endregion
