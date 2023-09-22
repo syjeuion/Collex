@@ -203,19 +203,19 @@ public class FolderManager : MonoBehaviour
     IEnumerator OnClickEsc()
     {
         int openPageNum = UIController.instance.curOpenPageNum;
-        if(openPageNum == -1)
+        if (openPageNum == -1)
         {
             goHome();
         }
-        else if(openPageNum == 4)
+        else if (openPageNum == 4)
         {
             returnFolder();
         }
-        else if(openPageNum == -3)
+        else if (openPageNum == -3)
         {
             DontDestroyCanvas.setRecord(false);
         }
-        else //openPageNum == 0 || 1 || 2 || 3
+        else if (openPageNum != -2) //openPageNum == 0 || 1 || 2 || 3
         {
             UIController.instance.PageObjArr[openPageNum].SetActive(false);
             UIController.instance.curOpenPageNum--;
@@ -1279,5 +1279,20 @@ public class FolderManager : MonoBehaviour
     {
         FinishUp_1.SetActive(false);
         UIController.instance.curOpenPageNum = -1;
+    }
+
+    //정렬 순서 - 최신순/오래된순
+    public TMP_Text textBtnSorting;
+    public Toggle toggleSortingLatest;
+    public void ToggleChangeSorting()
+    {
+        if (toggleSortingLatest.isOn)
+        {
+            textBtnSorting.text = "최신 순";
+        }
+        else
+        {
+            textBtnSorting.text = "오래된 순";
+        }
     }
 }
