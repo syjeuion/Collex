@@ -980,6 +980,11 @@ public class FolderManager : MonoBehaviour
             //print(EpisodeType.transform.GetChild(5).GetComponent<TMP_Text>().text);
             EpisodeType.transform.GetChild(4).gameObject.SetActive(false);
             EpisodeType.transform.GetChild(0).GetComponent<TMP_Text>().text = ReportScript.GetComponent<Report>().setEpisodeType()[1];
+            print("ReportScript.GetComponent<Report>().setEpisodeType()[1]: " + ReportScript.GetComponent<Report>().setEpisodeType()[0]);
+            if(string.IsNullOrEmpty(ReportScript.GetComponent<Report>().setEpisodeType()[0]))
+            {
+                print("ReportScript.GetComponent<Report>().setEpisodeType()[1]: " + ReportScript.GetComponent<Report>().setEpisodeType()[0]);
+                EpisodeType.transform.GetChild(5).GetComponent<TMP_Text>().text += "?"; }
             EpisodeType.transform.GetChild(3).GetComponent<TMP_Text>().text = ReportScript.GetComponent<Report>().setEpisodeType()[0];
 
             //역량 분석
