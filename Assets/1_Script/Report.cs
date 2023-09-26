@@ -36,6 +36,9 @@ public class Report : MonoBehaviour
 
     public Sprite[] episodeTypeArr;
     public Image episodeType;
+    public GameObject CapabilityArea;
+    public GameObject CapabilityEmpty;
+    //public TMPro.TMP_Text episodeDescription;
 
     MakeNewProject thisProject;
     private string thisUserName;
@@ -83,7 +86,8 @@ public class Report : MonoBehaviour
             new ProjectType("특급 해결사",$"이 활동에서는 <b><color=#1E2024>문제해결과정</color></b>에 대한 기록을 많이 작성하셨군요. 좋은 해결방법을 찾기 위해 노력하는 모습이 정말 멋져요! 자기소개서에서 문제해결 과정이 중요한 만큼 이 활동을 나중에 소재로 활용해보는 건 어때요?"),
             new ProjectType("프로 성장러",$"이 활동에서는 <b><color=#1E2024>배운점</color></b>에 대한 기록을 많이 작성하셨군요. 배운 점이 많다는 것은 그만큼 {thisUserName}님의 역량이 많이 성장했다는 의미이기도 해요. 배움을 얻은 계기와 함께 좋은 에피소드로 활용해 보아요!"),
             new ProjectType("슈퍼 루키",$"이 활동에서는 <b><color=#1E2024>잘한점</color></b>에 대한 기록을 많이 작성하셨군요.  지금까지 많은 잘한 점을 기록한 만큼 {thisUserName}님이 가진 역량은 무궁무진할 것입니다. 이를 자신만의 확실한 장점으로 발전시켜 보세요!"),
-            new ProjectType("대기만성 인재",$"이 활동에서는 <b><color=#1E2024>부족한점</color></b>에 대한 기록을 많이 작성하셨군요. 자신의 부족한 점을 인지하고 보완한다면 {thisUserName}님의 잠재력을 입증할 수 있는 하나의 방법이 될 수 있어요. {thisUserName}님은 분명 더 큰 성장을 이룰 수 있을 거에요. 언제나 응원합니다!")
+            new ProjectType("대기만성 인재",$"이 활동에서는 <b><color=#1E2024>부족한점</color></b>에 대한 기록을 많이 작성하셨군요. 자신의 부족한 점을 인지하고 보완한다면 {thisUserName}님의 잠재력을 입증할 수 있는 하나의 방법이 될 수 있어요. {thisUserName}님은 분명 더 큰 성장을 이룰 수 있을 거에요. 언제나 응원합니다!"),
+            new ProjectType("???","<align=center>이번 활동에서 질문을 선택하지 않았어요.\n다음 활동에서는 질문을 함께 선택해 보세요!</align>")
         };
     }
 
@@ -96,13 +100,25 @@ public class Report : MonoBehaviour
         //가장 많은 필드
         List<string> sortedKeys = new List<string>();
         foreach (string key in sortedWrtings.Keys) sortedKeys.Add(key);
+
+        if (sortedWrtings[sortedKeys[0]] == 0)
+        {   order = 6;
+            CapabilityArea.SetActive(false);
+            CapabilityEmpty.SetActive(true);
+        }
+        else
+        {
+            CapabilityArea.SetActive(true);
+            CapabilityEmpty.SetActive(false);
+
+            if (sortedKeys[0] == "문제상황") order = 0;
+            else if (sortedKeys[0] == "문제원인") order = 1;
+            else if (sortedKeys[0] == "해결과정") order = 2;
+            else if (sortedKeys[0] == "배운점") order = 3;
+            else if (sortedKeys[0] == "잘한점") order = 4;
+            else if (sortedKeys[0] == "부족한점") order = 5;
+        }
         
-        if (sortedKeys[0] == "문제상황") order = 0;
-        if (sortedKeys[0] == "문제원인") order = 1;
-        if (sortedKeys[0] == "해결과정") order = 2;
-        if (sortedKeys[0] == "배운점") order = 3;
-        if (sortedKeys[0] == "잘한점") order = 4;
-        if (sortedKeys[0] == "부족한점") order = 5;
         projectType[0] = projectTypes[order].projectType;
         projectType[1] = projectTypes[order].projectTypeDescription;
         episodeType.sprite = episodeTypeArr[order];

@@ -41,7 +41,8 @@ public class OverallReportManager : MonoBehaviour
         home_descriptions = new string[] {
         "아직 기록하지 않았어요!",
         "2주 이상 기록하지 않았어요!",
-        "2주 이상 기록해 보세요!"};
+        "2주 이상 기록해 보세요!",
+        "전체 리포트 보러가기"};
 
         totalRecordCount = UserManager.Instance.newUserInformation.titleCheck[7];
     }
@@ -106,7 +107,7 @@ public class OverallReportManager : MonoBehaviour
         }
         else //recordCountWeekGap = 0
         {
-            return "";
+            return home_descriptions[3];
         }
         
     }
