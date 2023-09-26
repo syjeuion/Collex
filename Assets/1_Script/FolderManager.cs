@@ -995,14 +995,14 @@ public class FolderManager : MonoBehaviour
             //글자 크기 예외처리
             if(ReportScript.GetComponent<Report>().MostCapability == "커뮤니케이션능력")
             {
-                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                                           이\n특히 두드러지네요!";
+                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                                          이\n특히 두드러지네요!";
                 CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().fontSize = 21;
                 CapabilitesAnalytics.transform.GetChild(2).GetComponent<TMP_Text>().fontSize = 21;
                 CapabilitesAnalytics.transform.GetChild(2).GetComponent<RectTransform>().anchoredPosition = new Vector2(-24, CapabilitesAnalytics.transform.GetChild(2).GetComponent<RectTransform>().anchoredPosition.y) ;
             }
             else if(ReportScript.GetComponent<Report>().MostCapability == "문제해결능력")
             {
-                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                                이\n특히 두드러지네요!";
+                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                               이\n특히 두드러지네요!";
             }
             CapabilitesAnalytics.transform.GetChild(6).gameObject.SetActive(false);
 

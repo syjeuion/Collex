@@ -134,6 +134,7 @@ public class OverallReportManager : MonoBehaviour
     public TMP_Text countDayOfWeek; 
     public GameObject[] graphDayOfWeek;
     public TMP_Text[] recordCountThisMonthTmp; //이번달 기록 개수
+    public GameObject blur_dayOfWeek;
     //역량
     public TMP_Text[] capabilitiesTmp; 
     public TMP_Text[] capabilityGraphTexts; 
@@ -174,7 +175,13 @@ public class OverallReportManager : MonoBehaviour
         }
 
         //가장 많이 작성한 요일 - The most day of the week
-        countDayOfWeek.text = drawGraphDayOfWeek(UserManager.Instance.newUserInformation.recordDayOfWeek,"요일") +"요일";
+        if (UserManager.Instance.newUserInformation.titleCheck[7] == 0)
+        { blur_dayOfWeek.SetActive(true); }
+        else
+        {
+            blur_dayOfWeek.SetActive(false);
+            countDayOfWeek.text = drawGraphDayOfWeek(UserManager.Instance.newUserInformation.recordDayOfWeek, "요일") + "요일";
+        }
 
         //이번달 기록 개수 - Records Count of this month
         recordCountThisMonthTmp[0].text = $"{DateTime.Now.Month}월 기록 개수";
