@@ -229,9 +229,14 @@ public class HomeManager : MonoBehaviour
     }
     IEnumerator OnClickEsc()
     {
-        if (UIController.instance.curOpenPageNum > -1)
+        int num = UIController.instance.curOpenPageNum;
+        if (UIController.instance.curOpenPageNum == 6)
         {
-            int num = UIController.instance.curOpenPageNum;
+            UIController.instance.PageObjArr[num].SetActive(false);
+            UIController.instance.curOpenPageNum = 4;
+        }
+        else if (UIController.instance.curOpenPageNum > -1)
+        {
             UIController.instance.PageObjArr[num].SetActive(false);
             UIController.instance.curOpenPageNum = -1;
         }

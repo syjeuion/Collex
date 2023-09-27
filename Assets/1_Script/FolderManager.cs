@@ -10,6 +10,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using TMPro;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
+using Firebase.Database;
 
 public class FolderManager : MonoBehaviour
 {
@@ -101,6 +103,10 @@ public class FolderManager : MonoBehaviour
     public GameObject ExEmpty;
     public GameObject ReportScript;
 
+    //파이어베이스
+    UserDB thisUserDB;
+    string thisUserId;
+
     //색상
     Color primary1;
     Color primary3;
@@ -121,15 +127,20 @@ public class FolderManager : MonoBehaviour
         ColorUtility.TryParseHtmlString("#575F6B", out gray700);
         ColorUtility.TryParseHtmlString("#1E2024", out gray900);
         ColorUtility.TryParseHtmlString("#FF3E49", out errorColor);
+
+        
     }
 
-    void Start()
+    private async void Start()
     {
+        UIController.instance.curOpenPageNum = -1;
         FolderPage.SetActive(true);
         //RecordInPage.SetActive(false);
 
         string thisFolderDatas = UserManager.Instance.folders[UserManager.Instance.pushedButton];
         thisProject = JsonConvert.DeserializeObject<MakeNewProject>(thisFolderDatas);
+
+        DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
 
         if (!thisProject.isItOngoing)
         {
@@ -159,12 +170,20 @@ public class FolderManager : MonoBehaviour
             countAndSorting.transform.GetChild(0).GetComponent<TMP_Text>().text = "기록 " + thisProject.records.Count.ToString() + "개";
             StartCoroutine(outputRecords(defaultTitles));
         }
+        else { DontDestroyCanvas.controlProgressIndicator(false); } //인디케이터 종료
+
 
         if (UserManager.Instance.newUserInformation.folderPageCount <= 5)
         { StartCoroutine(ActiveTooltip()); UserManager.Instance.newUserInformation.folderPageCount++; }
 
         if (!string.IsNullOrWhiteSpace(UserManager.Instance.pushedRecord)) clickRecord();
+
+        //파이어베이스
+        thisUserId = UserManager.Instance.newUserInformation.userId;
+        thisUserDB = await GetUserDB(thisUserId);
     }
+
+    bool EscCheck = true;
     private void Update()
     {
         if (ReportPage.activeSelf)
@@ -172,9 +191,39 @@ public class FolderManager : MonoBehaviour
             ReportContent.GetComponent<VerticalLayoutGroup>().spacing = 15.5f;
             ReportContent.GetComponent<VerticalLayoutGroup>().spacing = 16f;
         }
-        //if (Input.GetKey(KeyCode.Escape))
-        //{ goHome(); }
+
+        //안드로이드 디바이스 뒤로가기 클릭 시
+        if (Input.GetKey(KeyCode.Escape) && EscCheck)
+        {
+            EscCheck = false;
+            StartCoroutine(OnClickEsc());
+        }
     }
+    //뒤로가기
+    IEnumerator OnClickEsc()
+    {
+        int openPageNum = UIController.instance.curOpenPageNum;
+        if (openPageNum == -1)
+        {
+            goHome();
+        }
+        else if (openPageNum == 4)
+        {
+            returnFolder();
+        }
+        else if (openPageNum == -3)
+        {
+            DontDestroyCanvas.setRecord(false);
+        }
+        else if (openPageNum != -2) //openPageNum == 0 || 1 || 2 || 3
+        {
+            UIController.instance.PageObjArr[openPageNum].SetActive(false);
+            UIController.instance.curOpenPageNum--;
+        }
+        yield return new WaitForSeconds(0.1f);
+        EscCheck = true;
+    }
+
     //tooltip
     IEnumerator ActiveTooltip()
     {
@@ -196,6 +245,7 @@ public class FolderManager : MonoBehaviour
     //오픈 필터 페이지
     public void openFilter()
     {
+        UIController.instance.curOpenPageNum = -2;
         FilterPage.transform.SetSiblingIndex(1);
         FilterPage.SetActive(true);
         ClickFilterTab();
@@ -316,6 +366,7 @@ public class FolderManager : MonoBehaviour
             explanation.GetComponent<TMP_Text>().text = "조건에 해당하는 기록이 없어요.\n다른 조건으로 다시 설정해 보세요!";
         }
         FilterPage.transform.SetSiblingIndex(0);
+        UIController.instance.curOpenPageNum = -1;
     }
     //폴더 페이지에서 필터 상태 변경
     [SerializeField] GameObject[] filterChips;
@@ -362,7 +413,7 @@ public class FolderManager : MonoBehaviour
             DailyRecord newDailyRecord = JsonConvert.DeserializeObject<DailyRecord>(getRecordData);
 
             newRecord = Instantiate(recordList, recordListContainer.transform);
-            newRecord.transform.SetAsFirstSibling();
+            //newRecord.transform.SetAsFirstSibling();
             newRecord.transform.GetChild(0).GetComponent<TMP_Text>().text = newDailyRecord.title;
             newRecord.transform.GetChild(1).GetComponent<TMP_Text>().text = newDailyRecord.writings["활동내용"];
 
@@ -398,6 +449,8 @@ public class FolderManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
         filterChips[0].transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 7.9f;
         filterChips[0].transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 8;
+
+        DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
     }
     #endregion
 
@@ -408,7 +461,7 @@ public class FolderManager : MonoBehaviour
         if (clickButton != null)
         {
             UserManager.Instance.pushedRecord = clickButton.transform.GetChild(0).GetComponent<TMP_Text>().text;
-            DontDestroyCanvas.setRecord();
+            DontDestroyCanvas.setRecord(true);
         }
         
     }
@@ -419,6 +472,7 @@ public class FolderManager : MonoBehaviour
     {
         FinishUp_1.SetActive(false);
         FinishUp_2.SetActive(true);
+        UIController.instance.curOpenPageNum = 0;
         if (thisProject.projectType == "공모전") { Contest.SetActive(true); }
         else { Contest.SetActive(false); }
     }
@@ -453,6 +507,7 @@ public class FolderManager : MonoBehaviour
         else episodePositive = true;
 
         FinishUp_3.SetActive(true);
+        UIController.instance.curOpenPageNum = 1;
     }
     //Role & 한줄요약 안썼을때
     GameObject selectedField;
@@ -539,6 +594,7 @@ public class FolderManager : MonoBehaviour
     {
         selectedQuestion = new List<string>();
         SelectedRecordPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 2;
         selectedStep = EventSystem.current.currentSelectedGameObject.transform.parent.name;
 
         if (selectedStep == "Situation")
@@ -725,6 +781,7 @@ public class FolderManager : MonoBehaviour
         EpisodeTypeGroup.GetComponent<VerticalLayoutGroup>().spacing = 12;
         
         SelectedRecordPage.SetActive(false);
+        UIController.instance.curOpenPageNum = 1;
     }
     void openSelectRecord()
     {
@@ -736,6 +793,7 @@ public class FolderManager : MonoBehaviour
     public void setSelfWriting()
     {
         selfWritingPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 3;
         inputSelfWriting.text = "";
     }
     public void saveSelfWriting()
@@ -745,6 +803,7 @@ public class FolderManager : MonoBehaviour
             StartCoroutine(PrintWrittenRecord());
         }
         selfWritingPage.SetActive(false);
+        UIController.instance.curOpenPageNum = 1;
     }
     IEnumerator PrintWrittenRecord()
     {
@@ -802,7 +861,8 @@ public class FolderManager : MonoBehaviour
 
         setReport();
     }
-    
+    #endregion
+
     public void returnFolder()
     {
         FolderPage.SetActive(true);
@@ -820,9 +880,9 @@ public class FolderManager : MonoBehaviour
         //FinishUp_4.SetActive(false);
         SelectedRecordPage.SetActive(false);
         ReportPage.SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
     }
-    #endregion
-
+    
     #region 리포트
     //메인에피소드
     public GameObject mainEpisodeFolding;
@@ -839,6 +899,7 @@ public class FolderManager : MonoBehaviour
     public void setReport()
     {
         ReportPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 4;
 
         FolderInfo.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = thisProject.projectType;
         FolderInfo.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = thisProject.projectTitle;
@@ -919,6 +980,11 @@ public class FolderManager : MonoBehaviour
             //print(EpisodeType.transform.GetChild(5).GetComponent<TMP_Text>().text);
             EpisodeType.transform.GetChild(4).gameObject.SetActive(false);
             EpisodeType.transform.GetChild(0).GetComponent<TMP_Text>().text = ReportScript.GetComponent<Report>().setEpisodeType()[1];
+            print("ReportScript.GetComponent<Report>().setEpisodeType()[1]: " + ReportScript.GetComponent<Report>().setEpisodeType()[0]);
+            if(string.IsNullOrEmpty(ReportScript.GetComponent<Report>().setEpisodeType()[0]))
+            {
+                print("ReportScript.GetComponent<Report>().setEpisodeType()[1]: " + ReportScript.GetComponent<Report>().setEpisodeType()[0]);
+                EpisodeType.transform.GetChild(5).GetComponent<TMP_Text>().text += "?"; }
             EpisodeType.transform.GetChild(3).GetComponent<TMP_Text>().text = ReportScript.GetComponent<Report>().setEpisodeType()[0];
 
             //역량 분석
@@ -929,14 +995,14 @@ public class FolderManager : MonoBehaviour
             //글자 크기 예외처리
             if(ReportScript.GetComponent<Report>().MostCapability == "커뮤니케이션능력")
             {
-                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                                           이\n특히 두드러지네요!";
+                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                                          이\n특히 두드러지네요!";
                 CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().fontSize = 21;
                 CapabilitesAnalytics.transform.GetChild(2).GetComponent<TMP_Text>().fontSize = 21;
                 CapabilitesAnalytics.transform.GetChild(2).GetComponent<RectTransform>().anchoredPosition = new Vector2(-24, CapabilitesAnalytics.transform.GetChild(2).GetComponent<RectTransform>().anchoredPosition.y) ;
             }
             else if(ReportScript.GetComponent<Report>().MostCapability == "문제해결능력")
             {
-                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                                이\n특히 두드러지네요!";
+                CapabilitesAnalytics.transform.GetChild(1).GetComponent<TMP_Text>().text = "이 활동에서는                               이\n특히 두드러지네요!";
             }
             CapabilitesAnalytics.transform.GetChild(6).gameObject.SetActive(false);
 
@@ -1079,6 +1145,7 @@ public class FolderManager : MonoBehaviour
         modifyContainer.transform.GetChild(4).GetComponent<TMP_Text>().color = colorGray;
     }
     //폴더 수정사항 저장하기
+    
     public void saveModifyFolder()
     {
         //예외처리
@@ -1099,6 +1166,7 @@ public class FolderManager : MonoBehaviour
         }
 
         //기존 데이터 삭제
+        UserManager.Instance.newUserInformation.projectType[thisProject.projectType]--;
         UserManager.Instance.folders.Remove(thisProject.projectTitle);
 
         thisProject.projectTitle = inputFolderTitle.text;
@@ -1110,6 +1178,7 @@ public class FolderManager : MonoBehaviour
             }
         }
 
+        UserManager.Instance.newUserInformation.projectType[thisProject.projectType]++;
         //JSON으로 저장
         string newFolderData = JsonConvert.SerializeObject(thisProject);
         UserManager.Instance.folders.Add(thisProject.projectTitle, newFolderData);
@@ -1119,6 +1188,9 @@ public class FolderManager : MonoBehaviour
         titleArea.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.projectTitle;
         modifyContainer.transform.parent.gameObject.SetActive(false);
         FolderPage.SetActive(true);
+
+        //파이어베이스
+        UpdateFolderCount();
     }
     #endregion
 
@@ -1126,13 +1198,106 @@ public class FolderManager : MonoBehaviour
     public GameObject folderRemovePage;
     public void removeFolder()
     {
+        UserManager.Instance.newUserInformation.projectType[thisProject.projectType]--;
+
         UserManager.Instance.folders.Remove(thisProject.projectTitle);
         folderRemovePage.SetActive(false);
         UserManager.Instance.checkFolderDelete = true;
+
+        //파이어베이스
+        UpdateFolderCount();
+
         goHome();
     }
+    private void UpdateFolderCount()
+    {
+        int contestCount = UserManager.Instance.newUserInformation.projectType["공모전"];
+        int projectCount = UserManager.Instance.newUserInformation.projectType["프로젝트"];
+        int internshipCount = UserManager.Instance.newUserInformation.projectType["인턴십"];
+
+        thisUserDB.totalFolderCount = contestCount + projectCount + internshipCount;
+        thisUserDB.contestFolderCount = contestCount;
+        thisUserDB.projectFolderCount = projectCount;
+        thisUserDB.internshipFolderCount = internshipCount;
+
+        UpdateUserDB(thisUserId, thisUserDB);
+    }
+
+    #region 파이어베이스 realTimeDB
+    //DB에서 유저 data 가져오기
+    private async Task<UserDB> GetUserDB(string userId)
+    {
+        try
+        {
+            DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
+            var taskResult = await dataReference.GetValueAsync();
+            UserDB userDB = JsonConvert.DeserializeObject<UserDB>(taskResult.GetRawJsonValue());
+            return userDB;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("GetUserDB catch error: " + e.Message);
+            UserDB userDB = new UserDB();
+            return userDB;
+        }
+    }
+    //DB에 유저 data 저장하기
+    private async void UpdateUserDB(string userId, UserDB userDB)
+    {
+        DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
+        string userDBstr = JsonConvert.SerializeObject(userDB);
+        await dataReference.SetRawJsonValueAsync(userDBstr);
+    }
+    #endregion
 
     //씬 전환
     public void goHome() { SceneManager.LoadScene("1_Home"); UserManager.Instance.pushedButton = ""; }
     public void goWriting() { SceneManager.LoadScene("2_Writing"); UserManager.Instance.pushedRecord = ""; }
+
+    //뒤로가기
+    public void BackFromFinishUp2()
+    {
+        UIController.instance.curOpenPageNum = -1;
+        FinishUp_2.SetActive(false);
+    }
+    public void BackFromFinishUp3()
+    {
+        UIController.instance.curOpenPageNum = 0;
+        FinishUp_3.SetActive(false);
+    }
+    public void BackFromSelectRecord()
+    {
+        UIController.instance.curOpenPageNum = 1;
+        SelectedRecordPage.SetActive(false);
+    }
+    public void BackFromSelfWriting()
+    {
+        UIController.instance.curOpenPageNum = 1;
+        selfWritingPage.SetActive(false);
+    }
+    public void SetFinishUp1()
+    {
+        FinishUp_1.SetActive(true);
+        UIController.instance.curOpenPageNum = -2;
+    }
+    public void CancelFinishUp1()
+    {
+        FinishUp_1.SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
+    }
+
+    //정렬 순서 - 최신순/오래된순
+    public TMP_Text textBtnSorting;
+    public Toggle toggleSortingLatest;
+    public void ToggleChangeSorting()
+    {
+        if (toggleSortingLatest.isOn)
+        {
+            textBtnSorting.text = "최신 순";
+        }
+        else
+        {
+            textBtnSorting.text = "오래된 순";
+        }
+    }
 }

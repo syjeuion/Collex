@@ -82,8 +82,14 @@ public class RankingManager : MonoBehaviour
     {
         myRankingArea.transform.GetChild(2).GetComponent<Image>().sprite = myProfileImgs[UserManager.Instance.newUserInformation.userProfileImgNumber];
         myRankingArea.transform.GetChild(3).GetComponent<TMP_Text>().text = UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
-        myRankingArea.transform.GetChild(4).GetComponent<TMP_Text>().text = thisUserName;
+        myRankingArea.transform.GetChild(4).GetComponent<TMP_Text>().text = thisUserName;   
     }
+    private void MyRankingWithoutFriend(GameObject myRankingArea, int count)
+    {
+        myRankingArea.transform.GetChild(0).GetComponent<TMP_Text>().text = "1";
+        myRankingArea.transform.GetChild(6).GetComponent<TMP_Text>().text = count.ToString();
+    }
+
     #region 친구 랭킹 UI 세팅
     //친구 랭킹 UI 세팅
     private async void setFriendRanking()
@@ -92,9 +98,21 @@ public class RankingManager : MonoBehaviour
         thisUserDB = await GetUserDB(thisUserId);
 
         List<string> friendIdList = new List<string>();
-        if (thisUserDB.friendsDictionary.Count <= 0) {
+
+        //친구 없으면 종료
+        if (thisUserDB.friendsDictionary.Count <= 0)
+        {
+            //empty area 활성화
+            content_record.transform.GetChild(1).gameObject.SetActive(true);
+            content_cheerUp.transform.GetChild(1).gameObject.SetActive(true);
+
+            MyRankingWithoutFriend(recordMyRanking, thisUserDB.rankingData.countRecord);
+            MyRankingWithoutFriend(cheerupMyRanking, thisUserDB.rankingData.countCheerUp);
+
             DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
-            return;  } //친구 없으면 종료
+            return;
+        }
+        
         //empty area 제거
         content_record.transform.GetChild(1).gameObject.SetActive(false);
         content_cheerUp.transform.GetChild(1).gameObject.SetActive(false);
@@ -334,8 +352,15 @@ public class RankingManager : MonoBehaviour
         //친구 데이터 가져오기
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
 
+        //온보딩 체크
+        if (!UserManager.Instance.newUserInformation.idcard_onboarding)
+        {
+            idcard_front.transform.parent.GetChild(2).gameObject.SetActive(true);
+            UserManager.Instance.newUserInformation.idcard_onboarding = true;
+        }
+
         //현재 유저 랭킹 클릭
-        if(friendName == thisUserName)
+        if (friendName == thisUserName)
         {
             friendDB = thisUserDB;
             idcard_cheerUp.gameObject.SetActive(false);
@@ -418,6 +443,7 @@ public class RankingManager : MonoBehaviour
     //앞면 클릭 시 뒷면으로 돌아가기
     public void TurnIdCardFrontToBack()
     {
+        idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
         idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = false; //중복 터치 방지
         friendIdcardAni.SetTrigger("frontToBack");
         idcard_back.transform.GetChild(10).GetComponent<Button>().interactable = true;
@@ -442,6 +468,8 @@ public class RankingManager : MonoBehaviour
         idcard_front.transform.GetChild(2).GetComponent<TMP_Text>().text = "";
         idcard_front.transform.GetChild(3).GetComponent<TMP_Text>().text = "";
         idcard_front.transform.GetChild(4).GetComponent<TMP_Text>().text = "";
+
+        idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
     }
     #endregion
 

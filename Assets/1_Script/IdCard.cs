@@ -25,6 +25,11 @@ public class IdCard : MonoBehaviour
     public GameObject editProfileImg;
     public GameObject editIdCardAlert;
 
+    //로그아웃
+    public GameObject Dialog_Logout;
+
+    public GameObject editIdCard_userName;
+
     //버튼
     public Sprite Button_Disabled;
     public Sprite Button_Enabled;
@@ -74,7 +79,9 @@ public class IdCard : MonoBehaviour
     int profileImgNum;
     UserDB thisUserDB;
 
-    private void Start()
+    //이름 리스트
+    List<string> userNameList;
+    private async void Start()
     {
         ColorUtility.TryParseHtmlString("#EFF5FF", out primary1);
         ColorUtility.TryParseHtmlString("#408BFD", out primary3);
@@ -101,6 +108,9 @@ public class IdCard : MonoBehaviour
         GetThisUserDB();
 
         if (UserManager.Instance.editProfileInHome) { setEditIdCard(); }
+
+        //이름 리스트 가져오기
+        userNameList = await GetNameList();
     }
     //UserDB 가져오기
     private async void GetThisUserDB()
@@ -120,10 +130,41 @@ public class IdCard : MonoBehaviour
         DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
     }
 
+    bool EscCheck = true;
     private void Update()
     {
         //안드로이드 디바이스 뒤로가기 클릭 시
-        if (Input.GetKey(KeyCode.Escape)) goHome();
+        if (Input.GetKey(KeyCode.Escape) && EscCheck)
+        {
+            EscCheck = false;
+            StartCoroutine(OnClickEsc());
+        }
+    }
+    IEnumerator OnClickEsc()
+    {
+        int num = UIController.instance.curOpenPageNum;
+        if (num == -2)
+        {   DontDestroyCanvas.setRecord(false);
+            UIController.instance.curOpenPageNum = 3;
+        }
+        else if(num == 1)
+        {
+            CheckBackEditIDcard();
+        }
+        else if(num == 2)
+        {
+            BackFunc(1);
+        }
+        else if(num == -1)
+        {
+            goHome();
+        }
+        else if(num!=-3)
+        {
+            BackFunc(-1);
+        }
+        yield return new WaitForSeconds(0.1f);
+        EscCheck = true;
     }
 
     //사원증 세팅
@@ -207,13 +248,16 @@ public class IdCard : MonoBehaviour
     {
         EditIdCardPage.SetActive(true);
         editIdCardAlert.SetActive(false);
+        UIController.instance.curOpenPageNum = 1;
         //사원증 프로필 사진 수정
-        EditIdCardPage.transform.GetChild(0).GetComponent<Image>().sprite = ProfileImgs[profileNumber];
+        EditIdCardPage.transform.GetChild(0).GetComponent<Image>().sprite = ProfileImgs[profileImgNum];
 
         //이름
         EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text = userName;
         EditIdCardPage.transform.GetChild(1).GetChild(2).GetComponent<TMP_Text>().text =
             EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text.Length.ToString() + "/10";
+        editIdCard_userName.transform.GetChild(3).gameObject.SetActive(false);
+
         //목표기업명
         if (!string.IsNullOrWhiteSpace(userWishCompany))
         {
@@ -249,10 +293,15 @@ public class IdCard : MonoBehaviour
     public void setEditProfileImg()
     {
         editProfileImg.SetActive(true);
-        if (profileNumber == 0) { return; }
+        if (profileImgNum == 0) { return; }
         else
         {
-            editProfileImg.transform.GetChild(profileNumber-1).GetChild(0).gameObject.SetActive(true);
+            for(int i=0; i<8; i++)
+            {
+                if (i == (profileImgNum - 1))
+                { editProfileImg.transform.GetChild(i).GetChild(0).gameObject.SetActive(true); }
+                else { editProfileImg.transform.GetChild(i).GetChild(0).gameObject.SetActive(false); }
+            }
         }
     }
     public void ChangeProfileImg()
@@ -279,8 +328,9 @@ public class IdCard : MonoBehaviour
     public void setJobPage()
     {
         SetUserJobPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 2;
         //if(jobContent.transform.FindChild(userJob)) //find로 찾는 방법 - 한글을 써야함
-        
+
         if (userJob == 5) return;
         if (userDetailJob >= 4) return;
         
@@ -320,6 +370,7 @@ public class IdCard : MonoBehaviour
         SetJobTextUI(userJob, userDetailJob);
         //EditIdCardPage.transform.GetChild(3).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = Jobs[userJob] + " · " + JobList[userJob,userDetailJob];
         SetUserJobPage.SetActive(false);
+        UIController.instance.curOpenPageNum = 1;
     }
     #endregion
 
@@ -331,6 +382,7 @@ public class IdCard : MonoBehaviour
         if (currentInputObj.GetComponent<TMP_InputField>() == null) return;
         currentInputObj.GetComponent<Image>().color = primary3;
         currentInputObj.transform.parent.GetChild(2).GetComponent<TMP_Text>().color = primary3;
+        editIdCard_userName.transform.GetChild(3).gameObject.SetActive(false);
     }
     public void checkInput()
     {
@@ -373,19 +425,29 @@ public class IdCard : MonoBehaviour
         else if (UserManager.Instance.editProfileInHome)
             { goHome(); UserManager.Instance.editProfileInHome = false; }
         else { EditIdCardPage.SetActive(false); }
-
+        UIController.instance.curOpenPageNum = -1;
     }
+
     //사원증 수정 내역 저장
     public void SaveIdCard()
     {
-        if (string.IsNullOrWhiteSpace(EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text))
+        string newName = EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text;
+
+        if (string.IsNullOrWhiteSpace(newName))
         {
             return;
         }
+        else if (userNameList.Contains(newName)&& newName != userName)
+        {
+            editIdCard_userName.transform.GetChild(1).GetComponent<Image>().color = errorColor;
+            editIdCard_userName.transform.GetChild(3).gameObject.SetActive(true);
+            return;
+        }
+
         profileImgNum = profileNumber;
         UserManager.Instance.newUserInformation.userProfileImgNumber = profileImgNum;
 
-        UserManager.Instance.newUserInformation.userName = EditIdCardPage.transform.GetChild(1).GetChild(1).GetComponent<TMP_InputField>().text;
+        UserManager.Instance.newUserInformation.userName = newName;
         //UserManager.Instance.newUserInformation.userName = userName;
 
         userWishCompany = EditIdCardPage.transform.GetChild(2).GetChild(1).GetComponent<TMP_InputField>().text;
@@ -406,7 +468,9 @@ public class IdCard : MonoBehaviour
         }
 
         if (UserManager.Instance.editProfileInHome) { goHome(); UserManager.Instance.editProfileInHome = false; }
-        else { EditIdCardPage.SetActive(false); setIdCard(profileNumber, userWishCompany, UserManager.Instance.newUserInformation.userName); }
+        else { EditIdCardPage.SetActive(false);
+            UIController.instance.curOpenPageNum = -1;
+            setIdCard(profileNumber, userWishCompany, UserManager.Instance.newUserInformation.userName); }
 
         //파이어베이스 업데이트
         DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
@@ -442,6 +506,7 @@ public class IdCard : MonoBehaviour
     public void setBookmarkPage()
     {
         BookmarkPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 3;
         StartCoroutine(setBookMarkList());
     }
     IEnumerator setBookMarkList()
@@ -498,6 +563,14 @@ public class IdCard : MonoBehaviour
     public void OpenIdCard()
     {
         idcard_front.transform.parent.gameObject.SetActive(true);
+        UIController.instance.curOpenPageNum = -3;
+
+        //온보딩 체크
+        if (!UserManager.Instance.newUserInformation.idcard_onboarding)
+        {
+            idcard_front.transform.parent.GetChild(2).gameObject.SetActive(true);
+            UserManager.Instance.newUserInformation.idcard_onboarding = true;
+        }
 
         SetIdcardFront(thisUserDB);
         SetIdcardBack(thisUserDB);
@@ -558,6 +631,7 @@ public class IdCard : MonoBehaviour
     //앞면 클릭 시 뒷면으로 돌아가기
     public void TurnIdCardFrontToBack()
     {
+        idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
         idcard_front.transform.GetChild(6).GetComponent<Button>().interactable = false; //중복 터치 방지
         friendIdcardAni.SetTrigger("frontToBack");
         idcard_back.transform.GetChild(10).GetComponent<Button>().interactable = true;
@@ -582,6 +656,9 @@ public class IdCard : MonoBehaviour
         idcard_front.transform.GetChild(2).GetComponent<TMP_Text>().text = "";
         idcard_front.transform.GetChild(3).GetComponent<TMP_Text>().text = "";
         idcard_front.transform.GetChild(4).GetComponent<TMP_Text>().text = "";
+
+        idcard_front.transform.parent.GetChild(2).gameObject.SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
     }
     #endregion
 
@@ -625,6 +702,25 @@ public class IdCard : MonoBehaviour
         string userIdDicStr = JsonConvert.SerializeObject(userIdDic);
         await dataReference.SetRawJsonValueAsync(userIdDicStr);
     }
+    //유저 이름 리스트 가져오기
+    private async Task<List<string>> GetNameList()
+    {
+        List<string> list = new List<string>();
+        DatabaseReference userIdReference = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
+        Dictionary<string, string> userIdList = new Dictionary<string, string>();
+
+        var taskResult = await userIdReference.GetValueAsync();
+        try
+        {
+            userIdList = JsonConvert.DeserializeObject<Dictionary<string, string>>(taskResult.GetRawJsonValue());
+            foreach (string key in userIdList.Keys)
+            {
+                list.Add(key);
+            }
+        }
+        catch (Exception e) { Debug.LogError("Error deserializing JSON: " + e.Message); }
+        return list;
+    }
     #endregion
 
     //기록 상세페이지
@@ -633,10 +729,46 @@ public class IdCard : MonoBehaviour
         GameObject clickButton = EventSystem.current.currentSelectedGameObject;
         UserManager.Instance.pushedButton = clickButton.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text;
         UserManager.Instance.pushedRecord = clickButton.transform.GetChild(1).GetComponent<TMP_Text>().text;
-        DontDestroyCanvas.setRecord();
+        DontDestroyCanvas.setRecord(true);
+        UIController.instance.curOpenPageNum = -2;
     }
 
     public void goHome() { SceneManager.LoadScene("1_Home"); }
     public void goSearch() { SceneManager.LoadScene("4_Search"); }
     public void goRanking() { SceneManager.LoadScene("5_Ranking"); }
+
+
+    //페이지 열기
+    public void OpenPage(int num)
+    {
+        UIController.instance.PageObjArr[num].SetActive(true);
+        UIController.instance.curOpenPageNum = num;
+    }
+
+    //뒤로가기
+    public void BackFunc(int num)
+    {
+        UIController.instance.PageObjArr[UIController.instance.curOpenPageNum].SetActive(false);
+        UIController.instance.curOpenPageNum = num;
+    }
+    public void CloseTitlePopUp()
+    {
+        UIController.instance.curOpenPageNum = 4;
+    }
+
+    //로그아웃
+    public void OpenDialogLogout()
+    {
+        Dialog_Logout.SetActive(true);
+        UIController.instance.curOpenPageNum = -3;
+    }
+    public void CloseDialogLogout()
+    {
+        Dialog_Logout.SetActive(false);
+        UIController.instance.curOpenPageNum = 0;
+    }
+    public void LetSignOut()
+    {
+        GoogleSigninManager.SignOut();
+    }
 }

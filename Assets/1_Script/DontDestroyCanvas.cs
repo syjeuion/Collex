@@ -21,8 +21,9 @@ public class DontDestroyCanvas : MonoBehaviour
     public GameObject recordsContainer;
     public GameObject prefab;
     GameObject newWriting;
+    public Toggle toggleInfo;
 
-    public static Action setRecord; //페이지 세팅 함수
+    public static Action<bool> setRecord; //페이지 세팅 함수
     public static Action<bool> controlProgressIndicator; //프로그래스 제어
     public static Action openQuitAlert;
     public static DontDestroyCanvas Instance;
@@ -55,7 +56,7 @@ public class DontDestroyCanvas : MonoBehaviour
             DontDestroyOnLoad(this.gameObject);
         }
 
-        setRecord = () => { setRecordPage(); };
+        setRecord = (bool isRecordOpen) => { setRecordPage(isRecordOpen); };
         controlProgressIndicator = (bool check) => { ControlProgressIndicator(check); };
         openQuitAlert = () => { OpenQuitAlert(); };
     }
@@ -84,14 +85,21 @@ public class DontDestroyCanvas : MonoBehaviour
     //GameObject bookmarkPage;
     //GameObject toastPopUp;
 
-    private void setRecordPage()
+    private void setRecordPage(bool isRecordOpen)
     {
         if (SceneManager.GetActiveScene().name == "3_Folder")
         {
             folderPage = GameObject.Find("FolderPage");
         }
 
+        if (isRecordOpen) { OpenRecordPage(); }
+        else { CloseRecordPage(); }
+    }
+    private void OpenRecordPage()
+    {
         transform.GetChild(0).gameObject.SetActive(true);
+        UIController.instance.curOpenPageNum = -3;
+        
         clickedRecordTitle = UserManager.Instance.pushedRecord;
 
         string thisFolderDatas = UserManager.Instance.folders[UserManager.Instance.pushedButton];
@@ -101,10 +109,17 @@ public class DontDestroyCanvas : MonoBehaviour
 
         StartCoroutine(SetPage());
     }
+    public void CloseRecordPage()
+    {
+        transform.GetChild(0).gameObject.SetActive(false);
+        UIController.instance.curOpenPageNum = -1;
+    }
 
     string capas;
     IEnumerator SetPage()
     {
+        controlProgressIndicator(true); //인디케이터 시작
+
         if (UserManager.Instance.bookmarks.Contains(thisProject.projectTitle + "\t" + newRecord.title))
             transform.GetChild(0).GetChild(1).GetChild(2).GetComponent<Toggle>().isOn = true;
         else
@@ -113,12 +128,19 @@ public class DontDestroyCanvas : MonoBehaviour
         recordTitleContainer.transform.GetChild(0).GetComponent<TMP_Text>().text = newRecord.title;
         recordTitleContainer.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = newRecord.date;
 
+        //recordTitleContainer.transform.GetChild(3).gameObject.SetActive(true);
+        toggleInfo.isOn = true;
+
+        transform.GetChild(0).GetChild(2).gameObject.SetActive(false);
+
+        //역량
         if (string.IsNullOrWhiteSpace(newRecord.capabilities[0]))
         {
             recordTitleContainer.transform.GetChild(3).GetChild(0).gameObject.SetActive(false);
         }
         else
         {
+            recordTitleContainer.transform.GetChild(3).GetChild(0).gameObject.SetActive(true);
             for (int i = 0; i < newRecord.capabilities.Length; i++)
             {
                 if (newRecord.capabilities[i] == null) { break; }
@@ -129,12 +151,14 @@ public class DontDestroyCanvas : MonoBehaviour
             capas = "";
         }
 
+        //직무 경험
         if (newRecord.experiences.Count == 0)
         {
             recordTitleContainer.transform.GetChild(3).GetChild(1).gameObject.SetActive(false);
         }
         else
         {
+            recordTitleContainer.transform.GetChild(3).GetChild(1).gameObject.SetActive(true);
             for (int i = 0; i < newRecord.experiences.Count; i++)
             {
                 if (newRecord.experiences[i] == null) { break; }
@@ -145,12 +169,14 @@ public class DontDestroyCanvas : MonoBehaviour
             capas = "";
         }
 
+        //해시태그
         if (string.IsNullOrWhiteSpace(newRecord.hashtags[0]))
         {
             recordTitleContainer.transform.GetChild(3).GetChild(2).gameObject.SetActive(false);
         }
         else
         {
+            recordTitleContainer.transform.GetChild(3).GetChild(2).gameObject.SetActive(true);
             for (int i = 0; i < newRecord.hashtags.Length; i++)
             {
                 if (newRecord.hashtags[i] == null) { break; }
@@ -161,6 +187,7 @@ public class DontDestroyCanvas : MonoBehaviour
             capas = "";
         }
         yield return new WaitForEndOfFrame();
+
         if (!recordTitleContainer.transform.GetChild(3).GetChild(0).gameObject.activeSelf &&
             !recordTitleContainer.transform.GetChild(3).GetChild(1).gameObject.activeSelf &&
             !recordTitleContainer.transform.GetChild(3).GetChild(2).gameObject.activeSelf)
@@ -168,6 +195,9 @@ public class DontDestroyCanvas : MonoBehaviour
             recordTitleContainer.transform.GetChild(3).GetChild(3).gameObject.SetActive(true);
             recordTitleContainer.transform.GetChild(3).GetComponent<VerticalLayoutGroup>().childAlignment = TextAnchor.UpperCenter;
             //recordTitleContainer.transform.GetChild(3).GetChild(3).GetComponent<LayoutElement>().ignoreLayout = false;
+        }
+        else { recordTitleContainer.transform.GetChild(3).GetChild(3).gameObject.SetActive(false);
+            recordTitleContainer.transform.GetChild(3).GetComponent<VerticalLayoutGroup>().childAlignment = TextAnchor.UpperLeft;
         }
 
         for (int i = 0; i < recordsContainer.transform.childCount; i++)
@@ -193,17 +223,18 @@ public class DontDestroyCanvas : MonoBehaviour
         yield return new WaitForEndOfFrame();
         recordsContainer.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 23.9f;
         recordsContainer.transform.parent.GetComponent<VerticalLayoutGroup>().spacing = 24f;
+
+        controlProgressIndicator(false); //인디케이터 종료
     }
     #endregion
 
     public void RecordInfoToggle()
     {
-        StartCoroutine(ToggleCT());
+        StartCoroutine(ToggleCT(toggleInfo.isOn));
     }
-    IEnumerator ToggleCT()
+    IEnumerator ToggleCT(bool toggleIson)
     {
-        Toggle toggle = EventSystem.current.currentSelectedGameObject.GetComponent<Toggle>();
-        if (toggle.isOn)
+        if (toggleIson)
             recordTitleContainer.transform.GetChild(3).gameObject.SetActive(true);
         else
             recordTitleContainer.transform.GetChild(3).gameObject.SetActive(false);

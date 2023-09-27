@@ -134,7 +134,9 @@ public class Onboarding : MonoBehaviour
                 userNameList = await getIdOrNameList("name");
             }
         }
-        else { SignInPage.SetActive(true); }
+        else { SignInPage.SetActive(true);
+            DontDestroyCanvas.controlProgressIndicator(false); //인디케이터 종료
+        }
 
         //약관동의 체크
         if (UserManager.Instance.newUserInformation.agreementForApp) { AgreementsPage.SetActive(false); }
@@ -568,7 +570,7 @@ public class Onboarding : MonoBehaviour
         newUserData.userInformation.userTitle = UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
 
         //UserDB 저장
-        UpdateUserDB(userId, newUserData);
+        UpdateUserDB(UserManager.Instance.newUserInformation.userId, newUserData);
         //유저 UserIdList 저장
         UpdateUserIdList();
 
@@ -626,6 +628,7 @@ public class Onboarding : MonoBehaviour
     private async void UpdateUserDB(string userId, UserDB userDB)
     {
         DatabaseReference dataReference = FirebaseDatabase.DefaultInstance.GetReference("userList").Child(userId);
+
         string userDBstr = JsonConvert.SerializeObject(userDB);
         await dataReference.SetRawJsonValueAsync(userDBstr);
     }
@@ -638,7 +641,7 @@ public class Onboarding : MonoBehaviour
         DatabaseReference userIdList = FirebaseDatabase.DefaultInstance.GetReference("userIdList");
         var taskResult = await userIdList.GetValueAsync();
         userIdDic = JsonConvert.DeserializeObject<Dictionary<string, string>>(taskResult.GetRawJsonValue());
-        userIdDic.Add(UserName, userId);
+        userIdDic.Add(UserName, UserManager.Instance.newUserInformation.userId);
         
         string userIdListStr = JsonConvert.SerializeObject(userIdDic);
         await userIdList.SetRawJsonValueAsync(userIdListStr);
