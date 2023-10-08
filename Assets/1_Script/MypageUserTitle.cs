@@ -21,7 +21,11 @@ public class MypageUserTitle : MonoBehaviour
     private void Start()
     {
         if (UserManager.Instance.clickHomeBanner)
-        { usingGuidePage.SetActive(true); UserManager.Instance.clickHomeBanner = false; }
+        {
+            usingGuidePage.SetActive(true);
+            UserManager.Instance.clickHomeBanner = false;
+            UIController.instance.curOpenPageNum = -4;
+        }
         usingGuideBannerText.text = UserManager.Instance.newUserInformation.userName + "님을 위한\nCollex 이용 Tip 보러가기!";
     }
 

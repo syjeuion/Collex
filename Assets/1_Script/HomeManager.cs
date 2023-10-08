@@ -78,8 +78,6 @@ public class HomeManager : MonoBehaviour
         //홈 스크롤 시 앱바 색상 변경용도
         wholeContentRect = Home_MainContent.GetComponent<RectTransform>();
 
-        
-
         UserTitleManager.ActionUserTitle();
         //userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = "\n"+UserManager.Instance.newUserInformation.userName + "님!";
 
@@ -139,14 +137,27 @@ public class HomeManager : MonoBehaviour
         UserManager.Instance.newUserInformation.idCardColorNumber = userDB.idcardColor;
         UserManager.Instance.newUserInformation.userProfileImgNumber = userDB.userInformation.userProfileImg;
 
-        //이용팁 배너
+        StartCoroutine(SetBanner());
+    }
+    //이용팁 배너
+    private IEnumerator SetBanner()
+    {
         if (!UserManager.Instance.newUserInformation.homeBanner)
         {
             BannerArea.SetActive(true);
-            BannerArea.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = userName + "님을 위한\nCollex 이용 Tip 보러가기!";
+            BannerArea.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(328, 138);
+            BannerArea.transform.GetChild(0).GetComponent<TMP_Text>().text = userName + "님을 위한\nCollex 이용 Tip 보러가기!";
         }
-        else { BannerArea.SetActive(false); }
+        else
+        {
+            BannerArea.SetActive(false);
+            BannerArea.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(328, 66);
+        }
+        yield return new WaitForEndOfFrame();
+        Home_MainContent.GetComponent<VerticalLayoutGroup>().spacing = 0.1f;
+        Home_MainContent.GetComponent<VerticalLayoutGroup>().spacing = 0;
     }
+
     //폴더 세팅 함수
     void folderSetting()
     {

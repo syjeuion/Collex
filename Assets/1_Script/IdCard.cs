@@ -155,7 +155,7 @@ public class IdCard : MonoBehaviour
         {
             BackFunc(1);
         }
-        else if(num == -1)
+        else if(num == -1 || num == -4)
         {
             goHome();
         }
@@ -748,8 +748,15 @@ public class IdCard : MonoBehaviour
     //뒤로가기
     public void BackFunc(int num)
     {
-        UIController.instance.PageObjArr[UIController.instance.curOpenPageNum].SetActive(false);
-        UIController.instance.curOpenPageNum = num;
+        if (UIController.instance.curOpenPageNum == -4)
+        {
+            goHome();
+        }
+        else
+        {
+            UIController.instance.PageObjArr[UIController.instance.curOpenPageNum].SetActive(false);
+            UIController.instance.curOpenPageNum = num;
+        }
     }
     public void CloseTitlePopUp()
     {
