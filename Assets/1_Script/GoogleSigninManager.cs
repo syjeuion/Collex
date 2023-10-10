@@ -152,6 +152,10 @@ public class GoogleSigninManager : MonoBehaviour
             if (!string.IsNullOrEmpty(userDB.userInformation.userName))
             {
                 SceneManager.LoadScene("1_Home");
+                UserManager.Instance.newUserInformation.userName = userDB.userInformation.userName;
+                UserManager.Instance.newUserInformation.userProfileImgNumber = userDB.userInformation.userProfileImg;
+                UserManager.Instance.newUserInformation.idCardColorNumber = userDB.idcardColor;
+                
                 UserManager.Instance.newUserInformation.titleCheck[0]++;
             }
             else { return; }
