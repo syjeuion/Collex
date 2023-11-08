@@ -103,13 +103,13 @@ public class Report : MonoBehaviour
 
         if (sortedWrtings[sortedKeys[0]] == 0)
         {   order = 6;
-            CapabilityArea.SetActive(false);
-            CapabilityEmpty.SetActive(true);
+            //CapabilityArea.SetActive(false);
+            //CapabilityEmpty.SetActive(true);
         }
         else
         {
-            CapabilityArea.SetActive(true);
-            CapabilityEmpty.SetActive(false);
+            //CapabilityArea.SetActive(true);
+            //CapabilityEmpty.SetActive(false);
 
             if (sortedKeys[0] == "문제상황") order = 0;
             else if (sortedKeys[0] == "문제원인") order = 1;
@@ -151,6 +151,17 @@ public class Report : MonoBehaviour
         //키 리스트
         List<string> sortedKeys = new List<string>();
         foreach (string key in sortedAllcapabilites.Keys) sortedKeys.Add(key);
+
+        if (sortedAllcapabilites[sortedKeys[0]] == 0) {
+            CapabilityArea.SetActive(false);
+            CapabilityEmpty.SetActive(true);
+            return;
+        }
+        else
+        {
+            CapabilityArea.SetActive(true);
+            CapabilityEmpty.SetActive(false);
+        }
 
         if (check == 0) { MostCapability = sortedKeys[0]; check++; }
 
