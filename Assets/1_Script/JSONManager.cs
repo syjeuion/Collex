@@ -45,11 +45,15 @@ class MakeNewProject
     public string prize;
     //public string episodeType;
     public List<string> EpisodeTypes = new List<string>();
-    public string Summary;
-    public List<string> EpisodeSituation = new List<string>();
-    public List<string> EpisodeAction = new List<string>();
-    public List<string> EpisodeResult = new List<string>();
-    public List<string> EpisodeRealization = new List<string>();
+    //public string Summary;
+    //public List<string> EpisodeSituation = new List<string>();
+    //public List<string> EpisodeAction = new List<string>();
+    //public List<string> EpisodeResult = new List<string>();
+    //public List<string> EpisodeRealization = new List<string>();
+
+    public string episodeMain;
+    public string episodeGoodPoint;
+    public string episodeBadPoint;
 }
 
 //기록 생성

@@ -454,6 +454,22 @@ public class IdCard : MonoBehaviour
 
         UserManager.Instance.newUserInformation.kindOfJob = userJob;
         UserManager.Instance.newUserInformation.detailJob = userDetailJob;
+        if(userJob == 0)
+        {
+            UserManager.Instance.newUserInformation.titleCheck[1]++;
+            UserManager.Instance.checkTitle("뒤", 0, 1);
+        }
+        else if (userJob == 1)
+        {
+            UserManager.Instance.newUserInformation.titleCheck[2]++;
+            UserManager.Instance.checkTitle("뒤", 1, 2);
+        }
+        else if(userJob <= 4)
+        {
+            UserManager.Instance.newUserInformation.titleCheck[3]++;
+            UserManager.Instance.checkTitle("뒤", 2, 3);
+        }
+
 
         if (!string.IsNullOrWhiteSpace(UserManager.Instance.selectedModi))
         { UserManager.Instance.newUserInformation.userTitleModi = UserManager.Instance.selectedModi; }
@@ -464,8 +480,8 @@ public class IdCard : MonoBehaviour
         {
             UserManager.Instance.newUserInformation.titleCheck[28]++;
             UserManager.Instance.checkTitle("앞", 26, 28);
-            UserManager.Instance.getTitle = 1;
         }
+        UserManager.Instance.getTitle = 1;
 
         if (UserManager.Instance.editProfileInHome) { goHome(); UserManager.Instance.editProfileInHome = false; }
         else { EditIdCardPage.SetActive(false);

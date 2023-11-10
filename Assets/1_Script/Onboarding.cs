@@ -566,7 +566,10 @@ public class Onboarding : MonoBehaviour
         //온보딩 정보 파이어베이스에 저장
         UserDB newUserData = new UserDB();
         newUserData.userInformation.userName = UserName;
-        newUserData.userInformation.userJob = JobList[UserManager.Instance.newUserInformation.kindOfJob, UserManager.Instance.newUserInformation.detailJob];
+        if (UserJobIndex != 5)
+        {
+            newUserData.userInformation.userJob = JobList[UserManager.Instance.newUserInformation.kindOfJob, UserManager.Instance.newUserInformation.detailJob];
+        }
         newUserData.userInformation.userTitle = UserManager.Instance.newUserInformation.userTitleModi + " " + UserManager.Instance.newUserInformation.userTitleNoun;
 
         //UserDB 저장

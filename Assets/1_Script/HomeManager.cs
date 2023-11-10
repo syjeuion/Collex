@@ -123,7 +123,6 @@ public class HomeManager : MonoBehaviour
     //UserDB 가져오기
     private async void GetThisUserDB()
     {
-        print("GetThisUserDB func");
         thisUserDB = await GetUserDB(thisUserId);
         userName = thisUserDB.userInformation.userName;
         userProfiles.transform.GetChild(0).GetComponent<Image>().sprite = myProfileImgs[thisUserDB.userInformation.userProfileImg];

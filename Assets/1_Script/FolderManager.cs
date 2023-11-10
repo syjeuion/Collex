@@ -21,8 +21,9 @@ public class FolderManager : MonoBehaviour
     public GameObject FinishUp_1;
     public GameObject FinishUp_2;
     public GameObject FinishUp_3;
-    public GameObject SelectedRecordPage;
-    public GameObject selfWritingPage;
+    public GameObject ShowRecordsPage;
+    //public GameObject SelectedRecordPage;
+    //public GameObject selfWritingPage;
     public GameObject ReportPage;
     #endregion
 
@@ -67,18 +68,28 @@ public class FolderManager : MonoBehaviour
     public GameObject finishUp2_EpisodeTypes;
     public GameObject EpisodeTypeGroup;
 
-    public GameObject EpisodeSituation;
-    public GameObject EpisodeAction;
-    public GameObject EpisodeResult;
-    public GameObject EpisodeRealization;
+    //public GameObject EpisodeSituation;
+    //public GameObject EpisodeAction;
+    //public GameObject EpisodeResult;
+    //public GameObject EpisodeRealization;
+    public TMP_InputField episode_main;
+    public TMP_InputField episode_goodpoint;
+    public TMP_InputField episode_badpoint;
 
-    public TMP_Text selectRecordPageTitle;
-    public TMP_Text selectedRecord; //선택된 질문종류 표시 칩
+    //작성한 기록 보기
+    public GameObject showRecordsContent;
+    public GameObject prefab_recordInfo;
+    public GameObject prefab_singleRecord;
+    GameObject recordInfo;
+    GameObject singleRecord;
 
-    public GameObject writtenRecordContent; //기록 선택 페이지
-    public GameObject singleWrittenRecord; //선택 전
-    public GameObject singleSelectedWrittenRecord; //선택 후
-    GameObject newWrittenRecord;
+    //public TMP_Text selectRecordPageTitle;
+    //public TMP_Text selectedRecord; //선택된 질문종류 표시 칩
+
+    //public GameObject writtenRecordContent; //기록 선택 페이지
+    //public GameObject singleWrittenRecord; //선택 전
+    //public GameObject singleSelectedWrittenRecord; //선택 후
+    //GameObject newWrittenRecord;
     #endregion
 
     //필터
@@ -116,6 +127,9 @@ public class FolderManager : MonoBehaviour
     Color gray700;
     Color gray900;
     Color errorColor;
+
+    //기록 리스트
+    Dictionary<string, DailyRecord> recordDic;
 
     private void Awake()
     {
@@ -164,11 +178,19 @@ public class FolderManager : MonoBehaviour
         titleArea.transform.GetChild(2).GetComponent<TMP_Text>().text = thisProject.startDate.Year + "년 " + thisProject.startDate.Month + "월 " + thisProject.startDate.Day + "일";
         
         //해당 폴더에 기록이 있으면 기록 리스트 출력
-        if (thisProject.records.Count >0)
+        if (thisProject.records.Count > 0)
         {
             countAndSorting.SetActive(true);
             countAndSorting.transform.GetChild(0).GetComponent<TMP_Text>().text = "기록 " + thisProject.records.Count.ToString() + "개";
             StartCoroutine(outputRecords(defaultTitles));
+
+            recordDic = new Dictionary<string, DailyRecord>();
+            foreach (string key in thisProject.records.Keys)
+            {
+                DailyRecord newRecord = JsonConvert.DeserializeObject<DailyRecord>(thisProject.records[key]);
+                recordDic.Add(key, newRecord);
+            }
+            
         }
         else { DontDestroyCanvas.controlProgressIndicator(false); } //인디케이터 종료
 
@@ -477,7 +499,7 @@ public class FolderManager : MonoBehaviour
         else { Contest.SetActive(false); }
     }
 
-    bool episodePositive;
+    //bool episodePositive;
     public void FinishUp2Confirm()
     {
         //역할 인풋 비었는지 확인해야함
@@ -503,8 +525,8 @@ public class FolderManager : MonoBehaviour
             return;
         }*/
 
-        if (thisProject.EpisodeTypes.Count == 1 && thisProject.EpisodeTypes[0] == "계속해서 노력했지만 아쉬운 점이 많았어요") episodePositive = false;
-        else episodePositive = true;
+        //if (thisProject.EpisodeTypes.Count == 1 && thisProject.EpisodeTypes[0] == "계속해서 노력했지만 아쉬운 점이 많았어요") episodePositive = false;
+        //else episodePositive = true;
 
         FinishUp_3.SetActive(true);
         UIController.instance.curOpenPageNum = 1;
@@ -587,263 +609,370 @@ public class FolderManager : MonoBehaviour
         //lastToggle = thisToggle;
     }
 
-    #region 에피소드 선택 페이지 세팅
-    List<string> selectedQuestion = new List<string>();
-    string selectedStep;
-    public void selectEpisode()
+    #region 대표 에피소드 저장
+    private void SaveMainEpisode()
     {
-        selectedQuestion = new List<string>();
-        SelectedRecordPage.SetActive(true);
-        UIController.instance.curOpenPageNum = 2;
-        selectedStep = EventSystem.current.currentSelectedGameObject.transform.parent.name;
-
-        if (selectedStep == "Situation")
-        {   selectRecordPageTitle.text = "상황";
-            if (episodePositive) { selectedQuestion.Add("문제상황"); selectedQuestion.Add("활동내용"); }
-            else { selectedQuestion.Add("문제상황"); selectedQuestion.Add("문제원인"); }
-        }
-        if (selectedStep == "Action")
-        {   selectRecordPageTitle.text = "행동";
-            if (episodePositive) { selectedQuestion.Add("해결과정"); selectedQuestion.Add("잘한점"); }
-            else { selectedQuestion.Add("활동내용"); selectedQuestion.Add("해결과정"); }
-        }
-        if (selectedStep == "Result")
-        { selectRecordPageTitle.text = "결과";
-            if (episodePositive) { selectedQuestion.Add("배운점"); selectedQuestion.Add("잘한점"); }
-            else { selectedQuestion.Add("잘한점"); selectedQuestion.Add("부족한점"); }
-        }
-        if (selectedStep == "Realization")
-        { selectRecordPageTitle.text = "느낀점"; selectedQuestion.Add("배운점"); }
-
-        //해당되는 기록 출력
-        StartCoroutine(setRecordCard());
+        thisProject.episodeMain = episode_main.text;
+        thisProject.episodeGoodPoint = episode_goodpoint.text;
+        thisProject.episodeBadPoint = episode_badpoint.text;
     }
-    IEnumerator setRecordCard()
+    #endregion
+
+    #region ShowRecords 페이지 세팅
+    bool isFirstOpenShowRecords = true;
+    public void OpenShowRecords()
     {
-        selectedRecord.text = selectedQuestion[0];
-        if (selectedQuestion.Count>=2) selectedRecord.text += ", " + selectedQuestion[1];
-        if (selectedQuestion.Count>=3) selectedRecord.text += " 외 " + (selectedQuestion.Count - 2).ToString() + "건";
-        yield return new WaitForEndOfFrame();
-        selectedRecord.transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 3.9f;
-        selectedRecord.transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 4;
+        ShowRecordsPage.SetActive(true);
+        UIController.instance.curOpenPageNum = 2;
 
-        //리셋
-        for (int i = 1; i < writtenRecordContent.transform.childCount; i++)
-            { Destroy(writtenRecordContent.transform.GetChild(i).gameObject); }
-
-        //출력
-        foreach (string value in thisProject.records.Values)
+        //첫 오픈이 아니면 그냥 리턴
+        if (!isFirstOpenShowRecords)
         {
-            DailyRecord newDailyRecord = JsonConvert.DeserializeObject<DailyRecord>(value);
-            for (int i = 0; i < selectedQuestion.Count; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(newDailyRecord.writings[selectedQuestion[i]]))
-                {
-                    newWrittenRecord = Instantiate(singleWrittenRecord, writtenRecordContent.transform);
-                    newWrittenRecord.transform.GetChild(1).GetComponent<TMP_Text>().text = selectedQuestion[i];
-                    newWrittenRecord.transform.GetChild(2).GetComponent<TMP_Text>().text = newDailyRecord.title;
-                    newWrittenRecord.transform.GetChild(3).GetComponent<TMP_Text>().text = newDailyRecord.writings[selectedQuestion[i]];
-                    newWrittenRecord.transform.GetChild(4).GetComponent<TMP_Text>().text = newDailyRecord.date;
-                    newWrittenRecord.GetComponent<Toggle>().onValueChanged.AddListener(changeTextColor);
+            return;
+        }
+        //기록 없으면 리턴
+        if(thisProject.records.Count <= 0)
+        {
+            showRecordsContent.transform.GetChild(0).gameObject.SetActive(true);
+            return;
+        }
 
+        //기록 출력
+        StartCoroutine(ShowRecordList());
+        isFirstOpenShowRecords = false;
+    }
+    IEnumerator ShowRecordList()
+    {
+        foreach (string key in recordDic.Keys)
+        {
+            print("key:" + key);
+            DailyRecord newRecord = recordDic[key];
+            recordInfo = Instantiate(prefab_recordInfo, showRecordsContent.transform);
+
+            recordInfo.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = key;
+            string capabilities = "";
+            for (int i = 0; i < 3; i++)
+            {
+                if (string.IsNullOrEmpty(newRecord.capabilities[i]))
+                {
+                    break;
+                }
+                if (i == 0)
+                {
+                    capabilities = newRecord.capabilities[i];
+                }
+                else
+                {
+                    capabilities += " · " + newRecord.capabilities[i];
+                }
+            }
+            recordInfo.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = capabilities;
+            recordInfo.transform.GetChild(0).GetChild(2).GetComponent<TMP_Text>().text = newRecord.date;
+
+            recordInfo.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(BtnShowDetail);
+        }
+        yield return new WaitForEndOfFrame();
+        showRecordsContent.GetComponent<VerticalLayoutGroup>().spacing = 0.1f;
+        showRecordsContent.GetComponent<VerticalLayoutGroup>().spacing = 0;
+        yield return new WaitForEndOfFrame();
+    }
+
+    //자세히 보기
+    private void BtnShowDetail()
+    {
+        GameObject thisBtn = EventSystem.current.currentSelectedGameObject;
+        GameObject thisRecordObj = thisBtn.transform.parent.gameObject;
+        GameObject content = thisRecordObj.transform.GetChild(1).gameObject;
+
+        StartCoroutine(ShowDetail(thisBtn, content, thisRecordObj));
+
+    }
+    IEnumerator ShowDetail(GameObject thisBtn, GameObject content, GameObject thisRecordObj)
+    {
+        //열기
+        if (thisBtn.transform.GetChild(1).GetComponent<RectTransform>().rotation.z == 0)
+        {
+            thisBtn.transform.GetChild(1).GetComponent<RectTransform>().rotation = Quaternion.Euler(0, 0, 180);
+            content.SetActive(true);
+            if (content.transform.childCount == 0)
+            {
+                string thisRecordTitle = thisRecordObj.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text;
+                DailyRecord thisRecord = recordDic[thisRecordTitle];
+
+                foreach (string title in thisRecord.writings.Keys)
+                {
+                    print("title: " + title);
+                    if (!string.IsNullOrEmpty(thisRecord.writings[title]))
+                    {
+                        singleRecord = Instantiate(prefab_singleRecord, content.transform);
+                        singleRecord.transform.GetChild(0).GetComponent<TMP_Text>().text = title;
+                        singleRecord.transform.GetChild(1).GetComponent<TMP_Text>().text = thisRecord.writings[title];
+                    }
                 }
             }
         }
+        else //닫기
+        {
+            thisBtn.transform.GetChild(1).GetComponent<RectTransform>().rotation = Quaternion.Euler(0, 0, 0);
+            content.SetActive(false);
+        }
+        yield return new WaitForEndOfFrame();
+        showRecordsContent.GetComponent<VerticalLayoutGroup>().spacing = 0.1f;
+        showRecordsContent.GetComponent<VerticalLayoutGroup>().spacing = 0;
+        yield return new WaitForEndOfFrame();
     }
-    //토글 선택될때 글자 색 바꾸기
-    public void changeTextColor(bool isOn)
-    {
-        GameObject selectedObj = EventSystem.current.currentSelectedGameObject;
-        if (selectedObj.name == "NextButton") return;
-        if (isOn) selectedObj.transform.GetChild(1).GetComponent<TMP_Text>().color = primary3;
-        else selectedObj.transform.GetChild(1).GetComponent<TMP_Text>().color = gray600;
-    }
+    #endregion
+
+    #region 에피소드 선택 페이지 세팅
+    //List<string> selectedQuestion = new List<string>();
+    //string selectedStep;
+    //public void selectEpisode()
+    //{
+    //    selectedQuestion = new List<string>();
+    //    SelectedRecordPage.SetActive(true);
+    //    UIController.instance.curOpenPageNum = 2;
+    //    selectedStep = EventSystem.current.currentSelectedGameObject.transform.parent.name;
+
+    //    if (selectedStep == "Situation")
+    //    {   selectRecordPageTitle.text = "상황";
+    //        if (episodePositive) { selectedQuestion.Add("문제상황"); selectedQuestion.Add("활동내용"); }
+    //        else { selectedQuestion.Add("문제상황"); selectedQuestion.Add("문제원인"); }
+    //    }
+    //    if (selectedStep == "Action")
+    //    {   selectRecordPageTitle.text = "행동";
+    //        if (episodePositive) { selectedQuestion.Add("해결과정"); selectedQuestion.Add("잘한점"); }
+    //        else { selectedQuestion.Add("활동내용"); selectedQuestion.Add("해결과정"); }
+    //    }
+    //    if (selectedStep == "Result")
+    //    { selectRecordPageTitle.text = "결과";
+    //        if (episodePositive) { selectedQuestion.Add("배운점"); selectedQuestion.Add("잘한점"); }
+    //        else { selectedQuestion.Add("잘한점"); selectedQuestion.Add("부족한점"); }
+    //    }
+    //    if (selectedStep == "Realization")
+    //    { selectRecordPageTitle.text = "느낀점"; selectedQuestion.Add("배운점"); }
+
+    //    //해당되는 기록 출력
+    //    StartCoroutine(setRecordCard());
+    //}
+    //IEnumerator setRecordCard()
+    //{
+    //    selectedRecord.text = selectedQuestion[0];
+    //    if (selectedQuestion.Count>=2) selectedRecord.text += ", " + selectedQuestion[1];
+    //    if (selectedQuestion.Count>=3) selectedRecord.text += " 외 " + (selectedQuestion.Count - 2).ToString() + "건";
+    //    yield return new WaitForEndOfFrame();
+    //    selectedRecord.transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 3.9f;
+    //    selectedRecord.transform.parent.GetComponent<HorizontalLayoutGroup>().spacing = 4;
+
+    //    //리셋
+    //    for (int i = 1; i < writtenRecordContent.transform.childCount; i++)
+    //        { Destroy(writtenRecordContent.transform.GetChild(i).gameObject); }
+
+    //    //출력
+    //    foreach (string value in thisProject.records.Values)
+    //    {
+    //        DailyRecord newDailyRecord = JsonConvert.DeserializeObject<DailyRecord>(value);
+    //        for (int i = 0; i < selectedQuestion.Count; i++)
+    //        {
+    //            if (!string.IsNullOrWhiteSpace(newDailyRecord.writings[selectedQuestion[i]]))
+    //            {
+    //                newWrittenRecord = Instantiate(singleWrittenRecord, writtenRecordContent.transform);
+    //                newWrittenRecord.transform.GetChild(1).GetComponent<TMP_Text>().text = selectedQuestion[i];
+    //                newWrittenRecord.transform.GetChild(2).GetComponent<TMP_Text>().text = newDailyRecord.title;
+    //                newWrittenRecord.transform.GetChild(3).GetComponent<TMP_Text>().text = newDailyRecord.writings[selectedQuestion[i]];
+    //                newWrittenRecord.transform.GetChild(4).GetComponent<TMP_Text>().text = newDailyRecord.date;
+    //                newWrittenRecord.GetComponent<Toggle>().onValueChanged.AddListener(changeTextColor);
+
+    //            }
+    //        }
+    //    }
+    //}
+    ////토글 선택될때 글자 색 바꾸기
+    //public void changeTextColor(bool isOn)
+    //{
+    //    GameObject selectedObj = EventSystem.current.currentSelectedGameObject;
+    //    if (selectedObj.name == "NextButton") return;
+    //    if (isOn) selectedObj.transform.GetChild(1).GetComponent<TMP_Text>().color = primary3;
+    //    else selectedObj.transform.GetChild(1).GetComponent<TMP_Text>().color = gray600;
+    //}
     #endregion
 
     #region 바텀시트로 질문종류 추가
     //바텀시트 셋팅
-    public GameObject selectOtherRecordsContainer;
-    public void bottomSheetSetting()
-    {
-        selectOtherRecordsContainer.transform.parent.gameObject.SetActive(true);
-        for(int i=0; i< selectedQuestion.Count; i++)
-        {
-            for (int ii = 1; ii < 8; ii++)
-            {
-                if(selectOtherRecordsContainer.transform.GetChild(ii).GetChild(0).GetComponent<TMP_Text>().text == selectedQuestion[i])
-                {
-                    selectOtherRecordsContainer.transform.GetChild(ii).GetComponent<Toggle>().isOn = true;
-                    selectOtherRecordsContainer.transform.GetChild(ii).GetChild(0).GetComponent<TMP_Text>().color = primary3;
-                    break;
-                }
-            }
-        }
-    }
-    //바텀시트 칩 선택 시 색 변경
-    public void changeChipColor()
-    {
-        GameObject selectedChip = EventSystem.current.currentSelectedGameObject;
-        
-        if (selectedChip.name == "Button_AddInputField"||selectedChip.name=="SelectFilter Button") return;
-        if (selectedChip.GetComponent<Toggle>().isOn)
-        {
-            selectedChip.GetComponent<Image>().color = primary3;
-            selectedChip.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
-        }
-        else
-        {
-            selectedChip.GetComponent<Image>().color = gray300;
-            selectedChip.transform.GetChild(0).GetComponent<TMP_Text>().color = gray700;
-        }
-    }
-    //바텀시트 선택 저장
-    public void confirmBottom()
-    {
-        selectedQuestion = new List<string>();
-        for (int i=1;i< 8; i++)
-        {
-            GameObject thisToggle = selectOtherRecordsContainer.transform.GetChild(i).gameObject;
-            if (thisToggle.GetComponent<Toggle>().isOn)
-            {
-                selectedQuestion.Add(thisToggle.transform.GetChild(0).GetComponent<TMP_Text>().text);
-            }
-        }
-        StartCoroutine(setRecordCard());
-        selectOtherRecordsContainer.transform.parent.gameObject.SetActive(false);
-    }
+    //public GameObject selectOtherRecordsContainer;
+    //public void bottomSheetSetting()
+    //{
+    //    selectOtherRecordsContainer.transform.parent.gameObject.SetActive(true);
+    //    for(int i=0; i< selectedQuestion.Count; i++)
+    //    {
+    //        for (int ii = 1; ii < 8; ii++)
+    //        {
+    //            if(selectOtherRecordsContainer.transform.GetChild(ii).GetChild(0).GetComponent<TMP_Text>().text == selectedQuestion[i])
+    //            {
+    //                selectOtherRecordsContainer.transform.GetChild(ii).GetComponent<Toggle>().isOn = true;
+    //                selectOtherRecordsContainer.transform.GetChild(ii).GetChild(0).GetComponent<TMP_Text>().color = primary3;
+    //                break;
+    //            }
+    //        }
+    //    }
+    //}
+    ////바텀시트 칩 선택 시 색 변경
+    //public void changeChipColor()
+    //{
+    //    GameObject selectedChip = EventSystem.current.currentSelectedGameObject;
+
+    //    if (selectedChip.name == "Button_AddInputField"||selectedChip.name=="SelectFilter Button") return;
+    //    if (selectedChip.GetComponent<Toggle>().isOn)
+    //    {
+    //        selectedChip.GetComponent<Image>().color = primary3;
+    //        selectedChip.transform.GetChild(0).GetComponent<TMP_Text>().color = primary3;
+    //    }
+    //    else
+    //    {
+    //        selectedChip.GetComponent<Image>().color = gray300;
+    //        selectedChip.transform.GetChild(0).GetComponent<TMP_Text>().color = gray700;
+    //    }
+    //}
+    ////바텀시트 선택 저장
+    //public void confirmBottom()
+    //{
+    //    selectedQuestion = new List<string>();
+    //    for (int i=1;i< 8; i++)
+    //    {
+    //        GameObject thisToggle = selectOtherRecordsContainer.transform.GetChild(i).gameObject;
+    //        if (thisToggle.GetComponent<Toggle>().isOn)
+    //        {
+    //            selectedQuestion.Add(thisToggle.transform.GetChild(0).GetComponent<TMP_Text>().text);
+    //        }
+    //    }
+    //    StartCoroutine(setRecordCard());
+    //    selectOtherRecordsContainer.transform.parent.gameObject.SetActive(false);
+    //}
     #endregion
 
     #region 에피소드 선택된 기록 저장
-    public void SaveSelectedEpisode()
-    {
-        if (selectedStep == "Situation")
-            StartCoroutine(selectedEpisodeCT(EpisodeSituation.transform.parent.gameObject, thisProject.EpisodeSituation));
-        if (selectedStep == "Action")
-            StartCoroutine(selectedEpisodeCT(EpisodeAction.transform.parent.gameObject, thisProject.EpisodeAction));
-        if (selectedStep == "Result")
-            StartCoroutine(selectedEpisodeCT(EpisodeResult.transform.parent.gameObject, thisProject.EpisodeResult));
-        if (selectedStep == "Realization")
-            StartCoroutine(selectedEpisodeCT(EpisodeRealization.transform.parent.gameObject, thisProject.EpisodeRealization));
-    }
+    //public void SaveSelectedEpisode()
+    //{
+    //    if (selectedStep == "Situation")
+    //        StartCoroutine(selectedEpisodeCT(EpisodeSituation.transform.parent.gameObject, thisProject.EpisodeSituation));
+    //    if (selectedStep == "Action")
+    //        StartCoroutine(selectedEpisodeCT(EpisodeAction.transform.parent.gameObject, thisProject.EpisodeAction));
+    //    if (selectedStep == "Result")
+    //        StartCoroutine(selectedEpisodeCT(EpisodeResult.transform.parent.gameObject, thisProject.EpisodeResult));
+    //    if (selectedStep == "Realization")
+    //        StartCoroutine(selectedEpisodeCT(EpisodeRealization.transform.parent.gameObject, thisProject.EpisodeRealization));
+    //}
 
-    IEnumerator selectedEpisodeCT(GameObject parentObj, List<string> thisList)
-    {
-        //thisList = new List<string>();
-        for(int i=0;i<thisList.Count;i++)
-        {
-            thisList.Remove(thisList[i]);
-        }
 
-        for (int i = 1; i < writtenRecordContent.transform.childCount; i++)
-        {
-            GameObject selectedRecord = writtenRecordContent.transform.GetChild(i).gameObject;
-            if (selectedRecord.GetComponent<Toggle>().isOn)
-            {
-                if (i == 1)
-                {
-                    parentObj.transform.GetChild(1).gameObject.SetActive(false);
-                    for (int ii = 2; ii < parentObj.transform.childCount; ii++)
-                    { Destroy(parentObj.transform.GetChild(ii).gameObject); }
-                }
+    //IEnumerator selectedEpisodeCT(GameObject parentObj, List<string> thisList)
+    //{
+    //    //thisList = new List<string>();
+    //    for(int i=0;i<thisList.Count;i++)
+    //    {
+    //        thisList.Remove(thisList[i]);
+    //    }
 
-                string type = selectedRecord.transform.GetChild(1).GetComponent<TMP_Text>().text;
-                string title;
-                if (selectedRecord.transform.GetChild(2).gameObject.activeSelf)
-                { title = selectedRecord.transform.GetChild(2).GetComponent<TMP_Text>().text; }
-                else { title = ""; }
-                string content = selectedRecord.transform.GetChild(3).GetComponent<TMP_Text>().text;
-                string date = selectedRecord.transform.GetChild(4).GetComponent<TMP_Text>().text; 
+    //    for (int i = 1; i < writtenRecordContent.transform.childCount; i++)
+    //    {
+    //        GameObject selectedRecord = writtenRecordContent.transform.GetChild(i).gameObject;
+    //        if (selectedRecord.GetComponent<Toggle>().isOn)
+    //        {
+    //            if (i == 1)
+    //            {
+    //                parentObj.transform.GetChild(1).gameObject.SetActive(false);
+    //                for (int ii = 2; ii < parentObj.transform.childCount; ii++)
+    //                { Destroy(parentObj.transform.GetChild(ii).gameObject); }
+    //            }
 
-                newWrittenRecord = Instantiate(singleSelectedWrittenRecord, parentObj.transform);
-                newWrittenRecord.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = type;
-                newWrittenRecord.transform.GetChild(1).GetComponent<TMP_Text>().text = title;
-                if (string.IsNullOrWhiteSpace(title)) newWrittenRecord.transform.GetChild(1).gameObject.SetActive(false);
+    //            string type = selectedRecord.transform.GetChild(1).GetComponent<TMP_Text>().text;
+    //            string title;
+    //            if (selectedRecord.transform.GetChild(2).gameObject.activeSelf)
+    //            { title = selectedRecord.transform.GetChild(2).GetComponent<TMP_Text>().text; }
+    //            else { title = ""; }
+    //            string content = selectedRecord.transform.GetChild(3).GetComponent<TMP_Text>().text;
+    //            string date = selectedRecord.transform.GetChild(4).GetComponent<TMP_Text>().text; 
 
-                newWrittenRecord.transform.GetChild(2).GetComponent<TMP_Text>().text = content;
-                newWrittenRecord.transform.GetChild(3).GetComponent<TMP_Text>().text = date;
-                newWrittenRecord.GetComponent<Button>().onClick.AddListener(openSelectRecord);
+    //            newWrittenRecord = Instantiate(singleSelectedWrittenRecord, parentObj.transform);
+    //            newWrittenRecord.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = type;
+    //            newWrittenRecord.transform.GetChild(1).GetComponent<TMP_Text>().text = title;
+    //            if (string.IsNullOrWhiteSpace(title)) newWrittenRecord.transform.GetChild(1).gameObject.SetActive(false);
 
-                Episode episode = new Episode();
-                episode.type = type;
-                episode.title = title;
-                episode.content = content;
-                episode.date = date;
+    //            newWrittenRecord.transform.GetChild(2).GetComponent<TMP_Text>().text = content;
+    //            newWrittenRecord.transform.GetChild(3).GetComponent<TMP_Text>().text = date;
+    //            newWrittenRecord.GetComponent<Button>().onClick.AddListener(openSelectRecord);
 
-                string newEpisodeData = JsonConvert.SerializeObject(episode);
-                thisList.Add(newEpisodeData);
-            }
-        }
-        yield return new WaitForEndOfFrame();
-        parentObj.GetComponent<VerticalLayoutGroup>().spacing = 7.9f;
-        parentObj.GetComponent<VerticalLayoutGroup>().spacing = 8;
-        yield return new WaitForEndOfFrame();
-        EpisodeTypeGroup.GetComponent<VerticalLayoutGroup>().spacing = 11.9f;
-        EpisodeTypeGroup.GetComponent<VerticalLayoutGroup>().spacing = 12;
-        
-        SelectedRecordPage.SetActive(false);
-        UIController.instance.curOpenPageNum = 1;
-    }
-    void openSelectRecord()
-    {
-        SelectedRecordPage.SetActive(true);
-    }
+    //            Episode episode = new Episode();
+    //            episode.type = type;
+    //            episode.title = title;
+    //            episode.content = content;
+    //            episode.date = date;
+
+    //            string newEpisodeData = JsonConvert.SerializeObject(episode);
+    //            thisList.Add(newEpisodeData);
+    //        }
+    //    }
+    //    yield return new WaitForEndOfFrame();
+    //    parentObj.GetComponent<VerticalLayoutGroup>().spacing = 7.9f;
+    //    parentObj.GetComponent<VerticalLayoutGroup>().spacing = 8;
+    //    yield return new WaitForEndOfFrame();
+    //    EpisodeTypeGroup.GetComponent<VerticalLayoutGroup>().spacing = 11.9f;
+    //    EpisodeTypeGroup.GetComponent<VerticalLayoutGroup>().spacing = 12;
+
+    //    SelectedRecordPage.SetActive(false);
+    //    UIController.instance.curOpenPageNum = 1;
+    //}
+    //void openSelectRecord()
+    //{
+    //    SelectedRecordPage.SetActive(true);
+    //}
     #endregion
 
     #region 직접 작성하기
-    public void setSelfWriting()
-    {
-        selfWritingPage.SetActive(true);
-        UIController.instance.curOpenPageNum = 3;
-        inputSelfWriting.text = "";
-    }
-    public void saveSelfWriting()
-    {
-        if (!string.IsNullOrWhiteSpace(inputSelfWriting.text))
-        {
-            StartCoroutine(PrintWrittenRecord());
-        }
-        selfWritingPage.SetActive(false);
-        UIController.instance.curOpenPageNum = 1;
-    }
-    IEnumerator PrintWrittenRecord()
-    {
-        newWrittenRecord = Instantiate(singleWrittenRecord, writtenRecordContent.transform);
-        newWrittenRecord.transform.GetChild(1).GetComponent<TMP_Text>().text = "직접작성";
-        newWrittenRecord.transform.GetChild(1).GetComponent<TMP_Text>().color = primary3;
-        newWrittenRecord.transform.GetChild(3).GetComponent<TMP_Text>().text = inputSelfWriting.text;
-        newWrittenRecord.transform.GetChild(4).GetComponent<TMP_Text>().text = DateTime.Now.ToString("yyyy년 MM월 dd일");
-        newWrittenRecord.GetComponent<Toggle>().onValueChanged.AddListener(changeTextColor);
+    //public void setSelfWriting()
+    //{
+    //    selfWritingPage.SetActive(true);
+    //    UIController.instance.curOpenPageNum = 3;
+    //    inputSelfWriting.text = "";
+    //}
+    //public void saveSelfWriting()
+    //{
+    //    if (!string.IsNullOrWhiteSpace(inputSelfWriting.text))
+    //    {
+    //        StartCoroutine(PrintWrittenRecord());
+    //    }
+    //    selfWritingPage.SetActive(false);
+    //    UIController.instance.curOpenPageNum = 1;
+    //}
+    //IEnumerator PrintWrittenRecord()
+    //{
+    //    newWrittenRecord = Instantiate(singleWrittenRecord, writtenRecordContent.transform);
+    //    newWrittenRecord.transform.GetChild(1).GetComponent<TMP_Text>().text = "직접작성";
+    //    newWrittenRecord.transform.GetChild(1).GetComponent<TMP_Text>().color = primary3;
+    //    newWrittenRecord.transform.GetChild(3).GetComponent<TMP_Text>().text = inputSelfWriting.text;
+    //    newWrittenRecord.transform.GetChild(4).GetComponent<TMP_Text>().text = DateTime.Now.ToString("yyyy년 MM월 dd일");
+    //    newWrittenRecord.GetComponent<Toggle>().onValueChanged.AddListener(changeTextColor);
 
-        newWrittenRecord.transform.GetChild(2).gameObject.SetActive(false);
-        newWrittenRecord.transform.SetSiblingIndex(1);
+    //    newWrittenRecord.transform.GetChild(2).gameObject.SetActive(false);
+    //    newWrittenRecord.transform.SetSiblingIndex(1);
 
-        yield return new WaitForEndOfFrame();
-        newWrittenRecord.GetComponent<Toggle>().isOn = true;
-    }
+    //    yield return new WaitForEndOfFrame();
+    //    newWrittenRecord.GetComponent<Toggle>().isOn = true;
+    //}
     #endregion
 
     //최종 저장
     public void SaveFinishUp()
     {
-        //한줄요약 필수값
-        if (string.IsNullOrWhiteSpace(inputSummary.text))
-        {
-            inputSummary.GetComponent<Image>().color = errorColor;
-            return;
-        }
-
         thisProject.myRole = inputMyRole.text; //역할
-        thisProject.Summary = inputSummary.text; //한줄요약
+        //thisProject.Summary = inputSummary.text; //한줄요약
         //공모전 수상내역
         if (!string.IsNullOrWhiteSpace(Contest.transform.GetChild(2).GetComponent<TMP_InputField>().text))
             { thisProject.prize = Contest.transform.GetChild(2).GetComponent<TMP_InputField>().text; }
 
+        //에피소드
+        SaveMainEpisode();
+
         //종료날짜 저장
         thisProject.endedDate = DateTime.Now;
-        //thisProject.endedYear = DateTime.Now.Year;
-        //thisProject.endedMonth = DateTime.Now.Month;
-        //thisProject.endedDay = DateTime.Now.Day;
-        //thisProject.endedDate = DateTime.Now.Year.ToString() + "년 " + DateTime.Now.Month.ToString() + "월 " + DateTime.Now.Day.ToString() + "일";
 
         thisProject.isItOngoing = false;
 
@@ -878,7 +1007,8 @@ public class FolderManager : MonoBehaviour
         FinishUp_2.SetActive(false);
         FinishUp_3.SetActive(false);
         //FinishUp_4.SetActive(false);
-        SelectedRecordPage.SetActive(false);
+        //SelectedRecordPage.SetActive(false);
+        ShowRecordsPage.SetActive(false);
         ReportPage.SetActive(false);
         UIController.instance.curOpenPageNum = -1;
     }
@@ -942,7 +1072,7 @@ public class FolderManager : MonoBehaviour
             mainEpisode_none.SetActive(false);
             
             if (thisProject.EpisodeTypes.Count == 0)
-            { MainEpisode.transform.GetChild(0).GetChild(1).gameObject.SetActive(false); }
+            { MainEpisode.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = "특별한 에피소드가 없었어요"; }
             else 
             {
                 MainEpisode.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = "- "+thisProject.EpisodeTypes[0];
@@ -952,31 +1082,47 @@ public class FolderManager : MonoBehaviour
                     newEpisode.GetComponent<TMP_Text>().text = "- " + thisProject.EpisodeTypes[i];
                 }
             }
-            
+
             //MainEpisode.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = thisProject.episodeType;
-            MainEpisode.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.Summary;
+            //MainEpisode.transform.GetChild(1).GetComponent<TMP_Text>().text = thisProject.Summary;
 
-            if(thisProject.EpisodeSituation.Count==0&& thisProject.EpisodeAction.Count == 0
-                && thisProject.EpisodeResult.Count == 0&& thisProject.EpisodeRealization.Count == 0)
-            {
-                MainEpisode.transform.GetChild(2).gameObject.SetActive(false);
-                MainEpisode.transform.GetChild(3).gameObject.SetActive(false);
-                MainEpisode.transform.GetChild(4).gameObject.SetActive(false);
-            }
-            else
-            {
-                for(int i=0;i< mainEpisodeFolding.transform.childCount; i++)
-                    { Destroy(mainEpisodeFolding.transform.GetChild(i).gameObject); }
+            //if (thisProject.EpisodeSituation.Count == 0 && thisProject.EpisodeAction.Count == 0
+            //    && thisProject.EpisodeResult.Count == 0 && thisProject.EpisodeRealization.Count == 0)
+            //{
+            //    MainEpisode.transform.GetChild(2).gameObject.SetActive(false);
+            //    MainEpisode.transform.GetChild(3).gameObject.SetActive(false);
+            //    MainEpisode.transform.GetChild(4).gameObject.SetActive(false);
+            //}
+            //else
+            //{
+            //    for (int i = 0; i < mainEpisodeFolding.transform.childCount; i++)
+            //    { Destroy(mainEpisodeFolding.transform.GetChild(i).gameObject); }
 
-                setEpisode(thisProject.EpisodeSituation, "상황");
-                setEpisode(thisProject.EpisodeAction, "행동");
-                setEpisode(thisProject.EpisodeResult, "결과");
-                setEpisode(thisProject.EpisodeRealization, "느낀점");
+            //    setEpisode(thisProject.EpisodeSituation, "상황");
+            //    setEpisode(thisProject.EpisodeAction, "행동");
+            //    setEpisode(thisProject.EpisodeResult, "결과");
+            //    setEpisode(thisProject.EpisodeRealization, "느낀점");
+            //}
+            //대표 에피소드
+            if (!string.IsNullOrEmpty(thisProject.episodeMain)){
+                mainEpisodeFolding.transform.GetChild(0).gameObject.SetActive(true);
+                mainEpisodeFolding.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>().text = thisProject.episodeMain;
             }
+            if (!string.IsNullOrEmpty(thisProject.episodeGoodPoint))
+            {
+                mainEpisodeFolding.transform.GetChild(1).gameObject.SetActive(true);
+                mainEpisodeFolding.transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = thisProject.episodeGoodPoint;
+            }
+            if (!string.IsNullOrEmpty(thisProject.episodeBadPoint))
+            {
+                mainEpisodeFolding.transform.GetChild(2).gameObject.SetActive(true);
+                mainEpisodeFolding.transform.GetChild(2).GetChild(1).GetComponent<TMP_Text>().text = thisProject.episodeBadPoint;
+            }
+
 
             //활동 유형
             //print(UserManager.Instance.newUserInformation.userName);
-            
+
             //print(EpisodeType.transform.GetChild(5).GetComponent<TMP_Text>().text);
             EpisodeType.transform.GetChild(4).gameObject.SetActive(false);
             EpisodeType.transform.GetChild(0).GetComponent<TMP_Text>().text = ReportScript.GetComponent<Report>().setEpisodeType()[1];
@@ -1020,23 +1166,38 @@ public class FolderManager : MonoBehaviour
         }
     }
     //메인 에피소드
-    void setEpisode(List<string> episodeList, string step)
+    //void setEpisode(List<string> episodeList, string step)
+    //{
+    //    for (int i = 0; i < episodeList.Count; i++)
+    //    {
+    //        episode = JsonConvert.DeserializeObject<Episode>(episodeList[i]);
+
+    //        newEpisode = Instantiate(Episode, mainEpisodeFolding.transform);
+    //        newEpisode.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = step;
+    //        newEpisode.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = episode.type;
+
+    //        if (!string.IsNullOrWhiteSpace(episode.title))
+    //            { newEpisode.transform.GetChild(1).GetComponent<TMP_Text>().text = episode.title; }
+    //        else
+    //            newEpisode.transform.GetChild(1).gameObject.SetActive(false);
+
+    //        newEpisode.transform.GetChild(2).GetComponent<TMP_Text>().text = episode.content;
+    //        newEpisode.transform.GetChild(3).GetComponent<TMP_Text>().text = episode.date;
+    //    }
+    //}
+    //메인 에피소드 자세히보기 버튼
+    public RectTransform plusbtnCheckmark;
+    public void PlusButton()
     {
-        for (int i = 0; i < episodeList.Count; i++)
+        if (plusbtnCheckmark.rotation.z == 0)
         {
-            episode = JsonConvert.DeserializeObject<Episode>(episodeList[i]);
-
-            newEpisode = Instantiate(Episode, mainEpisodeFolding.transform);
-            newEpisode.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = step;
-            newEpisode.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = episode.type;
-
-            if (!string.IsNullOrWhiteSpace(episode.title))
-                { newEpisode.transform.GetChild(1).GetComponent<TMP_Text>().text = episode.title; }
-            else
-                newEpisode.transform.GetChild(1).gameObject.SetActive(false);
-
-            newEpisode.transform.GetChild(2).GetComponent<TMP_Text>().text = episode.content;
-            newEpisode.transform.GetChild(3).GetComponent<TMP_Text>().text = episode.date;
+            mainEpisodeFolding.SetActive(true);
+            plusbtnCheckmark.rotation = Quaternion.Euler(0, 0, 180);
+        }
+        else
+        {
+            mainEpisodeFolding.SetActive(false);
+            plusbtnCheckmark.rotation = Quaternion.Euler(0, 0, 0);
         }
     }
 
@@ -1265,15 +1426,20 @@ public class FolderManager : MonoBehaviour
         UIController.instance.curOpenPageNum = 0;
         FinishUp_3.SetActive(false);
     }
-    public void BackFromSelectRecord()
+    //public void BackFromSelectRecord()
+    //{
+    //    UIController.instance.curOpenPageNum = 1;
+    //    SelectedRecordPage.SetActive(false);
+    //}
+    //public void BackFromSelfWriting()
+    //{
+    //    UIController.instance.curOpenPageNum = 1;
+    //    selfWritingPage.SetActive(false);
+    //}
+    public void BackFromShowRecords()
     {
         UIController.instance.curOpenPageNum = 1;
-        SelectedRecordPage.SetActive(false);
-    }
-    public void BackFromSelfWriting()
-    {
-        UIController.instance.curOpenPageNum = 1;
-        selfWritingPage.SetActive(false);
+        ShowRecordsPage.SetActive(false);
     }
     public void SetFinishUp1()
     {
