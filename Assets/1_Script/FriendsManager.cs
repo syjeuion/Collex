@@ -46,6 +46,7 @@ public class FriendsManager : MonoBehaviour
     //입사동기 추가하기(검색)
     public GameObject friendSearchPage;
     public GameObject SearchButtonGroup;
+    public GameObject SearchEmptyArea;
     public TMP_InputField searchText;
     public GameObject searchedFriendProfile;
     public GameObject snackBar;
@@ -221,6 +222,7 @@ public class FriendsManager : MonoBehaviour
     {
         UIController.instance.curOpenPageNum = 6;
         friendSearchPage.SetActive(true);
+        SearchEmptyArea.SetActive(false);
         //검색바 리셋
         searchText.text = "";
         //검색 결과 리셋
@@ -243,7 +245,7 @@ public class FriendsManager : MonoBehaviour
         //x버튼 비활성화, 검색 버튼 활성화
         SearchButtonGroup.transform.GetChild(0).gameObject.SetActive(false);
         SearchButtonGroup.transform.GetChild(1).gameObject.SetActive(true);
-        friendSearchPage.transform.GetChild(2).gameObject.SetActive(false);
+        SearchEmptyArea.SetActive(false);
     }
     //검색바 - 검색어 입력 도중 상태 체크
     public void CheckInputFieldOnChanged()
@@ -263,7 +265,7 @@ public class FriendsManager : MonoBehaviour
         searchedName = searchText.text;
         if (userNameList.Contains(searchedName) && searchedName!=UserManager.Instance.newUserInformation.userName)
         {
-            friendSearchPage.transform.GetChild(2).gameObject.SetActive(false);
+            SearchEmptyArea.SetActive(false);
             DontDestroyCanvas.controlProgressIndicator(true); //인디케이터 시작
             try
             {
@@ -277,7 +279,7 @@ public class FriendsManager : MonoBehaviour
         else {
             //검색 결과 없을 때
             searchedFriendProfile.SetActive(false);
-            friendSearchPage.transform.GetChild(2).gameObject.SetActive(true);
+            SearchEmptyArea.SetActive(true);
         }
     }
     //UI처리
