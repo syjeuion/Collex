@@ -594,6 +594,8 @@ public class UserTitleManager : MonoBehaviour
         else
             saveTargetTitle(2);*/
 
+        UpdateUserTitle(selectedModiData[0], selectedNounData[0]);
+
         popUp.SetActive(false);
         UserTitlePage.SetActive(false);
         UIController.instance.curOpenPageNum = -1;
