@@ -1514,6 +1514,7 @@ RectTransform:
   - {fileID: 1797672228}
   - {fileID: 332931760}
   - {fileID: 1645405123}
+  - {fileID: 1159607442}
   m_Father: {fileID: 473228648}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -4652,10 +4653,10 @@ RectTransform:
   m_LocalScale: {x: 1.0002601, y: 1.0002601, z: 1.0002601}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 9743075}
   - {fileID: 2076860623}
   - {fileID: 109730530}
   - {fileID: 157193925}
-  - {fileID: 9743075}
   m_Father: {fileID: 1744249959}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5525,9 +5526,9 @@ RectTransform:
   m_Father: {fileID: 1900579613}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 1.5, y: -260}
   m_SizeDelta: {x: 360, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &297340927
@@ -17010,9 +17011,9 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1320224181}
-  - {fileID: 63337000}
   - {fileID: 1604895563}
   - {fileID: 740951225}
+  - {fileID: 63337000}
   m_Father: {fileID: 87860028}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -21761,13 +21762,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1159607439}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1521887159}
-  m_Father: {fileID: 1233798335}
+  m_Father: {fileID: 78660867}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
@@ -22388,7 +22389,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -58}
   m_SizeDelta: {x: 360, y: 232}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!1 &1233798334
@@ -22425,7 +22426,6 @@ RectTransform:
   - {fileID: 1128393309}
   - {fileID: 1351475029}
   - {fileID: 90945351}
-  - {fileID: 1159607442}
   m_Father: {fileID: 78660867}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -28614,9 +28614,9 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 577784404}
-  - {fileID: 1416659675}
-  - {fileID: 384641160}
   - {fileID: 1286715083}
+  - {fileID: 384641160}
+  - {fileID: 1416659675}
   m_Father: {fileID: 78660867}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -29676,10 +29676,10 @@ RectTransform:
   m_LocalScale: {x: 0.9997399, y: 0.9997399, z: 0.9997399}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1714372114}
   - {fileID: 1879515807}
   - {fileID: 1581190267}
   - {fileID: 942281509}
+  - {fileID: 1714372114}
   - {fileID: 1381690657}
   - {fileID: 1956516707}
   - {fileID: 1374093438}
@@ -31849,7 +31849,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -58}
   m_SizeDelta: {x: 360, y: 232}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!1 &1781484259
@@ -32312,8 +32312,8 @@ RectTransform:
   m_LocalScale: {x: 0.99974, y: 0.99974, z: 0.99974}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1866931041}
   - {fileID: 1250140558}
+  - {fileID: 1866931041}
   - {fileID: 743773718}
   m_Father: {fileID: 78660867}
   m_RootOrder: -1
@@ -34322,8 +34322,8 @@ RectTransform:
   m_Children:
   - {fileID: 87860028}
   - {fileID: 1294919956}
-  - {fileID: 1319112558}
   - {fileID: 297340926}
+  - {fileID: 1319112558}
   m_Father: {fileID: 1199511299}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -38670,7 +38670,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

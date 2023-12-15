@@ -336,6 +336,7 @@ public class FriendsManager : MonoBehaviour
         else
         {
             CancelRequestFriend();
+            StartCoroutine(SetSnackBar(searchedName, "님에게 신청한 입사동기 요청을 취소했어요.", 70));
             btnText.text = "추가";
         }
     }
@@ -368,7 +369,7 @@ public class FriendsManager : MonoBehaviour
             btnText.color = gray400;
             btnSendApplyFriend.transform.GetChild(1).gameObject.SetActive(true);
 
-            StartCoroutine(SetSnackBar("님과 입사동기가 되었어요!", 70));
+            StartCoroutine(SetSnackBar(searchedName,"님과 입사동기가 되었어요!", 70));
         }
         else
         {
@@ -380,7 +381,7 @@ public class FriendsManager : MonoBehaviour
     private async void SendRequestFriend(string searchedId)
     {
         //snackBar 띄우기
-        StartCoroutine(SetSnackBar("님에게 입사동기를 신청했어요!\n상대가 수락하면 랭킹에서 볼 수 있어요.", 98));
+        StartCoroutine(SetSnackBar(searchedName,"님에게 입사동기를 신청했어요!\n상대가 수락하면 랭킹에서 볼 수 있어요.", 98));
 
         //검색된 유저의 DB 받아오기
         
@@ -398,11 +399,11 @@ public class FriendsManager : MonoBehaviour
         //다시 검색된 유저 DB 업데이트 하기
         UpdateUserDB(searchedId, userDB);
     }
-    IEnumerator SetSnackBar(string text, int height)
+    IEnumerator SetSnackBar(string name ,string text, int height)
     {
         snackBar.GetComponent<RectTransform>().sizeDelta = new Vector2(350, height);
         snackBar.transform.GetChild(0).GetComponent<TMP_Text>().text =
-            searchedName + text;
+            name + text;
 
         snackBar.SetActive(true);
         yield return new WaitForSeconds(3f);
@@ -813,6 +814,8 @@ public class FriendsManager : MonoBehaviour
         friendDB.isNewNotiCheerUp = true;
 
         friendDB.rankingData.countCheerUp++; //랭킹 - 응원수
+
+        StartCoroutine(SetSnackBar(friendDB.userInformation.userName,"님에게 응원을 보냈어요.",70));
 
         UpdateUserDB(friendId, friendDB);
         UpdateUserDB(thisUserId, thisUserDB);

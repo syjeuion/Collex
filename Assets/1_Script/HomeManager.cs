@@ -94,14 +94,14 @@ public class HomeManager : MonoBehaviour
         if (UserManager.Instance.newUserInformation.isItFirst == 0)
         {
             explanation.SetActive(true);
-            userProfiles.transform.GetChild(3).GetComponent<TMP_Text>().text = cheerUpMessage[0];
+            userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = cheerUpMessage[0];
             //UserManager.Instance.isItFirst = 1;
         }
         else
         {
             System.Random random = new System.Random();
             int randomNumber = random.Next(1, 5);
-            userProfiles.transform.GetChild(3).GetComponent<TMP_Text>().text = cheerUpMessage[randomNumber];
+            userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = cheerUpMessage[randomNumber];
             explanation.SetActive(false);
             FoldersOngoing.SetActive(true);
             //FoldersEnded.SetActive(false);
@@ -126,7 +126,7 @@ public class HomeManager : MonoBehaviour
         thisUserDB = await GetUserDB(thisUserId);
         userName = thisUserDB.userInformation.userName;
         userProfiles.transform.GetChild(0).GetComponent<Image>().sprite = myProfileImgs[thisUserDB.userInformation.userProfileImg];
-        userProfiles.transform.GetChild(2).GetComponent<TMP_Text>().text = "\n" + userName + "님!";
+        userProfiles.transform.GetChild(1).GetComponent<TMP_Text>().text = "\n" + userName + "님!";
         UpdateUserManager(thisUserDB);
     }
     //UserDB에서 유저 이름, profileImg UserManager에 저장
