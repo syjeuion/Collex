@@ -371,6 +371,11 @@ public class FriendsManager : MonoBehaviour
             btnSendApplyFriend.transform.GetChild(1).gameObject.SetActive(true);
 
             StartCoroutine(SetSnackBar(searchedName, "님과 입사동기가 되었어요!", 70));
+
+            //칭호 획득
+            UserManager.Instance.newUserInformation.titleCheck[23]++; //입사동기 추가
+            UserManager.Instance.checkTitle("뒤", 23, 23);
+            if (UserManager.Instance.nowGetTitle.Count != 0) { UserManager.Instance.getTitle = 1; }
         }
         else
         {
@@ -569,6 +574,12 @@ public class FriendsManager : MonoBehaviour
         
         friendDB.friendsDictionary.Add(thisUserId, dateTimefriend);
         UpdateUserDB(friendId, friendDB);
+
+        //칭호 획득
+        UserManager.Instance.newUserInformation.titleCheck[23]++; //입사동기 추가
+        UserManager.Instance.checkTitle("뒤", 23, 23);
+        if (UserManager.Instance.nowGetTitle.Count != 0) { UserManager.Instance.getTitle = 1; }
+
     }
     //알림 - 입사동기 신청 - 거절 시 친구 요청 리스트에서 삭제
     private async void DeleteRequestFriend()
@@ -826,6 +837,14 @@ public class FriendsManager : MonoBehaviour
 
         UpdateUserDB(friendId, friendDB);
         UpdateUserDB(thisUserId, thisUserDB);
+
+        //칭호 획득
+        UserManager.Instance.newUserInformation.titleCheck[24]++; //입사동기 응원
+        UserManager.Instance.checkTitle("앞", 22, 24);
+        UserManager.Instance.checkTitle("앞", 23, 24);
+        UserManager.Instance.checkTitle("뒤", 24, 24);
+        UserManager.Instance.checkTitle("뒤", 25, 24);
+        if (UserManager.Instance.nowGetTitle.Count != 0) { UserManager.Instance.getTitle = 1; }
     }
     #endregion
 
