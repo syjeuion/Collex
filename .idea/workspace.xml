@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4b1963f9-f944-43e6-8848-57f96330f213" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-analytics-unity-11.0.0.aar" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-analytics-unity-11.0.0.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-app-unity-11.0.0.aar" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-app-unity-11.0.0.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-auth-unity-11.0.0.aar" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-auth-unity-11.0.0.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-common-20.3.2.aar" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-common-20.3.2.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-database-unity-11.0.0.aar" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-database-unity-11.0.0.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-messaging-unity-11.0.0.aar" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.firebase.firebase-messaging-unity-11.0.0.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.signin.google-signin-support-1.0.4.aar" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/com.google.signin.google-signin-support-1.0.4.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectVersion.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectVersion.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.1.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.106c40580.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.290087000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.29dcfb000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.2a7b37000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.2b5e13000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.2bc887000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.2d5b53000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.2e3d27000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.2e5513000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.47713.2ee307000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.63981.1.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.1.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.10a68c580.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.17c2df000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.17c36b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.17c6b3000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.17c7cb000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.17c857000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.17c8e3000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.290f2f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.29113b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.298487000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2986d3000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2988df000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.298bab000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.298db7000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.298fc3000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2991cf000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2993db000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2995e7000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.299947000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.299b53000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.299d5f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2a8a07000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2a8c13000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2a8e1f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2a902b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2a9237000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2a9443000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2a964f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2a985b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2ae24f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2d257b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2d3c0f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2d5707000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2d5913000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2d5b1f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2d5d2b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2d5f37000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2d63c3000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2d912f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2dd10f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2dd50f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2dd71b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2dd927000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2ddb33000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2ddd3f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2ddf4b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2de157000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2deb63000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e0207000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e0413000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e061f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e082b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e0a37000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e0c43000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e0e4f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e105b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e1267000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e1473000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e167f000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e188b000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e1a97000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e1ca3000.blob" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mono_crash.mem.64143.2e45c7000.blob" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2lKJ8SRlOdeNxjXte1S9pRNfhex" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/seoyunji/Documents/GitHub/Collex",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4b1963f9-f944-43e6-8848-57f96330f213" name="Changes" comment="" />
+      <created>1724922674434</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1724922674434</updated>
+    </task>
+    <servers />
+  </component>
+</project>
